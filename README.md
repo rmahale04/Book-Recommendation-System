@@ -57,9 +57,12 @@ This project was developed as part of an academic group project to demonstrate s
 Book-Recommendation-System/ 
 │── data/       # Datasets or database files
 │── src/        # Source code 
-│── app.py      # Flask application entry point
-│── templates/  # HTML templates for the web app
-│── static/     # CSS, JS, and image files for the web app
+│── app.py      # Flask application
+│── templates/  # HTML templates
+│── static/     # CSS, JS, and image files 
+│   ├── css/      
+│   ├── js/       
+│   └── images/ 
 │── LICENSE     
 │── README.md   
 
