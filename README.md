@@ -70,10 +70,8 @@ Book-Recommendation-System/
 
 ## 🔹 Future Enhancements
 - Add **hybrid recommendation** for improved accuracy.  
-- Enhance UI with Bootstrap/React for better user experience.  
 - Integrate with a **real-time database**.  
-- Use **deep learning models** for advanced recommendations.  
-- Deploy on cloud (Heroku/AWS).  
+- Use **deep learning models** for advanced recommendations.    
 
 ---
 
