@@ -54,17 +54,17 @@ This project was developed as part of an academic group project to demonstrate s
 ---
 
 ## 🔹 Project Structure
-Book-Recommendation-System/ 
-│── data/       # Datasets or database files
-│── src/        # Source code 
-│── app.py      # Flask application
-│── templates/  # HTML templates
-│── static/     # CSS, JS, and image files 
-│   ├── css/      
-│   ├── js/       
-│   └── images/ 
-│── LICENSE     
-│── README.md   
+Book-Recommendation-System/
+├── data/          # Datasets or database files
+├── src/           # Source code 
+├── app.py         # Flask application 
+├── templates/     # HTML templates 
+├── static/        # CSS, JS, and image files 
+│   ├── css/       
+│   ├── js/        
+│   └── images/    
+├── LICENSE        # MIT License 
+└── README.md      # Project overview
 
 ---
 
