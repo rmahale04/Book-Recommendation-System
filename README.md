@@ -54,7 +54,7 @@ This project was developed as part of an academic group project to demonstrate s
 ---
 
 ## 🔹 Project Structure
-Book-Recommendation-System/
+Book-Recommendation-System/ <br>
 ├── data/          # Datasets or database files <br>
 ├── src/           # Source code <br>
 ├── app.py         # Flask application <br>
