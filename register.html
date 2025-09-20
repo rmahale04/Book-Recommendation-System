@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommender - Sign Up</title>
+    <link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">📚 Book Recommender</a>
+            <nav class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">My Books</a>
+                <a href="#">Browse</a>
+                <a href="#">Community</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Left Side Content -->
+        <div class="left-content">
+            <h1 class="welcome-title">Join our community</h1>
+            <p class="welcome-subtitle">
+                Start your reading journey today and connect with thousands of book lovers worldwide.
+            </p>
+            <ul class="features-list">
+                <li>Get personalized book recommendations based on your taste</li>
+                <li>Track your reading progress and set reading goals</li>
+                <li>Join vibrant book clubs and discussion groups</li>
+                <li>Share reviews and discover hidden literary gems</li>
+                <li>Build your virtual bookshelf and wishlist</li>
+                <li>Connect with authors and fellow readers</li>
+            </ul>
+        </div>
+
+        <!-- Right Side - Registration Form -->
+        <div class="login-container">
+            <h2 class="login-title">Create Account</h2>
+            
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+
+            <!-- Registration Form -->
+            <form id="register_form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="8">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+
+                <!-- <div class="checkbox-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        I agree to the <a href="#" target="_blank">Terms of Service</a> and 
+                        <a href="#" target="_blank">Privacy Policy</a>
+                    </label>
+                </div> -->
+
+                <!-- <div class="checkbox-group">
+                    <input type="checkbox" id="newsletter" name="newsletter">
+                    <label for="newsletter">
+                        I would like to receive book recommendations and updates via email
+                    </label>
+                </div> -->
+
+                <button type="submit" class="sign-in-btn" id="sign_up_btn">
+                    Create Account
+                </button>
+                 
+            </form>
+
+            <!-- Sign In Link -->
+            <div class="signup-link">
+                Already have an account? 
+                <a href="login.html">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

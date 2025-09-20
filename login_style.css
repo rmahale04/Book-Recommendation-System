@@ -1,0 +1,264 @@
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #f4f1ea;
+        min-height: 100vh;
+        line-height: 1.5;
+    }
+
+    /* Header */
+    .header {
+        background-color: #f4f1ea;
+        padding: 15px 0;
+        border-bottom: 1px solid #d6d0c4;
+    }
+
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #382110;
+        text-decoration: none;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-links a {
+        color: #382110;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 3px;
+        transition: background-color 0.2s;
+    }
+
+    .nav-links a:hover {
+        background-color: #d6d0c4;
+    }
+
+    /* Main Container */
+    .main-container {
+        max-width: 960px;
+        margin: 40px auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 60px;
+        align-items: start;
+    }
+
+    /* Left Side Content */
+    .left-content {
+        padding-top: 40px;
+    }
+
+    .welcome-title {
+        font-size: 48px;
+        font-weight: normal;
+        color: #382110;
+        margin-bottom: 20px;
+        line-height: 1.1;
+    }
+
+    .welcome-subtitle {
+        font-size: 18px;
+        color: #767676;
+        margin-bottom: 30px;
+        line-height: 1.4;
+    }
+
+    .features-list {
+        list-style: none;
+        font-size: 16px;
+        color: #382110;
+    }
+
+    .features-list li {
+        margin-bottom: 12px;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    .features-list li::before {
+        content: "✓";
+        color: #00635d;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+
+    /* Right Side - Login Form */
+    .login-container {
+        background: white;
+        border: 1px solid #d6d0c4;
+        border-radius: 4px;
+        padding: 30px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .login-title {
+        font-size: 24px;
+        color: #382110;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: normal;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        color: #382110;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d6d0c4;
+        border-radius: 3px;
+        font-size: 14px;
+        background: white;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #00635d;
+        box-shadow: 0 0 0 1px #00635d;
+    }
+
+    /* .forgot-password {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+    .forgot-password a {
+        color: #00635d;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .forgot-password a:hover {
+        text-decoration: underline;
+    } */
+
+    .sign-in-btn {
+        width: 100%;
+        background-color: #00635d;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 3px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .sign-in-btn:hover {
+        background-color: #005450;
+    }
+
+    .sign-in-btn:active {
+        background-color: #004943;
+    }
+
+    .signup-link {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #d6d0c4;
+        color: #767676;
+        font-size: 14px;
+    }
+
+    .signup-link a {
+        color: #00635d;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .signup-link a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 20px auto;
+        }
+
+        .left-content {
+            padding-top: 0;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 36px;
+        }
+
+        .login-container {
+            padding: 25px 20px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-links {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .welcome-title {
+            font-size: 28px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 16px;
+        }
+        
+        .login-container {
+            margin: 0 10px;
+        }
+    }
+
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 10px 15px;
+        border-radius: 3px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        border: 1px solid #f1aeb5;
+        display: none;
+    }

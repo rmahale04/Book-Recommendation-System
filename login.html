@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommender - Sign In</title>
+    <link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">📚 Book Recommender</a>
+            <nav class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">My Books</a>
+                <a href="#">Browse</a>
+                <a href="#">Community</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Left Side Content -->
+        <div class="left-content">
+            <h1 class="welcome-title">Meet your next favorite book</h1>
+            <p class="welcome-subtitle">
+                Discover and read more, 
+                reviews, and discussion groups.
+            </p>
+            <ul class="features-list">
+                <li>Discover new books through personalized recommendations</li>
+                <li>Keep track of books you want to read</li>
+                <li>Join book clubs and connect with other readers</li>
+                <li>Read reviews from our community of book lovers</li>
+                <li>Set reading goals and track your progress</li>
+            </ul>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-container">
+            <h2 class="login-title">Sign in</h2>
+            
+            <div id="error-message" class="error-message"></div>
+
+            <!-- Login Form -->
+            <form id="login_Form">
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="sign-in-btn" id="signInBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Sign Up Link -->
+            <div class="signup-link">
+                Not a member? 
+                <a href="register.html">Sign up</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
