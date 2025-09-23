@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookFlow - Navigation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f1ea;
+            min-height: 100vh;
+            color: #382110;
+            line-height: 1.5;
+        }
+
+        .header {
+            background-color: #f4f1ea;
+            padding: 15px 0;
+            border-bottom: 1px solid #d6d0c4;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #382110;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #382110;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: #d6d0c4;
+        }
+
+        .nav-links a.active {
+            background-color: #00635d;
+            color: white;
+        }
+
+        .nav-links a.active:hover {
+            background-color: #005450;
+        }
+
+        .nav-links a.active:active {
+            background-color: #004943;
+        }
+
+        .search-section {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 40px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #d6d0c4;
+            border-radius: 25px;
+            font-size: 14px;
+            background: #fafafa;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #00635d;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(0, 99, 93, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-section {
+                max-width: 100%;
+                margin: 0;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">📚 BookFlow</a>
+            
+            <div class="search-section">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search books..." id="searchInput">
+                </div>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#" class="active" data-section="home-page">Home Page</a>
+                <a href="#" data-section="browse">Browse</a>
+                <a href="#" data-section="reading-list">Reading List</a>
+                <a href="#" data-section="community">Community</a>
+                <a href="#" data-section="profile">Profile</a>
+            </nav>
+        </div>
+    </header>
+
+    <script>
+        // Navigation functionality
+        const navLinks = document.querySelectorAll('.nav-links a');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                navLinks.forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const searchTerm = this.value.trim();
+                if (searchTerm) {
+                    console.log('Searching for:', searchTerm);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
