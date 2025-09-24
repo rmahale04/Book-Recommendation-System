@@ -157,7 +157,7 @@ def login():
         conn.close()
 
         if user:
-            if check_password_hash(user["password_hash"], form_data["password"]):
+            if check_password_hash(user["password_hash"], password):
                 session["user_id"] = user["user_id"]
                 session["username"] = user["username"]
                 flash("Login successful!")
@@ -186,3 +186,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
