@@ -42,13 +42,30 @@
         <div class="login-container">
             <h2 class="login-title">Sign in</h2>
             
-            <div id="error-message" class="error-message"></div>
+            <!-- <div id="error-message" class="error-message"></div> -->
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="flashes">
+                  {% for message in messages %}
+                    <li style="color: green;">{{ message }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+
+            {% if errors %}
+              <ul class="error-list">
+                {% for field, error in errors.items() %}
+                  <li style="color: red;">{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
 
             <!-- Login Form -->
             <form id="login_Form" action="{{ url_for('login') }}" method="POST">
                 <div class="form-group">
-                    <label for="email">Email address</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="identifier">Email or Username</label>
+                    <input type="text" id="identifier" name="email" value="{{ form_data.email if form_data else '' }}" required>
                 </div>
 
                 <div class="form-group">
