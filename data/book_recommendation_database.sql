@@ -2,17 +2,22 @@
 -- drop database books; 
 CREATE DATABASE books;
 USE books;
+drop database books_db;
 
 -- Users table
 CREATE TABLE users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(100) UNIQUE NOT NULL,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   bio TEXT,
   profile_image_url VARCHAR(255)
 );
+
+select * from users;
 
 -- Authors table
 CREATE TABLE authors (
