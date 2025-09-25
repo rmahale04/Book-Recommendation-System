@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - ReadNext</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f1ea;
+            color: #382110;
+            padding: 20px;
+        }
+        .book-container {
+            display: flex;
+            gap: 30px;
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .book-image img {
+            max-width: 300px;
+            width: 100%;
+            border-radius: 10px;
+        }
+        .book-info {
+            flex: 1;
+        }
+        .book-info h1 {
+            margin-bottom: 15px;
+        }
+        .book-info p {
+            margin-bottom: 10px;
+        }
+        .book-info span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="book-container">
+        <div class="book-image">
+            <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
+        </div>
+        <div class="book-info">
+            <h1>{{ book.title }}</h1>
+            <p><span>Author:</span> {{ book.author }}</p>
+            <p><span>Series:</span> {{ book.series or 'N/A' }}</p>
+            <p><span>Genres:</span> {{ book.genres or 'N/A' }}</p>
+            <p><span>Language:</span> {{ book.language or 'N/A' }}</p>
+            <p><span>Published Year:</span> {{ book.published_year }}</p>
+            <p><span>Description:</span></p>
+            <p>{{ book.description or 'No description available.' }}</p>
+        </div>
+    </div>
+</body>
+</html>
