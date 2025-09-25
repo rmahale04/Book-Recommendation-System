@@ -12,7 +12,7 @@ db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "gj@riya01",
+    "password": "Netra@432",
     "database": "books_db"
 }
 
@@ -183,6 +183,31 @@ def logout():
     session.pop("username", None)
     flash("You have been logged out.")
     return redirect(url_for("login"))
+
+
+@app.route("/profile")
+def profile():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT first_name, last_name, username, email FROM users WHERE user_id=%s", (session["user_id"],))
+        user = cursor.fetchone()
+        conn.close()
+
+        if not user:
+            flash("User not found.")
+            return redirect(url_for("home"))
+
+        return render_template("profile.html", user=user)
+
+    except Error as e:
+        flash("Database error: " + str(e))
+        return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
