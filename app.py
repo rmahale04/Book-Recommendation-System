@@ -216,19 +216,21 @@ def view_books():
 
     base_query = """
         SELECT b.book_id, b.title, a.name AS author, s.name AS series,
-               b.published_year, b.cover_image_url, b.avg_rating, b.num_ratings
+                        b.published_year, b.cover_image_url, b.avg_rating, b.num_ratings
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
         LEFT JOIN series s ON b.series_id = s.series_id
+        LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+        LEFT JOIN genres g ON bg.genre_id = g.genre_id
     """
-
+# add DISTINCT after select if too many genre will show different rows of same book
     if search_query:  
         # only add WHERE if something was searched
         base_query += """
-            WHERE b.title LIKE %s OR a.name LIKE %s OR s.name LIKE %s
+            WHERE b.title LIKE %s OR a.name LIKE %s OR s.name LIKE %s OR g.name LIKE %s
         """
         like_pattern = f"%{search_query}%"
-        cursor.execute(base_query, (like_pattern, like_pattern, like_pattern))
+        cursor.execute(base_query, (like_pattern, like_pattern, like_pattern, like_pattern))
     else:
         cursor.execute(base_query)
 
