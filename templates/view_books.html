@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Books</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/table_styles.css') }}">
+</head>
+<body>
+    {% include "nav_page.html" %}
+  <h1>📚 Book Collection</h1>
+    
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Cover</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Series</th>
+      <th>Year</th>
+      <th>Avg Rating</th>
+      <th>Total Ratings</th>
+    </tr>
+    {% if books %}
+      {% for book in books %}
+      <tr>
+        <td>{{ book.book_id }}</td>
+        <td><img src="{{ book.cover_image_url }}" alt="Cover"></td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author or '—' }}</td>
+        <td>{{ book.series or '—' }}</td>
+        <td>{{ book.published_year }}</td>
+        <td>{{ book.avg_rating }}</td>
+        <td>{{ book.num_ratings }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr><td colspan="8">No books found</td></tr>
+    {% endif %}
+  </table>
+</body>
+</html>
