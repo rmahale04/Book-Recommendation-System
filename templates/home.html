@@ -3,9 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>BookWise - Your Personal Reading Companion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Hello</h1>
+    {% include "nav_page.html" %}
+    <!-- Hero Section -->
+    <main class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Discover Your Next Great Read</h1>
+            <p class="hero-subtitle">Personalized book recommendations powered by your unique reading preferences and our intelligent algorithm.</p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span class="feature-icon">🎯</span>
+                    <span class="feature-text">Personalized recommendations based on your reading history</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🔍</span>
+                    <span class="feature-text">Advanced search across multiple books</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">⭐</span>
+                    <span class="feature-text">Detailed reviews and ratings from fellow readers</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📊</span>
+                    <span class="feature-text">Track your reading progress and goals</span>
+                </div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="#get-started" class="btn-primary">Get Started</a>
+                <a href="#browse" class="btn-secondary">Browse Books</a>
+            </div>
+        </div>
+
+        <!-- Book Discovery Widget -->
+        <div class="discovery-widget floating-animation">
+            <h3 class="widget-title">Find Your Perfect Book</h3>
+            
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search by title, author, or keyword..." id="searchInput" />
+            </div>
+
+            <div class="genre-tags">
+                <span class="genre-tag" onclick="toggleGenre(this)">Fiction</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Mystery</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Romance</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Sci-Fi</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Biography</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">History</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Fantasy</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Self-Help</span>
+            </div>
+
+            <button class="discover-btn" id="discoverBtn">
+                ✨ Discover Books
+            </button>
+        </div>
+    </main>
 </body>
 </html>
