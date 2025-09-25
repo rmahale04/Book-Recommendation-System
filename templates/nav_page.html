@@ -128,13 +128,13 @@
     </a>
 </div>
             
-            <div class="search-section">
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Search books..." id="searchInput">
-                </div>
-            </div>
+            <form action="{{ url_for('view_books') }}" method="get">
+    <input type="text" name="q" class="search-input"
+           placeholder="Search books..."
+           value="{{ search_query if search_query else '' }}">
+</form>
             
-           <nav class="nav-links">
+<nav class="nav-links">
     <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home Page</a>
     <a href="" class="{% if active_page=='browse' %}active{% endif %}">Browse</a>
     <a href="" class="{% if active_page=='reading-list' %}active{% endif %}">Reading List</a>
