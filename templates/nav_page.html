@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookNext - Navigation</title>
+    <title>ReadNext - Your Personal Reading Companion</title>
     
     <style>
         * {
@@ -35,11 +35,25 @@
             padding: 0 20px;
         }
 
-        .logo {
+        /* .logo {
             font-size: 24px;
             font-weight: bold;
             color: #382110;
             text-decoration: none;
+        } */
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 45px;              /* fixed height for consistency */
+            width: auto;               /* keeps aspect ratio */
+            object-fit: contain;       /* prevents distortion */
+            display: block;
+            transform: scale(2.5);   /* makes it 30% bigger visually */
+            transform-origin: left center; /* grows from left edge */
+            background: transparent;   /* ensures no background mismatch */
         }
 
         .nav-links {
@@ -113,8 +127,12 @@
             }
 
             .nav-links {
-                flex-wrap: wrap;
+                flex-wrap: wrap;    
                 justify-content: center;
+            }
+
+            .logo {
+                height: 40px;
             }
         }
     </style>
@@ -123,22 +141,24 @@
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
-    <a href="{{ url_for('home') }}">
-        <img src="{{ url_for('static', filename='images/logo1.png') }}" alt="ReadNext" class="logo">
-    </a>
-</div>
+                <a href="{{ url_for('home') }}">
+                    <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="ReadNext" class="logo">
+                </a>
+            </div>
             
             <form action="{{ url_for('view_books') }}" method="get">
     <input type="text" name="q" class="search-input"
-           placeholder="Search books..."
+           placeholder="Search"
            value="{{ search_query if search_query else '' }}">
 </form>
             
 <nav class="nav-links">
-    <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home Page</a>
-    <a href="" class="{% if active_page=='browse' %}active{% endif %}">Browse</a>
+    <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('view_books') }}" class="{% if active_page=='books' %}active{% endif %}">Books</a>
+    <a href="{{ url_for('recommendations') }}" class="{% if active_page=='recommendations' %}active{% endif %}">Recommendations</a>
+    <!-- <a href="" class="{% if active_page=='browse' %}active{% endif %}">Browse</a>
     <a href="" class="{% if active_page=='reading-list' %}active{% endif %}">Reading List</a>
-    <a href="" class="{% if active_page=='community' %}active{% endif %}">Community</a>
+    <a href="" class="{% if active_page=='community' %}active{% endif %}">Community</a> -->
     <a href="{{ url_for('profile') }}" class="{% if active_page=='profile' %}active{% endif %}">Profile</a>
 </nav>
 
