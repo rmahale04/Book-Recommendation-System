@@ -12,7 +12,7 @@ db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "Netra@432",
+    "password": "gj@riya01",
     "database": "books_db"
 }
 
@@ -184,7 +184,6 @@ def logout():
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
-
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
@@ -208,32 +207,85 @@ def profile():
         flash("Database error: " + str(e))
         return redirect(url_for("home"))
 
-@app.route("/books")
-def view_books():
-    search_query = request.args.get("q", "").strip()  # get search input
-    conn = mysql.connector.connect(**db_config)
+
+# view a page where complete info of a book is displayed    
+@app.route("/book/<int:book_id>")
+def book_details(book_id):
+    conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    base_query = """
+    cursor.execute("""
         SELECT b.book_id, b.title, a.name AS author, s.name AS series,
-                        b.published_year, b.cover_image_url, b.avg_rating, b.num_ratings
+               b.published_year, b.cover_image_url, b.language, b.description,
+               GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN series s ON b.series_id = s.series_id
+        LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+        LEFT JOIN genres g ON bg.genre_id = g.genre_id
+        WHERE b.book_id = %s
+        GROUP BY b.book_id
+    """, (book_id,))
+
+    book = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not book:
+        flash("Book not found.")
+        return redirect(url_for("view_books"))
+
+    return render_template("book_details.html", book=book)
+
+
+
+# @app.route("/all-books")
+@app.route("/books")
+def view_books():
+    search_query = request.args.get("q", "").strip()
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if "user_id" in session and search_query:
+        cursor.execute(
+            "INSERT INTO user_search_history (user_id, search_query) VALUES (%s, %s)",
+            (session["user_id"], search_query)
+        )
+        conn.commit()
+
+    base_query = """
+        SELECT 
+            b.book_id, b.title, a.name AS author, s.name AS series,
+            b.published_year, b.cover_image_url, b.language, b.description,
+            GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
         LEFT JOIN series s ON b.series_id = s.series_id
         LEFT JOIN book_genres bg ON b.book_id = bg.book_id
         LEFT JOIN genres g ON bg.genre_id = g.genre_id
     """
-# add DISTINCT after select if too many genre will show different rows of same book
-    if search_query:  
-        # only add WHERE if something was searched
+
+    params = ()
+    if search_query:
+        # Use WHERE before GROUP BY, not HAVING
         base_query += """
-            WHERE b.title LIKE %s OR a.name LIKE %s OR s.name LIKE %s OR g.name LIKE %s
+            WHERE 
+                b.title LIKE %s OR 
+                a.name LIKE %s OR 
+                s.name LIKE %s OR 
+                b.language LIKE %s OR 
+                b.description LIKE %s
         """
         like_pattern = f"%{search_query}%"
-        cursor.execute(base_query, (like_pattern, like_pattern, like_pattern, like_pattern))
-    else:
-        cursor.execute(base_query)
+        params = (like_pattern, like_pattern, like_pattern, like_pattern, like_pattern)
 
+    # Only one GROUP BY at the end
+    base_query += """
+        group by b.book_id
+        order by b.title
+    """
+
+    cursor.execute(base_query, params)
     books = cursor.fetchall()
 
     cursor.close()
@@ -241,7 +293,67 @@ def view_books():
 
     return render_template("view_books.html", books=books, search_query=search_query)
 
+# @app.route("/all-books")
+# def view_all_books():
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     cursor.execute("""
+#         SELECT b.title, a.name AS author, s.name AS series,
+#                b.published_year, b.cover_image_url
+#         FROM books b
+#         LEFT JOIN authors a ON b.author_id = a.author_id
+#         LEFT JOIN series s ON b.series_id = s.series_id
+#     """)
+#     books = cursor.fetchall()
+#     cursor.close()
+#     conn.close()
+
+#     return render_template("view_all_books.html", books=books, active_page="books")
+
+@app.route("/recommendations")
+def recommendations():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # get last 5 searches by user
+    cursor.execute("""
+        SELECT search_query FROM user_search_history
+        WHERE user_id=%s
+        ORDER BY search_date DESC
+        LIMIT 5
+    """, (session["user_id"],))
+    searches = [row["search_query"] for row in cursor.fetchall()]
+
+    recommended_books = []
+    if searches:
+        # get books matching any of the recent search keywords
+        placeholders = ",".join(["%s"]*len(searches))
+        query = f"""
+            SELECT DISTINCT b.book_id, b.title, a.name AS author, b.cover_image_url
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+            LEFT JOIN genres g ON bg.genre_id = g.genre_id
+            WHERE {" OR ".join(["b.title LIKE %s", "g.genre_name LIKE %s"] * len(searches))}
+            LIMIT 10
+        """
+        # build params for LIKE queries
+        params = []
+        for s in searches:
+            like_s = f"%{s}%"
+            params.extend([like_s, like_s])
+        cursor.execute(query, params)
+        recommended_books = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template("recommendations.html", books=recommended_books, active_page="recommendations")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
-
