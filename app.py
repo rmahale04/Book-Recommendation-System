@@ -208,6 +208,37 @@ def profile():
         flash("Database error: " + str(e))
         return redirect(url_for("home"))
 
+@app.route("/books")
+def view_books():
+    search_query = request.args.get("q", "").strip()  # get search input
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+
+    base_query = """
+        SELECT b.book_id, b.title, a.name AS author, s.name AS series,
+               b.published_year, b.cover_image_url, b.avg_rating, b.num_ratings
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN series s ON b.series_id = s.series_id
+    """
+
+    if search_query:  
+        # only add WHERE if something was searched
+        base_query += """
+            WHERE b.title LIKE %s OR a.name LIKE %s OR s.name LIKE %s
+        """
+        like_pattern = f"%{search_query}%"
+        cursor.execute(base_query, (like_pattern, like_pattern, like_pattern))
+    else:
+        cursor.execute(base_query)
+
+    books = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("view_books.html", books=books, search_query=search_query)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
