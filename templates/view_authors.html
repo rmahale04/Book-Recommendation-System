@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authors</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    h2 { margin-bottom: 10px; }
+    .bio { max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    a.button {
+      display: inline-block;
+      padding: 8px 12px;
+      margin-top: 10px;
+      background: #382110;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    a.button:hover { background: #5a3825; }
+  </style>
+</head>
+<body>
+  <h2>Authors</h2>
+
+  <a href="{{ url_for('add_author') }}" class="button">➕ Add Author</a>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Biography</th>
+        <th>Date of Birth</th>
+        <th>Date of Death</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for author in authors %}
+        <tr>
+          <td>{{ author.author_id }}</td>
+          <td>{{ author.name }}</td>
+          <td class="bio">{{ author.biography or "-" }}</td>
+          <td>{{ author.date_of_birth or "-" }}</td>
+          <td>{{ author.date_of_death or "-" }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="5">No authors found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p><a href="{{ url_for('home') }}">⬅ Back to Home</a></p>
+</body>
+</html>
