@@ -2,7 +2,7 @@
 -- drop database books; 
 CREATE DATABASE books_db;
 USE books_db;
-drop database books_db;
+-- drop database books_db;
 
 -- Users table
 CREATE TABLE users (
@@ -120,7 +120,7 @@ CREATE TABLE genres (
   genre_id INT AUTO_INCREMENT PRIMARY KEY,
   genre_name VARCHAR(100) UNIQUE NOT NULL
 );
-drop table genres;
+-- drop table genres;
 
 INSERT INTO genres (genre_name) VALUES
 -- ('Fiction'), ('Non-Fiction'), ('Fantasy'), ('Epic Fantasy'), ('Urban Fantasy'),
@@ -216,7 +216,7 @@ INSERT INTO books (title, author_id, series_id, published_year, language, descri
 ('Twisted Love', 28, 3, 2021, 'English', 'First book in the Twisted romance series.', 'https://covers.openlibrary.org/b/isbn/9781728274867-M.jpg', '9781728274867');
 
 select * from books;
-drop table books;
+-- drop table books;
 -- Book <-> Genre many-to-many table (a book can belong to multiple genres)
 CREATE TABLE book_genres (
   book_id INT,
@@ -250,7 +250,7 @@ INSERT INTO book_genres (book_id, genre_id) VALUES
 (22, 9), (22, 2),
 (23, 3), (23, 4),
 (24, 1), (24, 5);
-drop table book_genres;
+-- drop table book_genres;
 
 create table user_search_history (
   history_id int auto_increment primary key,
@@ -261,7 +261,7 @@ create table user_search_history (
   FOREIGN KEY (user_id) REFERENCES users(user_id)
   -- FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
-drop table user_search_history;
+-- drop table user_search_history;
 -- ---------------------------------------------------------
 -- Shelves table (types of shelves e.g. “Read”, “Want to Read”, “Currently Reading”, or custom by user)
 CREATE TABLE shelves (
