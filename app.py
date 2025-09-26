@@ -12,7 +12,7 @@ db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "gj@riya01",
+    "password": "Netra@432",
     "database": "books_db"
 }
 
@@ -353,6 +353,78 @@ def recommendations():
     cursor.close()
     conn.close()
     return render_template("recommendations.html", books=recommended_books, active_page="recommendations")
+
+@app.route("/add_author", methods=["GET", "POST"])
+def add_author():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
+    errors = {}
+    form_data = {}
+
+    if request.method == "POST":
+        form_data = {
+            "name": request.form.get("name", "").strip(),
+            "biography": request.form.get("biography", "").strip(),
+            "date_of_birth": request.form.get("date_of_birth", "").strip(),
+            "date_of_death": request.form.get("date_of_death", "").strip(),
+        }
+
+        if not form_data["name"]:
+            errors["name"] = "Author name is required."
+
+        if not errors:
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+
+                cursor.execute("""
+                    INSERT INTO authors (name, biography, date_of_birth, date_of_death)
+                    VALUES (%s, %s, %s, %s)
+                """, (
+                    form_data["name"],
+                    form_data["biography"] or None,
+                    form_data["date_of_birth"] or None,
+                    form_data["date_of_death"] or None
+                ))
+
+                conn.commit()
+                conn.close()
+                flash("Author added successfully!")
+                return redirect(url_for("view_books"))  # redirect somewhere useful
+
+            except Error as e:
+                errors["database"] = str(e)
+
+    return render_template("add_author.html", form_data=form_data, errors=errors)
+
+
+@app.route("/authors")
+def view_authors():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT author_id, name, biography, date_of_birth, date_of_death
+            FROM authors
+            ORDER BY name
+        """)
+        authors = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template("view_authors.html", authors=authors)
+
+    except Error as e:
+        flash("Database error: " + str(e))
+        return redirect(url_for("home"))
 
 
 if __name__ == "__main__":
