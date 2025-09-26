@@ -41,6 +41,7 @@
     </style>
 </head>
 <body>
+    {% include "nav_page.html" %}
     <div class="book-container">
         <div class="book-image">
             <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
