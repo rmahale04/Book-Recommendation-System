@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Books Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_styles.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo2.png') }}" alt="ReadNext" class="logo"> Books Admin</div>
+            <div class="user-info">
+                <div class="user-avatar">{{ session.username[0].upper() if session.username else 'A' }}</div>
+                <span style="color: #333; font-weight: 500;">{{ session.username }}</span>
+                <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <h1 class="page-title">Dashboard</h1>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Books</div>
+                <div class="stat-value">{{ total_books }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Authors</div>
+                <div class="stat-value">{{ total_authors }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value">{{ total_users }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Genres</div>
+                <div class="stat-value">{{ total_genres }}</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('books')">Books</button>
+            <button class="nav-tab" onclick="switchTab('authors')">Authors</button>
+            <button class="nav-tab" onclick="switchTab('users')">Users</button>
+            <button class="nav-tab" onclick="switchTab('genres')">Genres</button>
+            <button class="nav-tab" onclick="switchTab('series')">Series</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Books Tab -->
+            <div id="books-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2 class="section-title">Manage Books</h2>
+                    <button class="add-btn">+ Add New Book</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search books...">
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Year</th>
+                            <th>Language</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in books %}
+                        <tr>
+                            <td>{{ book.book_id }}</td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.author or 'Unknown' }}</td>
+                            <td>{{ book.published_year or '—' }}</td>
+                            <td>{{ book.language or '—' }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-edit">Edit</button>
+                                    <button class="btn-delete">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Authors Tab -->
+            <div id="authors-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">Manage Authors</h2>
+                    <button class="add-btn">+ Add New Author</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search author...">
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>Date of Death</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for author in authors %}
+                        <tr>
+                            <td>{{ author.author_id }}</td>
+                            <td>{{ author.name }}</td>
+                            <td>{{ author.date_of_birth or '—' }}</td>
+                            <td>{{ author.date_of_death or '—' }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-edit">Edit</button>
+                                    <button class="btn-delete">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">Manage Users</h2>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search user...">
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.user_id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'Admin' %}
+                                <span class="badge badge-admin">Admin</span>
+                                {% else %}
+                                <span class="badge badge-reader">Reader</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.join_date.strftime("%Y-%m-%d") }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Genres Tab -->
+            <div id="genres-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">Manage Genres</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Genre Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for genre in genres %}
+                        <tr>
+                            <td>{{ genre.genre_id }}</td>
+                            <td>{{ genre.genre_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Series Tab -->
+            <div id="series-tab" class="tab-content">
+                <div class="section-header">
+                    <h2 class="section-title">Manage Series</h2>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search series...">
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Series Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in series %}
+                        <tr>
+                            <td>{{ s.series_id }}</td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.description or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            const allTabs = document.querySelectorAll('.tab-content');
+            allTabs.forEach(tab => tab.classList.remove('active'));
+
+            const allNavTabs = document.querySelectorAll('.nav-tab');
+            allNavTabs.forEach(tab => tab.classList.remove('active'));
+
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
