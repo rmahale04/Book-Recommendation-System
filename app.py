@@ -160,14 +160,70 @@ def login():
             if check_password_hash(user["password_hash"], password):
                 session["user_id"] = user["user_id"]
                 session["username"] = user["username"]
+                session["role"] = user["role"]
+
                 flash("Login successful!")
-                return redirect(url_for("home"))
+
+                if user["role"] == "Admin":
+                    return redirect(url_for("admin_dashboard"))
+                else:
+                    return redirect(url_for("home"))
+            
             else:
                 errors["password"] = "Incorrect password."
         else:
             errors["email"] = "No account found with that email/username."
     
     return render_template("login.html", form_data=form_data, errors=errors)
+
+
+@app.route("/admin_dashboard")
+def admin_dashboard():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+    
+    if session.get("role") != "Admin":
+        flash("Access denied. Admins only.")
+        return redirect(url_for("home"))
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Basic statistics for dashboard
+        cursor.execute("SELECT COUNT(*) AS total_users FROM users")
+        total_users = cursor.fetchone()["total_users"]
+
+        cursor.execute("SELECT COUNT(*) AS total_books FROM books")
+        total_books = cursor.fetchone()["total_books"]
+
+        cursor.execute("SELECT COUNT(*) AS total_authors FROM authors")
+        total_authors = cursor.fetchone()["total_authors"]
+
+        cursor.execute("""
+            SELECT u.username, u.email, COUNT(s.search_query) AS searches
+            FROM users u
+            LEFT JOIN user_search_history s ON u.user_id = s.user_id
+            GROUP BY u.user_id
+            ORDER BY searches DESC
+            LIMIT 5
+        """)
+        top_users = cursor.fetchall()
+
+        conn.close()
+
+        return render_template("admin_dashboard.html",
+                               total_users=total_users,
+                               total_books=total_books,
+                               total_authors=total_authors,
+                               top_users=top_users)
+
+    except Error as e:
+        flash("Database error: " + str(e))
+        return redirect(url_for("home"))
+
+
 
 @app.route("/home")
 def home():
@@ -181,6 +237,7 @@ def home():
 def logout():
     session.pop("user_id", None)
     session.pop("username", None)
+    session.pop("role", None)
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
