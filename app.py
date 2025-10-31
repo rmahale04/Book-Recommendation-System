@@ -179,49 +179,61 @@ def login():
 
 @app.route("/admin_dashboard")
 def admin_dashboard():
-    if "user_id" not in session:
-        flash("Please log in first.")
-        return redirect(url_for("login"))
-    
-    if session.get("role") != "Admin":
+    if session.get("role", "").lower() != "admin":
         flash("Access denied. Admins only.")
         return redirect(url_for("home"))
-    
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
 
-        # Basic statistics for dashboard
-        cursor.execute("SELECT COUNT(*) AS total_users FROM users")
-        total_users = cursor.fetchone()["total_users"]
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT COUNT(*) AS total_books FROM books")
-        total_books = cursor.fetchone()["total_books"]
+    # Fetch counts
+    cursor.execute("SELECT COUNT(*) AS total_books FROM books")
+    total_books = cursor.fetchone()["total_books"]
 
-        cursor.execute("SELECT COUNT(*) AS total_authors FROM authors")
-        total_authors = cursor.fetchone()["total_authors"]
+    cursor.execute("SELECT COUNT(*) AS total_authors FROM authors")
+    total_authors = cursor.fetchone()["total_authors"]
 
-        cursor.execute("""
-            SELECT u.username, u.email, COUNT(s.search_query) AS searches
-            FROM users u
-            LEFT JOIN user_search_history s ON u.user_id = s.user_id
-            GROUP BY u.user_id
-            ORDER BY searches DESC
-            LIMIT 5
-        """)
-        top_users = cursor.fetchall()
+    cursor.execute("SELECT COUNT(*) AS total_users FROM users")
+    total_users = cursor.fetchone()["total_users"]
 
-        conn.close()
+    cursor.execute("SELECT COUNT(*) AS total_genres FROM genres")
+    total_genres = cursor.fetchone()["total_genres"]
 
-        return render_template("admin_dashboard.html",
-                               total_users=total_users,
-                               total_books=total_books,
-                               total_authors=total_authors,
-                               top_users=top_users)
+    # Fetch details for each tab
+    cursor.execute("""
+        SELECT b.book_id, b.title, a.name AS author, b.published_year, b.language
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+    """)
+    books = cursor.fetchall()
 
-    except Error as e:
-        flash("Database error: " + str(e))
-        return redirect(url_for("home"))
+    cursor.execute("SELECT * FROM authors")
+    authors = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM genres")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM series")
+    series = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        total_books=total_books,
+        total_authors=total_authors,
+        total_users=total_users,
+        total_genres=total_genres,
+        books=books,
+        authors=authors,
+        users=users,
+        genres=genres,
+        series=series
+    )
 
 
 
