@@ -20,6 +20,19 @@ CREATE TABLE users (
 
 select * from users;
 
+
+CREATE TABLE user_genres (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  genre_id INT NOT NULL,
+  UNIQUE (user_id, genre_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
+);
+
+select * from user_genres;
+-- drop table user_genres;
+
 -- Authors table
 CREATE TABLE authors (
   author_id INT AUTO_INCREMENT PRIMARY KEY,
