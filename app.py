@@ -110,11 +110,16 @@ def register():
                 "INSERT INTO users (first_name, last_name, username, email, password_hash) VALUES (%s, %s, %s, %s, %s)",
                 (form_data["first_name"], form_data["last_name"], form_data["username"], form_data["email"], hashed_pw)
             )
+           
             conn.commit()
+            user_id = cursor.lastrowid
             conn.close()
 
-            flash("Account created successfully! Please login.")
-            return redirect(url_for("login"))
+            session["user_id"] = user_id
+            session["username"] = form_data["username"]
+            flash("Account created successfully! Now choose your interests.")
+            return redirect(url_for("select_interests"))
+
         
         except Error as e:
             errors["database"] = str(e)
@@ -123,6 +128,43 @@ def register():
             return render_template("register.html", form_data=form_data, errors=errors)
 
     return render_template("register.html", form_data=form_data, errors=errors)
+
+
+@app.route("/interests", methods=["GET", "POST"])
+def select_interests():
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT genre_id, genre_name FROM genres")
+    genres = cursor.fetchall()
+
+    if request.method == "POST":
+        selected_genres = request.form.getlist("interests")
+        if len(selected_genres) < 5:
+            flash("Please select at least 5 genres.")
+            return render_template("interest.html", genres=genres)
+
+        # Save selected interests in user_genres table
+        for gid in selected_genres:
+            cursor.execute(
+                "INSERT IGNORE INTO user_genres (user_id, genre_id) VALUES (%s, %s)",
+                (session["user_id"], gid)
+            )
+
+        conn.commit()
+        conn.close()
+
+        flash("Interests saved successfully!")
+        return redirect(url_for("home"))
+
+    conn.close()
+    return render_template("interest.html", genres=genres)
+
+
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -364,6 +406,7 @@ def view_books():
 
 # @app.route("/all-books")
 # def view_all_books():
+
 #     conn = get_db_connection()
 #     cursor = conn.cursor(dictionary=True)
 
