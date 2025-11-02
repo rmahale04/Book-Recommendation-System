@@ -150,9 +150,10 @@ def select_interests():
         # Save selected interests in user_genres table
         for gid in selected_genres:
             cursor.execute(
-                "INSERT INTO user_genres (user_id, genre_id) VALUES (%s, %s)",
+                "INSERT IGNORE INTO user_genres (user_id, genre_id) VALUES (%s, %s)",
                 (session["user_id"], gid)
             )
+
         conn.commit()
         conn.close()
 
