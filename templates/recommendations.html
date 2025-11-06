@@ -5,31 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendations - ReadNext</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f1ea; color: #382110; }
-        .books-container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .book-card { background: white; padding: 15px; border-radius: 10px; width: 200px; text-align: center; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-        .book-card img { width: 100%; height: 300px; object-fit: cover; border-radius: 5px; }
-        .book-card h3 { margin: 10px 0 5px; font-size: 16px; }
-        .book-card p { margin: 5px 0; font-size: 14px; color: #555; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f4f1ea; 
+            color: #382110; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1 { 
+            margin-left: 20px; 
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .scroll-wrapper {
+            position: relative;
+            padding: 0 20px;
+        }
+        
+        .books-container { 
+            display: flex; 
+            gap: 20px; 
+            padding: 20px 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        
+        .books-container::-webkit-scrollbar {
+            height: 10px;
+        }
+        
+        .books-container::-webkit-scrollbar-track {
+            background: #e0d7c7;
+            border-radius: 5px;
+        }
+        
+        .books-container::-webkit-scrollbar-thumb {
+            background: #8b7355;
+            border-radius: 5px;
+        }
+        
+        .books-container::-webkit-scrollbar-thumb:hover {
+            background: #6d5a44;
+        }
+        
+        .book-card { 
+            background: white; 
+            padding: 12px; 
+            border-radius: 10px; 
+            min-width: 160px;
+            width: 160px;
+            text-align: center; 
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .book-card img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            border-radius: 5px; 
+        }
+        
+        .book-card h3 { 
+            margin: 8px 0 4px; 
+            font-size: 14px; 
+        }
+        
+        .book-card p { 
+            margin: 4px 0; 
+            font-size: 12px; 
+            color: #555; 
+        }
+        
+        .book-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .scroll-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(139, 115, 85, 0.9);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .scroll-arrow:hover {
+            background: rgba(109, 90, 68, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .scroll-arrow.left {
+            left: 0;
+        }
+        
+        .scroll-arrow.right {
+            right: 0;
+        }
+        
+        .scroll-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     {% include "nav_page.html" %}
-    <h1>Recommended for You</h1>
-    {% if books %}
-    <div class="books-container">
-        {% for book in books %}
-        <div class="book-card">
-            <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" alt="{{ book.title }}">
-                <h3>{{ book.title }}</h3>
-                <p>{{ book.author }}</p>
-            </a>
+
+    {% if search_books %}
+        <h1>Recommended Based on Your Searches</h1>
+        <div class="scroll-wrapper">
+            <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
+            <div class="books-container" onscroll="updateArrows(this)">
+                {% for book in search_books %}
+                <div class="book-card">
+                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" alt="{{ book.title }}">
+                        <h3>{{ book.title }}</h3>
+                        <p>{{ book.author }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-        <p>No recommendations yet. Start searching for books to get recommendations!</p>
     {% endif %}
+
+    {% if genre_books %}
+        <h1>Recommended Based on Your Genres</h1>
+        <div class="scroll-wrapper">
+            <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
+            <div class="books-container" onscroll="updateArrows(this)">
+                {% for book in genre_books %}
+                <div class="book-card">
+                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" alt="{{ book.title }}">
+                        <h3>{{ book.title }}</h3>
+                        <p>{{ book.author }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
+        </div>
+    {% endif %}
+
+    {% if not search_books and not genre_books %}
+        <p style="padding: 20px;">No recommendations yet. Start searching for books or select genres to get personalized suggestions!</p>
+    {% endif %}
+
+    <script>
+        function scrollContainer(button, direction) {
+            const wrapper = button.parentElement;
+            const container = wrapper.querySelector('.books-container');
+            const scrollAmount = 360;
+            
+            if (direction === 'left') {
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+            
+            setTimeout(() => updateArrows(container), 300);
+        }
+        
+        function updateArrows(container) {
+            const wrapper = container.parentElement;
+            const leftArrow = wrapper.querySelector('.scroll-arrow.left');
+            const rightArrow = wrapper.querySelector('.scroll-arrow.right');
+            
+            leftArrow.disabled = container.scrollLeft <= 0;
+            rightArrow.disabled = container.scrollLeft >= container.scrollWidth - container.clientWidth - 5;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.books-container').forEach(container => {
+                updateArrows(container);
+            });
+        });
+    </script>
 </body>
 </html>

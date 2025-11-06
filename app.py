@@ -219,6 +219,7 @@ def login():
     return render_template("login.html", form_data=form_data, errors=errors)
 
 
+
 @app.route("/admin_dashboard")
 def admin_dashboard():
     if session.get("role", "").lower() != "admin":
@@ -432,7 +433,16 @@ def recommendations():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # get last 5 searches by user
+    # --- 1️ Get user's selected genres ---
+    cursor.execute("""
+        SELECT g.genre_name
+        FROM user_genres ug
+        JOIN genres g ON ug.genre_id = g.genre_id
+        WHERE ug.user_id = %s
+    """, (session["user_id"],))
+    user_genres = [row["genre_name"] for row in cursor.fetchall()]
+
+    # --- 2️ Get user's recent searches ---
     cursor.execute("""
         SELECT search_query FROM user_search_history
         WHERE user_id=%s
@@ -441,30 +451,51 @@ def recommendations():
     """, (session["user_id"],))
     searches = [row["search_query"] for row in cursor.fetchall()]
 
-    recommended_books = []
+    # --- 3️ Recommend based on genres ---
+    genre_books = []
+    if user_genres:
+        placeholders = ",".join(["%s"] * len(user_genres))
+        cursor.execute(f"""
+            SELECT DISTINCT b.book_id, b.title, a.name AS author, b.cover_image_url, g.genre_name
+            FROM books b
+            JOIN book_genres bg ON b.book_id = bg.book_id
+            JOIN genres g ON bg.genre_id = g.genre_id
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            WHERE g.genre_name IN ({placeholders})
+            LIMIT 10
+        """, tuple(user_genres))
+        genre_books = cursor.fetchall()
+
+    # --- 4️ Recommend based on recent searches ---
+    search_books = []
     if searches:
-        # get books matching any of the recent search keywords
-        placeholders = ",".join(["%s"]*len(searches))
-        query = f"""
+        query_conditions = " OR ".join(["b.title LIKE %s OR g.genre_name LIKE %s"] * len(searches))
+        params = []
+        for s in searches:
+            like_s = f"%{s}%"
+            params.extend([like_s, like_s])
+        cursor.execute(f"""
             SELECT DISTINCT b.book_id, b.title, a.name AS author, b.cover_image_url
             FROM books b
             LEFT JOIN authors a ON b.author_id = a.author_id
             LEFT JOIN book_genres bg ON b.book_id = bg.book_id
             LEFT JOIN genres g ON bg.genre_id = g.genre_id
-            WHERE {" OR ".join(["b.title LIKE %s", "g.genre_name LIKE %s"] * len(searches))}
+            WHERE {query_conditions}
             LIMIT 10
-        """
-        # build params for LIKE queries
-        params = []
-        for s in searches:
-            like_s = f"%{s}%"
-            params.extend([like_s, like_s])
-        cursor.execute(query, params)
-        recommended_books = cursor.fetchall()
+        """, params)
+        search_books = cursor.fetchall()
 
     cursor.close()
     conn.close()
-    return render_template("recommendations.html", books=recommended_books, active_page="recommendations")
+
+    return render_template(
+        "recommendations.html",
+        search_books=search_books,
+        genre_books=genre_books,
+        active_page="recommendations"
+    )
+
+
 
 @app.route("/add_author", methods=["GET", "POST"])
 def add_author():
