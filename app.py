@@ -66,6 +66,9 @@ def validate_registration(form_data):
 def index():
     return redirect(url_for("login"))
 
+
+# Registration
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     form_data = {}
@@ -130,6 +133,8 @@ def register():
     return render_template("register.html", form_data=form_data, errors=errors)
 
 
+# interests
+
 @app.route("/interests", methods=["GET", "POST"])
 def select_interests():
     if "user_id" not in session:
@@ -164,7 +169,7 @@ def select_interests():
     return render_template("interest.html", genres=genres)
 
 
-
+#login
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -219,6 +224,7 @@ def login():
     return render_template("login.html", form_data=form_data, errors=errors)
 
 
+# admin dashboard
 
 @app.route("/admin_dashboard")
 def admin_dashboard():
@@ -279,6 +285,8 @@ def admin_dashboard():
     )
 
 
+# home page
+
 
 @app.route("/home")
 def home():
@@ -321,6 +329,8 @@ def profile():
 
 
 # view a page where complete info of a book is displayed    
+
+# book detail
 @app.route("/book/<int:book_id>")
 def book_details(book_id):
     conn = get_db_connection()
@@ -352,6 +362,9 @@ def book_details(book_id):
 
 
 # @app.route("/all-books")
+
+#search query
+
 @app.route("/books")
 def view_books():
     search_query = request.args.get("q", "").strip()
@@ -423,6 +436,8 @@ def view_books():
 #     conn.close()
 
 #     return render_template("view_all_books.html", books=books, active_page="books")
+
+# recommendation
 
 @app.route("/recommendations")
 def recommendations():
@@ -496,6 +511,7 @@ def recommendations():
     )
 
 
+# add author
 
 @app.route("/add_author", methods=["GET", "POST"])
 def add_author():
@@ -542,6 +558,9 @@ def add_author():
 
     return render_template("add_author.html", form_data=form_data, errors=errors)
 
+
+
+# view authors
 
 @app.route("/authors")
 def view_authors():
