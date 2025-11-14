@@ -5,56 +5,254 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.title }} - ReadNext</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f1ea;
-            color: #382110;
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #faf5ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .book-container {
-            display: flex;
-            gap: 30px;
-            max-width: 900px;
+            max-width: 950px;
             margin: 50px auto;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 60px rgba(139, 92, 246, 0.15),
+                0 0 0 1px rgba(168, 85, 247, 0.1);
+            position: relative;
+            z-index: 1;
         }
-        .book-image img {
-            max-width: 300px;
+
+        .book-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .book-image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .book-image-wrapper {
             width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .book-image-wrapper img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 
+                0 15px 35px rgba(139, 92, 246, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .book-image-wrapper:hover img {
+            transform: translateY(-5px);
+        }
+
+        .book-details-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .book-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #6b21a8;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .book-author {
+            font-size: 1.2rem;
+            color: #8b5cf6;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .metadata-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
             border-radius: 10px;
+            border-left: 4px solid #a855f7;
+            transition: all 0.3s ease;
         }
-        .book-info {
-            flex: 1;
+
+        .metadata-item:hover {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            transform: translateX(5px);
+            border-left-color: #8b5cf6;
         }
-        .book-info h1 {
+
+        .metadata-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #7c3aed;
+            font-weight: 600;
+            min-width: 110px;
+        }
+
+        .metadata-value {
+            font-size: 1rem;
+            color: #4c1d95;
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, 
+                #d8b4fe 0%, 
+                #c084fc 50%,
+                #d8b4fe 100%);
+            margin: 10px 0;
+            border-radius: 2px;
+        }
+
+        .description-section {
+            background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #a855f7;
+        }
+
+        .description-title {
+            font-size: 1.3rem;
+            color: #6b21a8;
             margin-bottom: 15px;
+            font-weight: 700;
         }
-        .book-info p {
-            margin-bottom: 10px;
+
+        .description-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #581c87;
+            text-align: justify;
         }
-        .book-info span {
-            font-weight: bold;
+
+        @media (max-width: 768px) {
+            .book-content {
+                grid-template-columns: 1fr;
+                padding: 30px 25px;
+            }
+
+            .book-image-section {
+                align-items: center;
+            }
+
+            .book-image-wrapper {
+                max-width: 250px;
+            }
+
+            .book-title {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            .book-author {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .book-title {
+                font-size: 1.5rem;
+            }
+
+            .metadata-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .metadata-label {
+                min-width: auto;
+            }
         }
     </style>
 </head>
 <body>
     {% include "nav_page.html" %}
+    
     <div class="book-container">
-        <div class="book-image">
-            <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
-        </div>
-        <div class="book-info">
-            <h1>{{ book.title }}</h1>
-            <p><span>Author:</span> {{ book.author }}</p>
-            <p><span>Series:</span> {{ book.series or 'N/A' }}</p>
-            <p><span>Genres:</span> {{ book.genres or 'N/A' }}</p>
-            <p><span>Language:</span> {{ book.language or 'N/A' }}</p>
-            <p><span>Published Year:</span> {{ book.published_year }}</p>
-            <p><span>Description:</span></p>
-            <p>{{ book.description or 'No description available.' }}</p>
+        <div class="book-content">
+            <div class="book-image-section">
+                <div class="book-image-wrapper">
+                    <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
+                </div>
+            </div>
+
+            <div class="book-details-section">
+                <div>
+                    <h1 class="book-title">{{ book.title }}</h1>
+                    <p class="book-author">by {{ book.author }}</p>
+                </div>
+
+                <div class="metadata-list">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Series</span>
+                        <span class="metadata-value">{{ book.series or 'Standalone' }}</span>
+                    </div>
+
+                    <div class="metadata-item">
+                        <span class="metadata-label">Genres</span>
+                        <span class="metadata-value">{{ book.genres or 'N/A' }}</span>
+                    </div>
+
+                    <div class="metadata-item">
+                        <span class="metadata-label">Language</span>
+                        <span class="metadata-value">{{ book.language or 'N/A' }}</span>
+                    </div>
+
+                    <div class="metadata-item">
+                        <span class="metadata-label">Published</span>
+                        <span class="metadata-value">{{ book.published_year }}</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="description-section">
+                    <h2 class="description-title">About This Book</h2>
+                    <p class="description-text">{{ book.description or 'No description available.' }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </body>
