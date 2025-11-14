@@ -1,5 +1,4 @@
 -- Create database
--- drop database books; 
 CREATE DATABASE books_db;
 USE books_db;
 -- drop database books_db;
@@ -20,18 +19,6 @@ CREATE TABLE users (
 
 select * from users;
 
-
-CREATE TABLE user_genres (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  genre_id INT NOT NULL,
-  UNIQUE (user_id, genre_id),
-  FOREIGN KEY (user_id) REFERENCES users(user_id),
-  FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
-);
-
-select * from user_genres;
--- drop table user_genres;
 
 -- Authors table
 CREATE TABLE authors (
@@ -264,6 +251,18 @@ INSERT INTO book_genres (book_id, genre_id) VALUES
 (23, 3), (23, 4),
 (24, 1), (24, 5);
 -- drop table book_genres;
+
+CREATE TABLE user_genres (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  genre_id INT NOT NULL,
+  UNIQUE (user_id, genre_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
+);
+
+select * from user_genres;
+-- drop table user_genres;
 
 create table user_search_history (
   history_id int auto_increment primary key,
