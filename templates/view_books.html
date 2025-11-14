@@ -3,44 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <title>Books</title>
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/table_styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table_styles.css') }}">
+  
 </head>
 <body>
-    {% include "nav_page.html" %}
-  <!-- <h1>📚 Book Collection</h1> -->
-    <br>
-  <table>
-    <tr>
-      <!-- <th>ID</th> -->
-      <th>Cover</th>
-      <th>Title</th>
-      <th>Author</th>
-      <th>Series</th>
-      <th>Year</th>
-      <!-- <th>Avg Rating</th> -->
-      <!-- <th>Total Ratings</th> -->
-    </tr>
-    {% if books %}
-      {% for book in books %}
-      <tr>
-    <td>
-      <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-        <img src="{{ book.cover_image_url or url_for('static', filename='static/images/no_cover.png') }}" alt="Cover">
-      </a>
-    </td>
-    <td>
-      <a href="{{ url_for('book_details', book_id=book.book_id) }}">{{ book.title }}</a>
-    </td>
-        <td>{{ book.author or '—' }}</td>
-        <td>{{ book.series or '—' }}</td>
-        <td>{{ book.published_year }}</td>
-        <!-- <td>{{ book.avg_rating }}</td>
-        <td>{{ book.num_ratings }}</td> -->
-      </tr>
-      {% endfor %}
-    {% else %}
-      <tr><td colspan="8">No books found</td></tr>
-    {% endif %}
-  </table>
+  {% include "nav_page.html" %}
+  
+  <h1 class="page-header">Book Collection</h1>
+  
+  <div class="container">
+    <div class="book-grid">
+      {% if books %}
+        {% for book in books %}
+        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
+          <div class="book-cover-container">
+            <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
+                 alt="{{ book.title }}" 
+                 class="book-cover">
+          </div>
+          <div class="book-title">{{ book.title }}</div>
+          <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+          {% if book.series %}
+          <div class="book-series">📖 {{ book.series }}</div>
+          {% else %}
+          <div class="book-series" style="opacity: 0;">—</div>
+          {% endif %}
+          <div class="book-meta">
+            <div>{{ book.published_year or 'N/A' }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          No books found in your collection yet
+        </div>
+      {% endif %}
+    </div>
+  </div>
 </body>
 </html>
