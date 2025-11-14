@@ -5,126 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendations - ReadNext</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f4f1ea; 
-            color: #382110; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             margin: 0;
             padding: 0;
+            color: white;
         }
-        
-        h1 { 
-            margin-left: 20px; 
-            margin-top: 20px;
-            margin-bottom: 10px;
+
+        h1 {
+            margin: 30px 20px 10px;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.35);
         }
-        
+
         .scroll-wrapper {
             position: relative;
-            padding: 0 20px;
+            padding: 0 40px;
         }
-        
-        .books-container { 
-            display: flex; 
-            gap: 20px; 
-            padding: 20px 0;
+
+        .books-container {
+            display: flex;
+            gap: 25px;
+            padding: 25px 0;
             overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
         }
-        
+
         .books-container::-webkit-scrollbar {
             height: 10px;
         }
-        
         .books-container::-webkit-scrollbar-track {
-            background: #e0d7c7;
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 5px;
         }
-        
         .books-container::-webkit-scrollbar-thumb {
-            background: #8b7355;
+            background: rgba(255, 255, 255, 0.4);
             border-radius: 5px;
         }
-        
         .books-container::-webkit-scrollbar-thumb:hover {
-            background: #6d5a44;
+            background: rgba(255, 255, 255, 0.6);
         }
-        
-        .book-card { 
-            background: white; 
-            padding: 12px; 
-            border-radius: 10px; 
+
+        /* ===== Book Card (Glassmorphism) ===== */
+        .book-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 14px;
+            border-radius: 18px;
             min-width: 160px;
             width: 160px;
-            text-align: center; 
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             flex-shrink: 0;
         }
-        
-        .book-card img { 
-            width: 100%; 
-            height: 200px; 
-            object-fit: cover; 
-            border-radius: 5px; 
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
         }
-        
-        .book-card h3 { 
-            margin: 8px 0 4px; 
-            font-size: 14px; 
+
+        .book-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
         }
-        
-        .book-card p { 
-            margin: 4px 0; 
-            font-size: 12px; 
-            color: #555; 
+
+        .book-card h3 {
+            margin: 10px 0 4px;
+            font-size: 15px;
+            color: #333;
         }
-        
+
+        .book-card p {
+            margin: 4px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
         .book-card a {
             text-decoration: none;
             color: inherit;
         }
-        
+
+        /* ===== Scroll Arrows (Glass Buttons) ===== */
         .scroll-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(139, 115, 85, 0.9);
+            background: rgba(255, 255, 255, 0.25);
             color: white;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 24px;
+            font-size: 26px;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 20;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-        
+
         .scroll-arrow:hover {
-            background: rgba(109, 90, 68, 1);
-            transform: translateY(-50%) scale(1.1);
+            transform: translateY(-50%) scale(1.12);
+            background: rgba(255, 255, 255, 0.5);
         }
-        
+
         .scroll-arrow.left {
             left: 0;
         }
-        
+
         .scroll-arrow.right {
             right: 0;
         }
-        
+
         .scroll-arrow:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
-    </style>
+
+        </style>
 </head>
 <body>
     {% include "nav_page.html" %}
