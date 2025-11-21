@@ -13,10 +13,11 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #faf5ff 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
             position: relative;
+            padding-bottom: 50px;
         }
 
         body::before {
@@ -33,19 +34,25 @@
             z-index: 0;
         }
 
-        .book-container {
+        /* --- Main Containers --- */
+        .container-wrapper {
             max-width: 950px;
             margin: 50px auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .book-container {
             background: white;
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 
                 0 20px 60px rgba(139, 92, 246, 0.15),
                 0 0 0 1px rgba(168, 85, 247, 0.1);
-            position: relative;
-            z-index: 1;
+            margin-bottom: 30px;
         }
 
+        /* --- Book Content Styles --- */
         .book-content {
             display: grid;
             grid-template-columns: 280px 1fr;
@@ -98,6 +105,7 @@
             margin-bottom: 20px;
         }
 
+        /* --- Metadata --- */
         .metadata-list {
             display: flex;
             flex-direction: column;
@@ -137,10 +145,7 @@
 
         .divider {
             height: 2px;
-            background: linear-gradient(to right, 
-                #d8b4fe 0%, 
-                #c084fc 50%,
-                #d8b4fe 100%);
+            background: linear-gradient(to right, #d8b4fe 0%, #c084fc 50%, #d8b4fe 100%);
             margin: 10px 0;
             border-radius: 2px;
         }
@@ -166,94 +171,311 @@
             text-align: justify;
         }
 
+        /* --- Reviews Section --- */
+        .reviews-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* Form on left, Reviews on right */
+            gap: 40px;
+        }
+
+        .reviews-header {
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3e8ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reviews-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #6b21a8;
+        }
+
+        .overall-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .big-star {
+            color: #fbbf24;
+            font-size: 1.5rem;
+        }
+
+        .rating-score {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #4c1d95;
+        }
+
+        /* --- Add Review Form --- */
+        .add-review-section {
+            background: #faf5ff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e9d5ff;
+            height: fit-content;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            color: #5b21b6;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #6d28d9;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9d5ff;
+            border-radius: 8px;
+            background: white;
+            font-family: inherit;
+            color: #4c1d95;
+            transition: 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* --- Review List --- */
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Scrollbar styling */
+        .review-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .review-list::-webkit-scrollbar-thumb {
+            background-color: #d8b4fe;
+            border-radius: 4px;
+        }
+
+        .review-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #f3f4f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: 0.3s;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 10px 15px rgba(139, 92, 246, 0.05);
+            border-color: #e9d5ff;
+        }
+
+        .review-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: 700;
+            color: #4c1d95;
+        }
+
+        .review-date {
+            font-size: 0.85rem;
+            color: #8b5cf6;
+        }
+
+        .star-row {
+            color: #fbbf24;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .review-body {
+            color: #4b5563;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        /* --- Responsive --- */
         @media (max-width: 768px) {
             .book-content {
                 grid-template-columns: 1fr;
                 padding: 30px 25px;
             }
-
-            .book-image-section {
-                align-items: center;
-            }
-
-            .book-image-wrapper {
-                max-width: 250px;
-            }
-
-            .book-title {
-                font-size: 1.8rem;
-                text-align: center;
-            }
-
-            .book-author {
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .book-title {
-                font-size: 1.5rem;
-            }
-
-            .metadata-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-
-            .metadata-label {
-                min-width: auto;
+            .book-image-section { align-items: center; }
+            .book-image-wrapper { max-width: 250px; }
+            .book-title, .book-author { text-align: center; }
+            
+            .reviews-container {
+                grid-template-columns: 1fr; /* Stack form and list */
+                padding: 25px;
             }
         }
     </style>
 </head>
 <body>
+    
     {% include "nav_page.html" %}
     
-    <div class="book-container">
-        <div class="book-content">
-            <div class="book-image-section">
-                <div class="book-image-wrapper">
-                    <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
-                </div>
-            </div>
-
-            <div class="book-details-section">
-                <div>
-                    <h1 class="book-title">{{ book.title }}</h1>
-                    <p class="book-author">by {{ book.author }}</p>
-                </div>
-
-                <div class="metadata-list">
-                    <div class="metadata-item">
-                        <span class="metadata-label">Series</span>
-                        <span class="metadata-value">{{ book.series or 'Standalone' }}</span>
-                    </div>
-
-                    <div class="metadata-item">
-                        <span class="metadata-label">Genres</span>
-                        <span class="metadata-value">{{ book.genres or 'N/A' }}</span>
-                    </div>
-
-                    <div class="metadata-item">
-                        <span class="metadata-label">Language</span>
-                        <span class="metadata-value">{{ book.language or 'N/A' }}</span>
-                    </div>
-
-                    <div class="metadata-item">
-                        <span class="metadata-label">Published</span>
-                        <span class="metadata-value">{{ book.published_year }}</span>
+    <div class="container-wrapper">
+        
+        <div class="book-container">
+            <div class="book-content">
+                <div class="book-image-section">
+                    <div class="book-image-wrapper">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
                     </div>
                 </div>
 
-                <div class="divider"></div>
+                <div class="book-details-section">
+                    <div>
+                        <h1 class="book-title">{{ book.title }}</h1>
+                        <p class="book-author">by {{ book.author }}</p>
+                    </div>
 
-                <div class="description-section">
-                    <h2 class="description-title">About This Book</h2>
-                    <p class="description-text">{{ book.description or 'No description available.' }}</p>
+                    <div class="metadata-list">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Series</span>
+                            <span class="metadata-value">{{ book.series or 'Standalone' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Genres</span>
+                            <span class="metadata-value">{{ book.genres or 'N/A' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Language</span>
+                            <span class="metadata-value">{{ book.language or 'N/A' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Published</span>
+                            <span class="metadata-value">{{ book.published_year }}</span>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="description-section">
+                        <h2 class="description-title">About This Book</h2>
+                        <p class="description-text">{{ book.description or 'No description available.' }}</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="reviews-container">
+            
+            <div class="reviews-header">
+                <h2 class="reviews-title">Reviews & Ratings</h2>
+                <div class="overall-rating">
+                    <span class="big-star">★</span>
+                    <span class="rating-score">4.5</span>
+                    <span class="metadata-label" style="color: #8b5cf6; min-width: auto;">(120 reviews)</span>
+                </div>
+            </div>
+
+            <div class="add-review-section">
+                <h3 class="form-title">Write a Review</h3>
+                <form action="#" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Your Rating</label>
+                        <select class="form-select">
+                            <option value="5">★★★★★ - Amazing</option>
+                            <option value="4">★★★★☆ - Very Good</option>
+                            <option value="3">★★★☆☆ - Good</option>
+                            <option value="2">★★☆☆☆ - Fair</option>
+                            <option value="1">★☆☆☆☆ - Poor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Your Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Your Review</label>
+                        <textarea class="form-textarea" rows="4" placeholder="What did you think of this book?"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Post Review</button>
+                </form>
+            </div>
+
+            <div class="review-list">
+                
+                <div class="review-card">
+                    <div class="review-top">
+                        <span class="reviewer-name">Netra</span>
+                        <span class="review-date">Oct 12, 2024</span>
+                    </div>
+                    <div class="star-row">★★★★★</div>
+                    <p class="review-body">Loved this book! The characters were amazing and the plot kept me hooked till the very end.</p>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-top">
+                        <span class="reviewer-name">Aisha</span>
+                        <span class="review-date">Sep 28, 2024</span>
+                    </div>
+                    <div class="star-row">★★★★☆</div>
+                    <p class="review-body">Good story but the ending felt a bit rushed compared to the rest of the series. Still worth a read.</p>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-top">
+                        <span class="reviewer-name">Rohan</span>
+                        <span class="review-date">Sep 15, 2024</span>
+                    </div>
+                    <div class="star-row">★★★★★</div>
+                    <p class="review-body">One of the best fantasy books I have read this year. Highly recommended.</p>
+                </div>
+
+            </div>
+        </div>
+
     </div>
+
 </body>
 </html>
