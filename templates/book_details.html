@@ -15,7 +15,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            /* padding: 20px; */
             position: relative;
             padding-bottom: 50px;
         }
@@ -353,6 +353,56 @@
                 padding: 25px;
             }
         }
+        .add-to-library {
+            position: relative;
+        }
+
+        .add-btn {
+            margin-top: 15px;
+            padding: 12px 18px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .shelf-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            background: white;
+            padding: 20px;
+            width: 250px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        .shelf-select, .shelf-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .add-confirm-btn {
+            width: 100%;
+            padding: 10px;
+            background: #6d28d9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .add-confirm-btn:hover {
+            background: #5b21b6;
+        }
     </style>
 </head>
 <body>
@@ -365,7 +415,8 @@
             <div class="book-content">
                 <div class="book-image-section">
                     <div class="book-image-wrapper">
-                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}" alt="{{ book.title }}">
+                        <!-- <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}"> -->
                     </div>
                 </div>
 
@@ -394,6 +445,35 @@
                         </div>
                     </div>
 
+                    <div class="add-to-library">
+                        <button onclick="toggleShelfMenu()" class="add-btn">+ Add to Library</button>
+
+                        <div id="shelf-menu" class="shelf-menu">
+                            <form action="{{ url_for('add_to_shelf', book_id=book.book_id) }}" method="POST">
+
+                                <label>Select Shelf:</label>
+                                <select name="shelf_id" class="shelf-select">
+                                    {% for shelf in shelves %}
+                                    <option value="{{ shelf.shelf_id }}">{{ shelf.name }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <div class="divider"></div>
+
+                                <label>Create New Shelf:</label>
+                                <input type="text" name="new_shelf_name" placeholder="New shelf name..." class="shelf-input">
+
+                                <button type="submit" class="add-confirm-btn">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                    function toggleShelfMenu() {
+                        const menu = document.getElementById("shelf-menu");
+                        menu.style.display = (menu.style.display === "block") ? "none" : "block";
+                    }
+                    </script>
+
                     <div class="divider"></div>
 
                     <div class="description-section">
@@ -405,76 +485,116 @@
         </div>
 
         <div class="reviews-container">
-            
-            <div class="reviews-header">
-                <h2 class="reviews-title">Reviews & Ratings</h2>
-                <div class="overall-rating">
-                    <span class="big-star">★</span>
-                    <span class="rating-score">4.5</span>
-                    <span class="metadata-label" style="color: #8b5cf6; min-width: auto;">(120 reviews)</span>
-                </div>
-            </div>
-
-            <div class="add-review-section">
-                <h3 class="form-title">Write a Review</h3>
-                <form action="#" method="POST">
-                    <div class="form-group">
-                        <label class="form-label">Your Rating</label>
-                        <select class="form-select">
-                            <option value="5">★★★★★ - Amazing</option>
-                            <option value="4">★★★★☆ - Very Good</option>
-                            <option value="3">★★★☆☆ - Good</option>
-                            <option value="2">★★☆☆☆ - Fair</option>
-                            <option value="1">★☆☆☆☆ - Poor</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Your Name</label>
-                        <input type="text" class="form-input" placeholder="Enter your name">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Your Review</label>
-                        <textarea class="form-textarea" rows="4" placeholder="What did you think of this book?"></textarea>
-                    </div>
-
-                    <button type="submit" class="submit-btn">Post Review</button>
-                </form>
-            </div>
-
-            <div class="review-list">
-                
-                <div class="review-card">
-                    <div class="review-top">
-                        <span class="reviewer-name">Netra</span>
-                        <span class="review-date">Oct 12, 2024</span>
-                    </div>
-                    <div class="star-row">★★★★★</div>
-                    <p class="review-body">Loved this book! The characters were amazing and the plot kept me hooked till the very end.</p>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-top">
-                        <span class="reviewer-name">Aisha</span>
-                        <span class="review-date">Sep 28, 2024</span>
-                    </div>
-                    <div class="star-row">★★★★☆</div>
-                    <p class="review-body">Good story but the ending felt a bit rushed compared to the rest of the series. Still worth a read.</p>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-top">
-                        <span class="reviewer-name">Rohan</span>
-                        <span class="review-date">Sep 15, 2024</span>
-                    </div>
-                    <div class="star-row">★★★★★</div>
-                    <p class="review-body">One of the best fantasy books I have read this year. Highly recommended.</p>
-                </div>
-
-            </div>
+    <div class="reviews-header">
+        <h2 class="reviews-title">Reviews & Ratings</h2>
+        <div class="overall-rating">
+            <span class="big-star">★</span>
+            <span class="rating-score">
+                {{ "%.1f" % avg_rating if avg_rating else "0.0" }}
+            </span>
+            <span class="metadata-label" style="color: #8b5cf6; min-width: auto; font-size: 0.95rem;">
+                ({{ total_reviews }} review{{ 's' if total_reviews != 1 else '' }})
+            </span>
         </div>
+    </div>
 
+    <!-- Write / Update Review Form -->
+    {% if "user_id" in session %}
+    <div class="add-review-section">
+        <h3 class="form-title">
+            {% if user_review %}Update Your Review{% else %}Write a Review{% endif %}
+        </h3>
+        <form action="{{ url_for('add_review', book_id=book.book_id) }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Your Rating <span style="color:red;">*</span></label>
+                <select name="rating" class="form-select" required>
+                    <option value="" disabled {{ 'selected' if not user_review else '' }}>
+                        Choose your rating...
+                    </option>
+                    {% for i in range(5,0,-1) %}
+                    <option value="{{ i }}" 
+                        {{ 'selected' if user_review and user_review.ratings == i else '' }}>
+                        {{ '★' * i + '☆' * (5-i) }} — {{ i }} Star{{ 's' if i > 1 else '' }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Your Review <small style="color:#9ca3af;">(optional)</small></label>
+                <textarea name="review_text" class="form-textarea" rows="5"
+                          placeholder="What did you think about '{{ book.title }}'? Spoiler-free please!">
+                    {{ user_review.review_text if user_review else '' }}
+                </textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                {% if user_review %}Update Review{% else %}Post Review{% endif %}
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="add-review-section">
+        <p style="text-align:center; padding:28px; color:#7c3aed; font-size:1.1rem;">
+            <a href="{{ url_for('login') }}" 
+               style="color:#8b5cf6; text-decoration:underline; font-weight:600;">
+                Log in
+            </a> to write a review and rate this book
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="review-list">
+        {% if reviews %}
+            {% for r in reviews %}
+            <div class="review-card">
+                <div class="review-top">
+                    <span class="reviewer-name">{{ r.username }}</span>
+                    <span class="review-date">{{ r.review_date.strftime('%b %d, %Y') }}</span>
+                </div>
+
+                <!-- Stars + Rating Number -->
+                <div class="star-row" style="color:#fbbf24; font-size:1.2rem; margin:8px 0;">
+                    {{ '★' * r.ratings + '☆' * (5 - r.ratings) }}
+                    <span style="margin-left:10px; font-size:0.95rem; color:#6b21a8; font-weight:600;">
+                        {{ r.ratings }} / 5
+                    </span>
+                </div>
+
+                <!-- Review Text -->
+                {% if r.review_text %}
+                <p class="review-body">{{ r.review_text }}</p>
+                {% else %}
+                <p class="review-body" style="color:#9ca3af; font-style:italic;">
+                    No written review — just rated the book.
+                </p>
+                {% endif %}
+
+                <!-- Optional: Delete button for own review -->
+                {% if "user_id" in session and session["user_id"] == r.user_id %}
+                <div style="margin-top:12px; text-align:right;">
+                    <small>
+                        <a href="{{ url_for('delete_review', book_id=book.book_id) }}" 
+                           style="color:#dc2626; text-decoration:underline; font-size:0.85rem;"
+                           onclick="return confirm('Delete your review? This cannot be undone.')">
+                            Delete review
+                        </a>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align:center; padding:50px 20px; color:#9ca3af;">
+                <p style="font-size:1.1rem; font-style:italic;">
+                    No reviews yet.<br>
+                    <strong>Be the first to share your thoughts!</strong>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
     </div>
 
 </body>
