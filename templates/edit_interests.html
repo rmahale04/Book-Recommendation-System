@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Edit Interests</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;padding:20px}
+    .card{max-width:900px;margin:30px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+    .genre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+    .genre-item{padding:10px;border-radius:8px;border:1px solid #eee;cursor:pointer;text-align:center}
+    .genre-item input{margin-right:8px}
+    .btn-primary{background:#4facfe;color:#fff;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Edit Interests (Genres)</h2>
+    <form method="post">
+      <div class="genre-grid">
+        {% for g in genres %}
+          <label class="genre-item">
+            <input type="checkbox" name="interests" value="{{ g.genre_id }}" {% if g.genre_id|string in selected %}checked{% endif %}>
+            {{ g.genre_name }}
+          </label>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn-primary" type="submit">Save</button>
+        <a href="{{ url_for('profile_root') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

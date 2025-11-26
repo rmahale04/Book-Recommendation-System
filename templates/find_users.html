@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Discover People • NextRead</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+/* ---------- GLOBAL ---------- */
+* { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
+body {  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+/* ---------- GRID LAYOUT ---------- */
+.wrapper {
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+    background:white;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 0 12px rgba(0,0,0,0.1);
+    height:max-content;
+}
+
+.sidebar h2 {
+    color:#5b21b6;
+    margin-bottom:15px;
+    font-size:1.4rem;
+}
+
+.search-box input {
+    width:100%;
+    padding:14px;
+    font-size:15px;
+    border-radius:12px;
+    border:2px solid #ddd;
+    margin-bottom:15px;
+    transition:.25s;
+}
+
+.search-box input:focus {
+    border-color:#8b5cf6;
+    outline:none;
+}
+
+.stats {
+    background:#ede9fe;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.stats span {
+    font-size:28px;
+    font-weight:bold;
+    color:#5b21b6;
+}
+
+/* ---------- RIGHT SECTION ---------- */
+.right { display:flex; flex-direction:column; gap:20px; }
+
+/* ---------- PENDING REQUESTS ---------- */
+.pending-box {
+    background:white;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 0 12px rgba(0,0,0,0.1);
+}
+
+.pending-box h3 {
+    color:#5b21b6;
+    margin-bottom:12px;
+    font-size:1.3rem;
+}
+
+.pending-item {
+    background:#f9f9f9;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.pending-item img {
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.pending-info { flex:1; }
+.pending-info strong { font-size:1.1rem; }
+.pending-info small { color:#7c3aed; }
+
+.btn {
+    padding:10px 16px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    color:white;
+    font-size:14px;
+    transition:.2s;
+}
+
+.btn-accept { background:#10b981; }
+.btn-accept:hover { background:#059669; }
+
+.btn-reject { background:#ef4444; }
+.btn-reject:hover { background:#dc2626; }
+
+/* ---------- USERS GRID ---------- */
+.users-box {
+    background:white;
+    padding:22px;
+    border-radius:14px;
+    box-shadow:0 0 12px rgba(0,0,0,0.1);
+}
+
+.users-box h3 {
+    color:#5b21b6;
+    margin-bottom:16px;
+    font-size:1.3rem;
+}
+
+.users-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(320px,1fr));
+    gap:18px;
+}
+
+.user-card {
+    background:#faf5ff;
+    padding:18px;
+    border-radius:16px;
+    border:2px solid #e9d5ff;
+    display:flex;
+    gap:16px;
+    transition:.25s;
+}
+
+.user-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 12px 28px rgba(139,92,246,.2);
+}
+
+.user-card img {
+    width:78px;
+    height:78px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #c084fc;
+}
+
+.user-info h3 {
+    font-size:1.15rem;
+    margin-bottom:3px;
+}
+
+.username {
+    font-size:14px;
+    color:#7c3aed;
+    font-weight:600;
+}
+
+.bio-preview {
+    font-size:0.9rem;
+    color:#555;
+    margin-top:6px;
+}
+
+/* Action buttons */
+.action-area {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+}
+
+.btn-add { background:#7c3aed; }
+.btn-add:hover { background:#6d28d9; }
+
+.btn-cancel { background:#dc2626; }
+.btn-cancel:hover { background:#b91c1c; }
+
+.btn-unfriend { background:#6b7280; }
+.btn-unfriend:hover { background:#4b5563; }
+
+/* Status Badges */
+.status {
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.friend { background:#d1fae5; color:#065f46; }
+
+@media(max-width:900px){
+    .wrapper { grid-template-columns:1fr; }
+}
+</style>
+
+</head>
+<body>
+
+{% include 'nav_page.html' %}
+
+<div class="wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2>Find Readers</h2>
+
+        <form method="GET" action="{{ url_for('find_users') }}">
+            <div class="search-box">
+                <input type="text" name="q" placeholder="Search by name or @username..."
+                       value="{{ search_query or '' }}" autofocus>
+            </div>
+        </form>
+
+        <div class="stats">
+            <span>{{ total_users }}</span>
+            <small>Readers on NextRead</small>
+        </div>
+    </aside>
+
+    <!-- RIGHT CONTENT -->
+    <div class="right">
+
+        <!-- PENDING REQUESTS -->
+        <div class="pending-box">
+            <h3>Pending Friend Requests</h3>
+
+            {% if pending_requests %}
+                {% for p in pending_requests %}
+                <div class="pending-item">
+                    <img src="{{ p.profile_image_url or url_for('static', filename='images/default_profile.png') }}"
+                         alt="{{ p.first_name }}">
+
+                    <div class="pending-info">
+                        <strong>{{ p.first_name }} {{ p.last_name }}</strong><br>
+                        <small>@{{ p.username }}</small>
+                    </div>
+
+                    <form action="{{ url_for('accept_request', request_id=p.request_id) }}" method="POST">
+                        <button class="btn btn-accept">Accept</button>
+                    </form>
+
+                    <form action="{{ url_for('reject_request', request_id=p.request_id) }}" method="POST">
+                        <button class="btn btn-reject">Reject</button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align:center;color:#888;padding:15px;">No pending requests</p>
+            {% endif %}
+        </div>
+
+        <!-- USERS GRID -->
+        <div class="users-box">
+            <h3>People You May Know</h3>
+
+            {% if users %}
+            <div class="users-grid">
+
+                <!-- {% for u in users %}
+                <div class="user-card">
+                    
+                    <img src="{{ u.profile_image_url or url_for('static', filename='images/default_profile.png') }}"
+                         alt="{{ u.first_name }}">
+
+                    <div class="user-info">
+                        <h3>{{ u.first_name }} {{ u.last_name }}</h3>
+                        <div class="username">@{{ u.username }}</div>
+
+                        {% if u.bio %}
+                        <div class="bio-preview">
+                            {{ u.bio[:90] }}{% if u.bio|length > 90 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="action-area">
+                        
+                        {% if u.is_friend %}
+                            <div class="status friend">Friends</div>
+
+                            <form action="{{ url_for('remove_friend', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-unfriend">Unfriend</button>
+                            </form>
+
+                        {% elif u.request_sent %}
+                            <form action="{{ url_for('cancel_friend_request', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-cancel">Cancel Request</button>
+                            </form>
+
+                        {% else %}
+                            <form action="{{ url_for('send_friend_request', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-add">Add Friend</button>
+                            </form>
+
+                        {% endif %}
+                    </div>
+
+                </div>
+                {% endfor %} -->
+                {% for u in users %}
+                <a href="{{ url_for('profile_by_username', username=u.username) }}" class="user-card" 
+                style="text-decoration:none; color:inherit;">
+
+                    <img src="{{ u.profile_image_url or url_for('static', filename='images/default_profile.png') }}"
+                        alt="{{ u.first_name }}">
+
+                    <div class="user-info">
+                        <h3>{{ u.first_name }} {{ u.last_name }}</h3>
+                        <div class="username">@{{ u.username }}</div>
+
+                        {% if u.bio %}
+                        <div class="bio-preview">
+                            {{ u.bio[:90] }}{% if u.bio|length > 90 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="action-area">
+                        {% if u.is_friend %}
+                            <div class="status friend">Friends</div>
+                            <form action="{{ url_for('remove_friend', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-unfriend" onclick="event.stopPropagation()">Unfriend</button>
+                            </form>
+
+                        {% elif u.request_sent %}
+                            <form action="{{ url_for('cancel_friend_request', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-cancel" onclick="event.stopPropagation()">Cancel Request</button>
+                            </form>
+
+                        {% else %}
+                            <form action="{{ url_for('send_friend_request', user_id=u.user_id) }}" method="POST">
+                                <button class="btn btn-add" onclick="event.stopPropagation()">Add Friend</button>
+                            </form>
+
+                        {% endif %}
+                    </div>
+
+                </a>
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+                <p style="text-align:center;color:#777;padding:40px;">
+                    No users found for "{{ search_query }}"
+                </p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
