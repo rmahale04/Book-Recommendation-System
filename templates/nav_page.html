@@ -52,7 +52,7 @@
             align-items: center;
         }
         .logo {
-            height: 45px;              /* fixed height for consistency */
+            height: 30px;              /* fixed height for consistency */
             width: auto;               /* keeps aspect ratio */
             object-fit: contain;       /* prevents distortion */
             display: block;
@@ -185,7 +185,7 @@
         <div class="header-content">
             <div class="logo-container">
                 <a href="{{ url_for('home') }}">
-                    <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="ReadNext" class="logo">
+                    <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="logo">
                 </a>
             </div>
             
@@ -200,7 +200,7 @@
                 <a href="{{ url_for('view_books') }}" class="{% if active_page=='books' %}active{% endif %}">Books</a>
                 <a href="{{ url_for('recommendations') }}" class="{% if active_page=='recommendations' %}active{% endif %}">Recommendations</a>
                 <a href="{{ url_for('find_users') }}" class="{% if active_page=='find_users' %}active{% endif %}">Discover Friends</a>    
-                <a href="{{ url_for('profile') }}" class="{% if active_page=='profile' %}active{% endif %}">Profile</a>
+                <a href="{{ url_for('profile_root') }}" class="{% if active_page=='profile' %}active{% endif %}">Profile</a>
             </nav>
 
         </div>
