@@ -1,0 +1,120 @@
+<!-- templates/settings_panel.html -->
+
+<!-- SETTINGS PANEL OVERLAY -->
+<div id="settings-overlay" class="settings-panel-overlay" style="display:none;">
+    
+    <!-- SLIDING SETTINGS PANEL -->
+    <div id="settings-panel" class="settings-panel">
+
+        <!-- CLOSE BUTTON -->
+        <span class="settings-close" onclick="closeSettings()">×</span>
+
+        <h3>Settings</h3>
+
+        <!-- EDIT PROFILE -->
+        <div class="settings-option"
+             onclick="window.location.href='{{ url_for('edit_profile', username=session.get('username')) }}'">
+            Edit Profile
+        </div>
+
+        <!-- CHANGE PASSWORD -->
+        <!-- <div class="settings-option"
+             onclick="window.location.href='{{ url_for('change_password') }}'">
+            Change Password
+        </div> -->
+
+        <!-- FORGOT PASSWORD -->
+        <!-- <div class="settings-option"
+             onclick="window.location.href='{{ url_for('forgot_password') }}'">
+            Forgot Password
+        </div> -->
+
+        <!-- EDIT INTERESTS -->
+        <div class="settings-option"
+             onclick="window.location.href='{{ url_for('edit_interests', username=session.get('username')) }}'">
+            Edit Interests (Genres)
+        </div>
+
+        <!-- PRIVACY SETTINGS (if needed later) -->
+        <!-- <div class="settings-option"
+             onclick="window.location.href='{{ url_for('profile_by_username', username=session.get('username')) }}'">
+            Privacy Settings
+        </div> -->
+
+        <!-- LOGOUT -->
+        <div class="settings-option"
+             onclick="window.location.href='{{ url_for('logout') }}'">
+            Logout
+        </div>
+
+    </div>
+</div>
+
+
+<!-- INLINE CSS FOR SETTINGS PANEL -->
+<style>
+    /* Overlay behind panel */
+    .settings-panel-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.55);
+        z-index: 2000;
+        display: flex;
+        justify-content: flex-end;
+        align-items: stretch;
+    }
+
+    /* The actual sliding box */
+    .settings-panel {
+        width: 320px;
+        background: #fff;
+        height: 100%;
+        padding: 25px;
+        border-radius: 15px 0 0 15px;
+        box-shadow: -5px 0 20px rgba(0,0,0,0.25);
+        transform: translateX(100%);
+        transition: 0.35s ease;
+    }
+
+    /* Panel open animation */
+    .settings-panel.open {
+        transform: translateX(0);
+    }
+
+    /* Close button */
+    .settings-close {
+        font-size: 24px;
+        float: right;
+        cursor: pointer;
+        color: #666;
+        margin-top: -5px;
+        margin-right: -5px;
+    }
+
+    .settings-panel h3 {
+        margin: 0 0 20px 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #444;
+    }
+
+    /* Settings item */
+    .settings-option {
+        padding: 14px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 16px;
+        cursor: pointer;
+        color: #444;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+    .settings-option:hover {
+        padding-left: 5px;
+        background: #f4f4ff;
+        color: #667eea;
+    }
+</style>
