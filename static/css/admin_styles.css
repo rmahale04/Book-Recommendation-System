@@ -27,12 +27,28 @@ body {
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 24px;
     font-weight: bold;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #333;
+}
+
+.logo img {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    transform: scale(2.5);
+    transform-origin: left center;
+    transition: all 0.3s ease;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo img:hover {
+    transform: scale(2.6);
+    filter: drop-shadow(2px 2px 8px rgba(102, 126, 234, 0.4));
 }
 
 .user-info {
@@ -149,6 +165,7 @@ body {
     border-radius: 10px;
     padding: 30px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-height: 400px;
 }
 
 .tab-content {
@@ -234,7 +251,7 @@ body {
     font-size: 14px;
 }
 
-.data-table tr:hover {
+.data-table tbody tr:hover {
     background: #f8f9fa;
 }
 
@@ -315,6 +332,8 @@ body {
 
     .data-table {
         font-size: 12px;
+        display: block;
+        overflow-x: auto;
     }
 
     .data-table th,
@@ -325,21 +344,16 @@ body {
     .nav-tabs {
         overflow-x: auto;
     }
-}
 
-.logo {
-    height: 45px;
-    width: auto;
-    object-fit: contain;
-    display: block;
-    transform: scale(2.5);
-    transform-origin: left center;
-    background: transparent;
-    transition: all 0.3s ease;
-    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
-}
+    .content-area {
+        padding: 20px;
+    }
 
-.logo:hover {
-    transform: scale(2.6);
-    filter: drop-shadow(2px 2px 8px rgba(102, 126, 234, 0.4));
+    .logo img {
+        transform: scale(2);
+    }
+
+    .logo img:hover {
+        transform: scale(2.1);
+    }
 }
