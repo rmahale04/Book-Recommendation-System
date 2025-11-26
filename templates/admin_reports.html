@@ -1,0 +1,74 @@
+<h2>Book Inventory Report</h2>
+
+<h3>Total Books in Database</h3>
+<p><strong>{{ total_books }}</strong></p>
+
+<h3>Books Per Genre</h3>
+<table class="data-table">
+    <thead>
+        <tr><th>Genre</th><th>Books Count</th></tr>
+    </thead>
+    <tbody>
+        {% for row in books_per_genre %}
+        <tr>
+            <td>{{ row.genre_name }}</td>
+            <td>{{ row.total_books }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Books Per Author</h3>
+<table class="data-table">
+    <thead>
+        <tr><th>Author</th><th>Total Books</th></tr>
+    </thead>
+    <tbody>
+        {% for row in books_per_author %}
+        <tr>
+            <td>{{ row.author_name }}</td>
+            <td>{{ row.total_books }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Recently Added Books</h3>
+<table class="data-table">
+    <thead>
+        <tr><th>ID</th><th>Title</th><th>Year</th></tr>
+    </thead>
+    <tbody>
+        {% for row in recent_books %}
+        <tr>
+            <td>{{ row.book_id }}</td>
+            <td>{{ row.title }}</td>
+            <td>{{ row.published_year }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h2>Genre Gap Analysis Report</h2>
+<p>This report shows **which genres users search for more vs how many books exist**.</p>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Genre</th>
+            <th>Books in DB</th>
+            <th>Search Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in gap_analysis %}
+        <tr>
+            <td>{{ row.genre_name }}</td>
+            <td>{{ row.total_books_in_db }}</td>
+            <td>{{ row.search_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
