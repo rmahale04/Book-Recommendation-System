@@ -4,190 +4,433 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendations - ReadNext</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/table_styles.css') }}">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            color: white;
+        .recommendations-section {
+            margin-bottom: 60px;
         }
 
-        h1 {
-            margin: 30px 20px 10px;
-            font-size: 26px;
+        .section-header {
+            font-size: 2rem;
             font-weight: 700;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.35);
+            margin: 40px 0 25px 0;
+            padding: 0 20px;
+            position: relative;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .section-header::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            margin-top: 12px;
+            border-radius: 2px;
+            animation: scaleIn 0.6s ease 0.3s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scaleX(0);
+                transform-origin: left;
+            }
+            to {
+                transform: scaleX(1);
+                transform-origin: left;
+            }
         }
 
         .scroll-wrapper {
             position: relative;
-            padding: 0 40px;
+            padding: 0 70px;
+            margin-bottom: 20px;
         }
 
         .books-container {
             display: flex;
-            gap: 25px;
-            padding: 25px 0;
+            gap: 30px;
+            padding: 25px 5px;
             overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(79, 172, 254, 0.6) rgba(255, 255, 255, 0.1);
         }
 
         .books-container::-webkit-scrollbar {
             height: 10px;
         }
+
         .books-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 5px;
-        }
-        .books-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 5px;
-        }
-        .books-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
         }
 
-        /* ===== Book Card (Glassmorphism) ===== */
+        .books-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.4);
+        }
+
+        .books-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #3d9ae6 0%, #00d9e6 100%);
+        }
+
         .book-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
-            padding: 14px;
-            border-radius: 18px;
-            min-width: 160px;
-            width: 160px;
-            text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            min-width: 220px;
+            width: 220px;
             flex-shrink: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInScale 0.5s ease both;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .book-card:hover::before {
+            transform: scaleX(1);
         }
 
         .book-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+            transform: translateY(-12px);
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.4);
         }
 
-        .book-card img {
-            width: 100%;
-            height: 200px;
+        .book-cover-container {
+            text-align: center;
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .book-cover {
+            width: 160px;
+            height: 240px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
         }
 
-        .book-card h3 {
-            margin: 10px 0 4px;
-            font-size: 15px;
-            color: #333;
+        .book-card:hover .book-cover {
+            transform: scale(1.05) rotateY(5deg);
         }
 
-        .book-card p {
-            margin: 4px 0;
-            font-size: 12px;
-            color: #555;
+        .book-title {
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 16px;
+            line-height: 1.3;
+            margin: 10px 0 12px 0;
+            min-height: 42px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s ease;
         }
 
-        .book-card a {
-            text-decoration: none;
-            color: inherit;
+        .book-card:hover .book-title {
+            transform: translateX(3px);
         }
 
-        /* ===== Scroll Arrows (Glass Buttons) ===== */
+        .book-author {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .book-author::before {
+            content: '✍️';
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
         .scroll-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.25);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 26px;
-            font-weight: bold;
+            font-size: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 20;
+            z-index: 10;
             transition: all 0.3s ease;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            font-weight: 300;
+            line-height: 1;
+            backdrop-filter: blur(10px);
         }
 
         .scroll-arrow:hover {
-            transform: translateY(-50%) scale(1.12);
-            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.7);
+            background: linear-gradient(135deg, #5568d3 0%, #64408a 100%);
+        }
+
+        .scroll-arrow:active {
+            transform: translateY(-50%) scale(1.05);
         }
 
         .scroll-arrow.left {
-            left: 0;
+            left: 10px;
         }
 
         .scroll-arrow.right {
-            right: 0;
+            right: 10px;
         }
 
         .scroll-arrow:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+            transform: translateY(-50%);
         }
 
-        </style>
+        .scroll-arrow:disabled:hover {
+            transform: translateY(-50%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 40px;
+            color: white;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin: 20px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .empty-state::before {
+            content: "📚";
+            display: block;
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Stagger animation for horizontal cards */
+        .book-card:nth-child(1) { animation-delay: 0.1s; }
+        .book-card:nth-child(2) { animation-delay: 0.15s; }
+        .book-card:nth-child(3) { animation-delay: 0.2s; }
+        .book-card:nth-child(4) { animation-delay: 0.25s; }
+        .book-card:nth-child(5) { animation-delay: 0.3s; }
+        .book-card:nth-child(6) { animation-delay: 0.35s; }
+        .book-card:nth-child(n+7) { animation-delay: 0.4s; }
+
+        @media (max-width: 768px) {
+            .scroll-wrapper {
+                padding: 0 55px;
+            }
+
+            .section-header {
+                font-size: 1.6rem;
+                padding: 0 15px;
+            }
+
+            .book-card {
+                min-width: 180px;
+                width: 180px;
+                padding: 20px;
+            }
+
+            .book-cover {
+                width: 130px;
+                height: 195px;
+            }
+
+            .book-title {
+                font-size: 15px;
+                min-height: 40px;
+            }
+
+            .book-author {
+                font-size: 13px;
+            }
+
+            .scroll-arrow {
+                width: 44px;
+                height: 44px;
+                font-size: 24px;
+            }
+
+            .books-container {
+                gap: 20px;
+                padding: 20px 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .scroll-wrapper {
+                padding: 0 50px;
+            }
+
+            .section-header {
+                font-size: 1.4rem;
+            }
+
+            .book-card {
+                min-width: 160px;
+                width: 160px;
+                padding: 15px;
+            }
+
+            .book-cover {
+                width: 120px;
+                height: 180px;
+            }
+
+            .book-title {
+                font-size: 14px;
+            }
+
+            .scroll-arrow {
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+            }
+
+            .books-container {
+                gap: 15px;
+            }
+
+            .empty-state {
+                padding: 60px 20px;
+                font-size: 16px;
+            }
+
+            .empty-state::before {
+                font-size: 60px;
+            }
+        }
+    </style>
 </head>
 <body>
     {% include "nav_page.html" %}
 
-    {% if search_books %}
-        <h1>Recommended Based on Your Searches</h1>
-        <div class="scroll-wrapper">
-            <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
-            <div class="books-container" onscroll="updateArrows(this)">
-                {% for book in search_books %}
-                <div class="book-card">
-                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" alt="{{ book.title }}">
-                        <h3>{{ book.title }}</h3>
-                        <p>{{ book.author }}</p>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-            <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
-        </div>
-    {% endif %}
+    <h1 class="page-header">Your Recommendations</h1>
 
-    {% if genre_books %}
-        <h1>Recommended Based on Your Interests</h1>
-        <div class="scroll-wrapper">
-            <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
-            <div class="books-container" onscroll="updateArrows(this)">
-                {% for book in genre_books %}
-                <div class="book-card">
-                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-                        <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" alt="{{ book.title }}">
-                        <h3>{{ book.title }}</h3>
-                        <p>{{ book.author }}</p>
-                    </a>
+    <div class="container">
+        {% if search_books %}
+            <div class="recommendations-section">
+                <h2 class="section-header">Based on Your Searches</h2>
+                <div class="scroll-wrapper">
+                    <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
+                    <div class="books-container" onscroll="updateArrows(this)">
+                        {% for book in search_books %}
+                        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
+                            <div class="book-cover-container">
+                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
+                                     alt="{{ book.title }}" 
+                                     class="book-cover">
+                            </div>
+                            <div class="book-title">{{ book.title }}</div>
+                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
                 </div>
-                {% endfor %}
             </div>
-            <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
-        </div>
-    {% endif %}
+        {% endif %}
 
-    {% if not search_books and not genre_books %}
-        <p style="padding: 20px;">No recommendations yet. Start searching for books or select genres to get personalized suggestions!</p>
-    {% endif %}
+        {% if genre_books %}
+            <div class="recommendations-section">
+                <h2 class="section-header">Based on Your Genres</h2>
+                <div class="scroll-wrapper">
+                    <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
+                    <div class="books-container" onscroll="updateArrows(this)">
+                        {% for book in genre_books %}
+                        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
+                            <div class="book-cover-container">
+                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
+                                     alt="{{ book.title }}" 
+                                     class="book-cover">
+                            </div>
+                            <div class="book-title">{{ book.title }}</div>
+                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if not search_books and not genre_books %}
+            <div class="empty-state">
+                No recommendations yet. Start searching for books or select genres to get personalized suggestions!
+            </div>
+        {% endif %}
+    </div>
 
     <script>
         function scrollContainer(button, direction) {
             const wrapper = button.parentElement;
             const container = wrapper.querySelector('.books-container');
-            const scrollAmount = 360;
+            const scrollAmount = 500;
             
             if (direction === 'left') {
                 container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
