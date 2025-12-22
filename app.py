@@ -16,10 +16,10 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
-    "database": "books_db"
+    "password": "Netra@432",
+    "database": "books_db2"
 }
 
 def get_db_connection():
@@ -1670,6 +1670,10 @@ def profile_root():
     return redirect(url_for("profile_by_username", username=session["username"]))
 
 
+
+@app.route("/author_register")
+def author_register():
+    return render_template("author_register.html")
 
 
 # # ------ DUPLICATE: older profile() variant (commented)
