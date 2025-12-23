@@ -1273,6 +1273,8 @@ def logout():
     session.pop("user_id", None)
     session.pop("username", None)
     session.pop("role", None)
+    session.pop("user_type", None)
+
     flash("You have been logged out.")
     return redirect(url_for("login"))
 
@@ -1671,9 +1673,6 @@ def profile_root():
 
 
 
-@app.route("/author_register")
-def author_register():
-    return render_template("author_register.html")
 
 
 # # ------ DUPLICATE: older profile() variant (commented)
@@ -1689,6 +1688,409 @@ def author_register():
 #     # ... original commented SQL ...
 #     """
 
+
+# -------------------------
+# Author Registration
+# -------------------------
+@app.route("/author_register", methods=["GET", "POST"])
+def author_register():
+    from datetime import date
+    
+    form_data = {}
+    errors = {}
+
+    if request.method == "POST":
+        form_data = {
+            "name": request.form.get("name", "").strip(),
+            "email": request.form.get("email", "").strip(),
+            "password": request.form.get("password", "").strip(),
+            "confirm_password": request.form.get("confirm_password", "").strip(),
+            "biography": request.form.get("biography", "").strip(),
+            "date_of_birth": request.form.get("date_of_birth", "").strip(),
+            "date_of_death": request.form.get("date_of_death", "").strip(),
+            "website": request.form.get("website", "").strip()
+        }
+
+        # Validation
+        if not form_data["name"] or len(form_data["name"]) < 3:
+            errors["name"] = "Name must be at least 3 characters long."
+        
+        if not form_data["email"]:
+            errors["email"] = "Email is required."
+        
+        if not form_data["biography"] or len(form_data["biography"]) < 50:
+            errors["biography"] = "Biography must be at least 50 characters long."
+        elif len(form_data["biography"]) > 2000:
+            errors["biography"] = "Biography must not exceed 2000 characters."
+        
+        if not form_data["date_of_birth"]:
+            errors["date_of_birth"] = "Date of birth is required."
+        
+        # Password validation
+        password_error = validate_password(form_data["password"])
+        if password_error:
+            errors["password"] = password_error
+        elif form_data["password"] != form_data["confirm_password"]:
+            errors["confirm_password"] = "Passwords do not match."
+
+        # Date validation
+        if form_data["date_of_birth"] and form_data["date_of_death"]:
+            try:
+                from datetime import datetime
+                dob = datetime.strptime(form_data["date_of_birth"], "%Y-%m-%d")
+                dod = datetime.strptime(form_data["date_of_death"], "%Y-%m-%d")
+                if dod <= dob:
+                    errors["date_of_death"] = "Date of death must be after date of birth."
+            except ValueError:
+                errors["date_of_birth"] = "Invalid date format."
+
+        if errors:
+            return render_template("author_register.html", 
+                                 form_data=form_data, 
+                                 errors=errors,
+                                 today=date.today().isoformat())
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            # Check if email already exists in authors table
+            cursor.execute("SELECT * FROM authors WHERE email=%s", (form_data["email"],))
+            if cursor.fetchone():
+                errors["email"] = "This email is already registered as an author."
+                conn.close()
+                return render_template("author_register.html", 
+                                     form_data=form_data, 
+                                     errors=errors,
+                                     today=date.today().isoformat())
+
+            # Hash password
+            hashed_pw = generate_password_hash(form_data["password"])
+
+            # Insert into authors table
+            cursor.execute("""
+                INSERT INTO authors 
+                (name, email, password_hash, biography, date_of_birth, date_of_death, website)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                form_data["name"],
+                form_data["email"],
+                hashed_pw,
+                form_data["biography"],
+                form_data["date_of_birth"] or None,
+                form_data["date_of_death"] or None,
+                form_data["website"] or None
+            ))
+            
+            conn.commit()
+            author_id = cursor.lastrowid
+            conn.close()
+
+            # Set session for author
+            session["author_id"] = author_id
+            session["author_name"] = form_data["name"]
+            session["author_email"] = form_data["email"]
+            session["user_type"] = "author"  # Distinguish from regular users
+
+            flash("Author account created successfully! Welcome to your dashboard.", "success")
+            return redirect(url_for("author_dashboard"))
+
+        except Error as e:
+            errors["database"] = str(e)
+            return render_template("author_register.html", 
+                                 form_data=form_data, 
+                                 errors=errors,
+                                 today=date.today().isoformat())
+
+    return render_template("author_register.html", 
+                         form_data=form_data, 
+                         errors=errors,
+                         today=date.today().isoformat())
+
+
+# -------------------------
+# Author Login
+# -------------------------
+@app.route("/author_login", methods=["GET", "POST"])
+def author_login():
+    form_data = {}
+    errors = {}
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "").strip()
+
+        # ... (validation logic) ...
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM authors WHERE email=%s", (email,))
+        author = cursor.fetchone()
+        print(f"DEBUG: Session Author ID: {author}")
+        conn.close()
+        print(check_password_hash(author["password_hash"], password) )
+
+            # In author_login route:
+        if author and check_password_hash(author["password_hash"], password):
+            session.clear()
+            # Ensure 'author_id' matches your SQL column name exactly
+            session["author_id"] = author["author_id"] 
+            session["author_name"] = author["name"]
+            session["user_type"] = "author"
+            session.modified = True 
+            print(f"DEBUG: Session User Type: {session.get('user_type')}")
+            print(f"DEBUG: Session Author ID: {session.get('author_id')}")
+            return redirect(url_for("author_dashboard"))
+
+        errors["email"] = "Invalid email or password."
+
+    return render_template("author_login.html", form_data=form_data, errors=errors)
+
+# -------------------------
+# Author Logout
+# -------------------------
+@app.route("/author_logout")
+def author_logout():
+    session.pop("author_id", None)
+    session.pop("author_name", None)
+    session.pop("author_email", None)
+    session.pop("user_type", None)
+    flash("You have been logged out.", "info")
+    return redirect(url_for("author_login"))
+
+
+# -------------------------
+# Update Author Dashboard to require authentication
+# -------------------------
+@app.route("/author_dashboard")
+def author_dashboard():
+    print(f"DEBUG: Session User Type: {session.get('user_type')}")
+    print(f"DEBUG: Session Author ID: {session.get('author_id')}")
+    """Dashboard for authors to view their books, reviews, and statistics"""
+    # Check if logged in as author
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author to access the dashboard.", "error")
+        return redirect(url_for("author_login"))
+    
+    author_id = session["author_id"]
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Get author information
+    cursor.execute("""
+        SELECT author_id, name, email, biography, date_of_birth, date_of_death, 
+               website, created_at
+        FROM authors
+        WHERE author_id = %s
+    """, (author_id,))
+    author = cursor.fetchone()
+    
+    if not author:
+        flash("Author profile not found.", "error") #
+        session.clear()
+        return redirect(url_for("author_login")) #
+    if session.get("user_type") != "author":
+        flash("Please log in as an author.", "error")
+        return redirect(url_for("author_login"))
+
+    author_id = session.get("author_id")
+    if not author_id:
+        session.pop("author_id", None)
+        session.pop("author_name", None)
+        session.pop("author_email", None)
+        session.pop("user_type", None)
+        return redirect(url_for("author_login"))
+
+    
+    # author_id = session["author_id"]
+    # author_id = 1
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Get author information
+    cursor.execute("""
+        SELECT author_id, name, email, biography, date_of_birth, date_of_death, 
+               website, created_at
+        FROM authors
+        WHERE author_id = %s
+    """, (author_id,))
+    author = cursor.fetchone()
+    
+    if not author:
+        flash("Author profile not found.", "error")
+        session.clear()
+        return redirect(url_for("author_login"))
+    
+    # Get author's books with statistics
+    cursor.execute("""
+        SELECT 
+            b.book_id,
+            b.title,
+            b.published_year,
+            b.cover_image_url,
+            GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres,
+            COALESCE(AVG(r.ratings), 0) AS avg_rating,
+            COUNT(DISTINCT r.review_id) AS review_count,
+            COUNT(DISTINCT usb.shelf_id) AS shelf_count
+        FROM books b
+        LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+        LEFT JOIN genres g ON bg.genre_id = g.genre_id
+        LEFT JOIN reviews r ON b.book_id = r.book_id
+        LEFT JOIN user_shelf_books usb ON b.book_id = usb.book_id
+        WHERE b.author_id = %s
+        GROUP BY b.book_id
+        ORDER BY b.published_year DESC
+    """, (author_id,))
+    books = cursor.fetchall()
+    
+    # Get total statistics
+    cursor.execute("SELECT COUNT(*) AS total FROM books WHERE author_id = %s", (author_id,))
+    total_books = cursor.fetchone()['total']
+    
+    cursor.execute("""
+        SELECT COUNT(*) AS total 
+        FROM reviews r
+        JOIN books b ON r.book_id = b.book_id
+        WHERE b.author_id = %s
+    """, (author_id,))
+    total_reviews = cursor.fetchone()['total']
+    
+    cursor.execute("""
+        SELECT AVG(r.ratings) AS avg
+        FROM reviews r
+        JOIN books b ON r.book_id = b.book_id
+        WHERE b.author_id = %s AND r.ratings IS NOT NULL
+    """, (author_id,))
+    avg_rating = cursor.fetchone()['avg'] or 0
+    
+    cursor.execute("""
+        SELECT COUNT(DISTINCT usb.shelf_id) AS total
+        FROM user_shelf_books usb
+        JOIN books b ON usb.book_id = b.book_id
+        WHERE b.author_id = %s
+    """, (author_id,))
+    total_readers = cursor.fetchone()['total']
+    
+    # Get recent reviews
+    cursor.execute("""
+        SELECT 
+            r.ratings,
+            r.review_text,
+            r.review_date,
+            u.username,
+            b.title AS book_title,
+            b.book_id
+        FROM reviews r
+        JOIN users u ON r.user_id = u.user_id
+        JOIN books b ON r.book_id = b.book_id
+        WHERE b.author_id = %s
+        ORDER BY r.review_date DESC
+        LIMIT 10
+    """, (author_id,))
+    recent_reviews = cursor.fetchall()
+    
+    # Get recent activity
+    cursor.execute("""
+        SELECT 
+            'review' AS type,
+            CONCAT(u.username, ' reviewed "', b.title, '"') AS text,
+            r.review_date AS time
+        FROM reviews r
+        JOIN users u ON r.user_id = u.user_id
+        JOIN books b ON r.book_id = b.book_id
+        WHERE b.author_id = %s
+        UNION ALL
+        SELECT 
+            'shelf' AS type,
+            CONCAT('A reader added "', b.title, '" to their shelf') AS text,
+            usb.added_date AS time
+        FROM user_shelf_books usb
+        JOIN books b ON usb.book_id = b.book_id
+        WHERE b.author_id = %s
+        ORDER BY time DESC
+        LIMIT 15
+    """, (author_id, author_id))
+    recent_activity = cursor.fetchall()
+    
+    # Format activity times
+    for activity in recent_activity:
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        diff = now - activity['time']
+        
+        if diff < timedelta(minutes=1):
+            activity['time'] = "just now"
+        elif diff < timedelta(hours=1):
+            activity['time'] = f"{int(diff.total_seconds() / 60)} minutes ago"
+        elif diff < timedelta(days=1):
+            activity['time'] = f"{int(diff.total_seconds() / 3600)} hours ago"
+        elif diff < timedelta(days=7):
+            activity['time'] = f"{diff.days} days ago"
+        else:
+            activity['time'] = activity['time'].strftime("%b %d, %Y")
+    
+    cursor.close()
+    conn.close()
+    
+    return render_template("author_dashboard.html",
+                         author=author,
+                         books=books,
+                         total_books=total_books,
+                         total_reviews=total_reviews,
+                         avg_rating=round(avg_rating, 2),
+                         total_readers=total_readers,
+                         recent_reviews=recent_reviews,
+                         recent_activity=recent_activity)
+
+
+# -------------------------
+# Author Profile Edit
+# -------------------------
+@app.route("/author_profile/edit", methods=["GET", "POST"])
+def edit_author_profile():
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author.", "error")
+        return redirect(url_for("author_login"))
+    
+    author_id = session["author_id"]
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        biography = request.form.get("biography", "").strip()
+        website = request.form.get("website", "").strip()
+        
+        errors = {}
+        if not name or len(name) < 3:
+            errors["name"] = "Name must be at least 3 characters."
+        if not biography or len(biography) < 50:
+            errors["biography"] = "Biography must be at least 50 characters."
+        
+        if not errors:
+            cursor.execute("""
+                UPDATE authors 
+                SET name=%s, biography=%s, website=%s
+                WHERE author_id=%s
+            """, (name, biography, website or None, author_id))
+            conn.commit()
+            
+            session["author_name"] = name
+            flash("Profile updated successfully!", "success")
+            conn.close()
+            return redirect(url_for("author_dashboard"))
+        
+        conn.close()
+        return render_template("edit_author_profile.html", errors=errors, 
+                             author={"name": name, "biography": biography, "website": website})
+    
+    cursor.execute("SELECT * FROM authors WHERE author_id=%s", (author_id,))
+    author = cursor.fetchone()
+    conn.close()
+    
+    return render_template("edit_author_profile.html", author=author, errors={})
 
 
 # -------------------------
