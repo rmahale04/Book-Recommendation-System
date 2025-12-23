@@ -595,6 +595,19 @@ INSERT INTO `reviews` (`review_id`, `user_id`, `book_id`, `ratings`, `review_tex
 (19, 11, 18, 2, 'Finished Steve Jobs.\r\nWell-researched but too long and too dry for me.\r\nI struggled to stay engaged, and the narration felt repetitive at times.\r\nA 2-star read.', '2025-11-25 07:30:41');
 
 -- --------------------------------------------------------
+-- Add email and password columns to authors table
+ALTER TABLE authors
+ADD COLUMN email VARCHAR(255) UNIQUE,
+ADD COLUMN password_hash VARCHAR(255),
+ADD COLUMN website VARCHAR(255),
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Make email NOT NULL for new authors (optional)
+-- ALTER TABLE authors MODIFY COLUMN email VARCHAR(255) UNIQUE NOT NULL;
+-- $2a24723fb0f3a1ee1e8786436b9517af478660199987c8e38eba99de43225eabd517b7761b0d226ed8e0c27746195d196ae58464ad6376a8f33bfbef9d97cf61
+-- Ana_yaung@gmail.com
+select * from authors;
+SELECT * FROM authors WHERE email="Ana_yaung@gmail.com";
 
 --
 -- Table structure for table `series`
