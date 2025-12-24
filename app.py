@@ -383,16 +383,26 @@ def book_details(book_id):
     book = cursor.fetchone()
 
     if not book:
+        cursor.close()
         conn.close()
         flash("Book not found.", "error")
         return redirect(url_for("view_books"))
+
+    # --- Save book view (Continue Browsing) ---
+    if "user_id" in session:
+        cursor.execute("""
+            INSERT INTO user_book_views (user_id, book_id)
+            VALUES (%s, %s)
+        """, (session["user_id"], book_id))
+        conn.commit()  # ✅ REQUIRED
 
     # --- Shelves ---
     shelves = []
     if "user_id" in session:
         cursor.execute("""
-            SELECT shelf_id, name FROM shelves 
-            WHERE user_id = %s 
+            SELECT shelf_id, name
+            FROM shelves
+            WHERE user_id = %s
             ORDER BY is_default DESC, name
         """, (session["user_id"],))
         shelves = cursor.fetchall()
@@ -400,12 +410,13 @@ def book_details(book_id):
     # --- Average rating & count ---
     cursor.execute("""
         SELECT AVG(ratings) AS avg_rating, COUNT(*) AS total_reviews
-        FROM reviews 
+        FROM reviews
         WHERE book_id = %s AND ratings IS NOT NULL
     """, (book_id,))
     rating_info = cursor.fetchone()
-    avg_rating = round(rating_info['avg_rating'], 1) if rating_info['avg_rating'] else 0.0
-    total_reviews = rating_info['total_reviews']
+
+    avg_rating = round(rating_info["avg_rating"], 1) if rating_info["avg_rating"] else 0.0
+    total_reviews = rating_info["total_reviews"]
 
     # --- All reviews ---
     cursor.execute("""
@@ -417,12 +428,12 @@ def book_details(book_id):
     """, (book_id,))
     reviews = cursor.fetchall()
 
-    # --- Current user's review (for pre-filling form) ---
+    # --- Current user's review ---
     user_review = None
     if "user_id" in session:
         cursor.execute("""
-            SELECT ratings, review_text 
-            FROM reviews 
+            SELECT ratings, review_text
+            FROM reviews
             WHERE user_id = %s AND book_id = %s
         """, (session["user_id"], book_id))
         user_review = cursor.fetchone()
@@ -432,13 +443,15 @@ def book_details(book_id):
     cursor.close()
     conn.close()
 
-    return render_template("book_details.html",
-                           book=book,
-                           shelves=shelves,
-                           avg_rating=avg_rating,
-                           total_reviews=total_reviews,
-                           reviews=reviews,
-                           user_review=user_review)
+    return render_template(
+        "book_details.html",
+        book=book,
+        shelves=shelves,
+        avg_rating=avg_rating,
+        total_reviews=total_reviews,
+        reviews=reviews,
+        user_review=user_review
+    )
 
 
 @app.route("/book/<int:book_id>/review", methods=["POST"])
@@ -1290,6 +1303,29 @@ def recommendations():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # --- Last viewed book (Continue Browsing) ---
+
+    continue_books = []
+
+    cursor.execute("""
+    SELECT 
+        b.book_id,
+        b.title,
+        a.name AS author,
+        b.cover_image_url,
+        MAX(ubv.view_date) AS last_viewed
+    FROM user_book_views ubv
+    JOIN books b ON ubv.book_id = b.book_id
+    LEFT JOIN authors a ON b.author_id = a.author_id
+    WHERE ubv.user_id = %s
+    GROUP BY b.book_id, b.title, a.name, b.cover_image_url
+    ORDER BY last_viewed DESC
+    LIMIT 5
+""", (session["user_id"],))
+
+
+    continue_books = cursor.fetchall()
+
     # --- 1️ Get user's selected genres ---
     cursor.execute("""
         SELECT g.genre_name
@@ -1349,6 +1385,7 @@ def recommendations():
         "recommendations.html",
         search_books=search_books,
         genre_books=genre_books,
+        continue_books=continue_books,
         active_page="recommendations"
     )
 
