@@ -7,6 +7,7 @@ import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+import yagmail
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -14,6 +15,7 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 # Database configuration
 # =========================
+# netra
 db_config = {
     "host": "localhost",
     "port": 3306,
@@ -22,9 +24,35 @@ db_config = {
     "database": "books_db2"
 }
 
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db"
+# }
+
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+# =========================
+# send mail function
+# =========================
+def send_email(receiver_email, subject, body):
+    try:
+        # Login with your Gmail (use app password, not raw Gmail password)
+        yag = yagmail.SMTP("tamari gmail id", "tamaro app password")
+        yag.send(
+            to=receiver_email,
+            subject=subject,
+            contents=body
+        )
+        print(f"Email sent to {receiver_email}")
+        return True
+    except Exception as e:
+        print(f"Error sending email to {receiver_email}: {e}")
+        return False
 
 # =========================
 # Utilities & validators
@@ -2135,3 +2163,4 @@ def edit_author_profile():
 # -------------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
