@@ -161,7 +161,7 @@
             margin: 10px 0 12px 0;
             min-height: 42px;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            /* -webkit-line-clamp: 2; */
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -373,6 +373,34 @@
     <h1 class="page-header">Your Recommendations</h1>
 
     <div class="container">
+
+
+        {% if continue_books %}
+            <div class="recommendations-section">
+                <h2 class="section-header">Continue Browsing</h2>
+                <div class="scroll-wrapper">
+                    <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
+                    <div class="books-container" onscroll="updateArrows(this)">
+                        {% for book in continue_books %}
+                        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
+                            <div class="book-cover-container">
+                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
+                                     alt="{{ book.title }}" 
+                                     class="book-cover">
+                            </div>
+                            <div class="book-title">{{ book.title }}</div>
+                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <button class="scroll-arrow right" onclick="scrollContainer(this, 'right')">›</button>
+                </div>
+            </div>
+        {% endif %}
+
+
+
+
         {% if search_books %}
             <div class="recommendations-section">
                 <h2 class="section-header">Based on Your Searches</h2>
@@ -419,7 +447,9 @@
             </div>
         {% endif %}
 
-        {% if not search_books and not genre_books %}
+
+
+        {% if not search_books and not genre_books and not continue_book%}
             <div class="empty-state">
                 No recommendations yet. Start searching for books or select genres to get personalized suggestions!
             </div>
