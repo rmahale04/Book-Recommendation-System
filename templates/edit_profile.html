@@ -1,0 +1,49 @@
+<!-- templates/edit_profile.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Edit Profile - {{ user.username }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;padding:20px}
+    .card{max-width:700px;margin:30px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+    label{display:block;margin:12px 0 6px;font-weight:600}
+    input[type=text], textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+    .actions{margin-top:15px}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
+    .btn-primary{background:#4facfe;color:#fff}
+    .error{color:#d23; font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Edit Profile</h2>
+    <form method="post">
+      <label>First name</label>
+      <input type="text" name="first_name" value="{{ user.first_name }}">
+      {% if errors.first_name %}<div class="error">{{ errors.first_name }}</div>{% endif %}
+
+      <label>Last name</label>
+      <input type="text" name="last_name" value="{{ user.last_name }}">
+      {% if errors.last_name %}<div class="error">{{ errors.last_name }}</div>{% endif %}
+
+      <label>Bio</label>
+      <textarea name="bio" rows="3">{{ user.bio or '' }}</textarea>
+
+      <label>About me</label>
+      <textarea name="about_me" rows="4">{{ user.about_me or '' }}</textarea>
+
+      <label>Profile image URL</label>
+      <input type="text" name="profile_image_url" value="{{ user.profile_image_url or '' }}">
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn" href="{{ url_for('profile_by_username', username=user.username) }}">Cancel</a>
+      </div>
+
+      {% if errors.database %}<div class="error">{{ errors.database }}</div>{% endif %}
+    </form>
+  </div>
+</body>
+</html>

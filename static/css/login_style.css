@@ -1,4 +1,4 @@
-    * {
+* {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -6,16 +6,16 @@
 
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        background-color: #f4f1ea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         line-height: 1.5;
     }
 
     /* Header */
     .header {
-        background-color: #f4f1ea;
+        background: rgba(255, 255, 255, 0.95);
         padding: 15px 0;
-        border-bottom: 1px solid #d6d0c4;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
     .header-content {
@@ -30,7 +30,10 @@
     .logo {
         font-size: 24px;
         font-weight: bold;
-        color: #382110;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-decoration: none;
     }
 
@@ -40,16 +43,16 @@
     }
 
     .nav-links a {
-        color: #382110;
+        color: #333;
         text-decoration: none;
         font-size: 14px;
         padding: 8px 12px;
-        border-radius: 3px;
+        border-radius: 5px;
         transition: background-color 0.2s;
     }
 
     .nav-links a:hover {
-        background-color: #d6d0c4;
+        background-color: #f0f0f0;
     }
 
     /* Main Container */
@@ -71,14 +74,14 @@
     .welcome-title {
         font-size: 48px;
         font-weight: normal;
-        color: #382110;
+        color: white;
         margin-bottom: 20px;
         line-height: 1.1;
     }
 
     .welcome-subtitle {
         font-size: 18px;
-        color: #767676;
+        color: rgba(255, 255, 255, 0.9);
         margin-bottom: 30px;
         line-height: 1.4;
     }
@@ -86,7 +89,7 @@
     .features-list {
         list-style: none;
         font-size: 16px;
-        color: #382110;
+        color: white;
     }
 
     .features-list li {
@@ -97,7 +100,7 @@
 
     .features-list li::before {
         content: "✓";
-        color: #00635d;
+        color: #4facfe;
         font-weight: bold;
         position: absolute;
         left: 0;
@@ -106,18 +109,17 @@
     /* Right Side - Login Form */
     .login-container {
         background: white;
-        border: 1px solid #d6d0c4;
-        border-radius: 4px;
+        border-radius: 10px;
         padding: 30px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
 
     .login-title {
         font-size: 24px;
-        color: #382110;
+        color: #667eea;
         margin-bottom: 20px;
         text-align: center;
-        font-weight: normal;
+        font-weight: 600;
     }
 
     .form-group {
@@ -127,7 +129,7 @@
     .form-group label {
         display: block;
         font-size: 14px;
-        color: #382110;
+        color: #333;
         margin-bottom: 5px;
         font-weight: 500;
     }
@@ -137,8 +139,8 @@
     .form-group input[type="password"] {
         width: 100%;
         padding: 12px;
-        border: 1px solid #d6d0c4;
-        border-radius: 3px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
         font-size: 14px;
         background: white;
         transition: border-color 0.2s;
@@ -146,8 +148,7 @@
 
     .form-group input:focus {
         outline: none;
-        border-color: #00635d;
-        box-shadow: 0 0 0 1px #00635d;
+        border-color: #667eea;
     }
 
     /* .forgot-password {
@@ -156,7 +157,7 @@
     }
 
     .forgot-password a {
-        color: #00635d;
+        color: #667eea;
         text-decoration: none;
         font-size: 13px;
     }
@@ -167,35 +168,35 @@
 
     .sign-in-btn {
         width: 100%;
-        background-color: #00635d;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         padding: 12px 20px;
-        border-radius: 3px;
+        border-radius: 5px;
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: opacity 0.2s;
     }
 
     .sign-in-btn:hover {
-        background-color: #005450;
+        opacity: 0.9;
     }
 
     .sign-in-btn:active {
-        background-color: #004943;
+        opacity: 0.8;
     }
 
     .signup-link {
         text-align: center;
         padding-top: 20px;
-        border-top: 1px solid #d6d0c4;
+        border-top: 1px solid #e0e0e0;
         color: #767676;
         font-size: 14px;
     }
 
     .signup-link a {
-        color: #00635d;
+        color: #667eea;
         text-decoration: none;
         font-weight: 500;
     }
@@ -252,12 +253,12 @@
 
 
     .error-message {
-        background: #f8d7da;
-        color: #721c24;
+        background: #fee;
+        color: #c00;
         padding: 10px 15px;
-        border-radius: 3px;
+        border-radius: 5px;
         margin-bottom: 15px;
         font-size: 14px;
-        border: 1px solid #f1aeb5;
+        border: 1px solid #fcc;
         display: none;
     }

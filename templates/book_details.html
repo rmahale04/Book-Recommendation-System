@@ -5,57 +5,597 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.title }} - ReadNext</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f1ea;
-            color: #382110;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            /* padding: 20px; */
+            position: relative;
+            padding-bottom: 50px;
         }
-        .book-container {
-            display: flex;
-            gap: 30px;
-            max-width: 900px;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* --- Main Containers --- */
+        .container-wrapper {
+            max-width: 950px;
             margin: 50px auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .book-container {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 60px rgba(139, 92, 246, 0.15),
+                0 0 0 1px rgba(168, 85, 247, 0.1);
+            margin-bottom: 30px;
         }
-        .book-image img {
-            max-width: 300px;
+
+        /* --- Book Content Styles --- */
+        .book-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .book-image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .book-image-wrapper {
             width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .book-image-wrapper img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 
+                0 15px 35px rgba(139, 92, 246, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .book-image-wrapper:hover img {
+            transform: translateY(-5px);
+        }
+
+        .book-details-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .book-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #6b21a8;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .book-author {
+            font-size: 1.2rem;
+            color: #8b5cf6;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        /* --- Metadata --- */
+        .metadata-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
             border-radius: 10px;
+            border-left: 4px solid #a855f7;
+            transition: all 0.3s ease;
         }
-        .book-info {
-            flex: 1;
+
+        .metadata-item:hover {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            transform: translateX(5px);
+            border-left-color: #8b5cf6;
         }
-        .book-info h1 {
+
+        .metadata-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #7c3aed;
+            font-weight: 600;
+            min-width: 110px;
+        }
+
+        .metadata-value {
+            font-size: 1rem;
+            color: #4c1d95;
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, #d8b4fe 0%, #c084fc 50%, #d8b4fe 100%);
+            margin: 10px 0;
+            border-radius: 2px;
+        }
+
+        .description-section {
+            background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #a855f7;
+        }
+
+        .description-title {
+            font-size: 1.3rem;
+            color: #6b21a8;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .description-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #581c87;
+            text-align: justify;
+        }
+
+        /* --- Reviews Section --- */
+        .reviews-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* Form on left, Reviews on right */
+            gap: 40px;
+        }
+
+        .reviews-header {
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3e8ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reviews-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #6b21a8;
+        }
+
+        .overall-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .big-star {
+            color: #fbbf24;
+            font-size: 1.5rem;
+        }
+
+        .rating-score {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #4c1d95;
+        }
+
+        /* --- Add Review Form --- */
+        .add-review-section {
+            background: #faf5ff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e9d5ff;
+            height: fit-content;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            color: #5b21b6;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
             margin-bottom: 15px;
         }
-        .book-info p {
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #6d28d9;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9d5ff;
+            border-radius: 8px;
+            background: white;
+            font-family: inherit;
+            color: #4c1d95;
+            transition: 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* --- Review List --- */
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Scrollbar styling */
+        .review-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .review-list::-webkit-scrollbar-thumb {
+            background-color: #d8b4fe;
+            border-radius: 4px;
+        }
+
+        .review-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #f3f4f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: 0.3s;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 10px 15px rgba(139, 92, 246, 0.05);
+            border-color: #e9d5ff;
+        }
+
+        .review-top {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 10px;
         }
-        .book-info span {
-            font-weight: bold;
+
+        .reviewer-name {
+            font-weight: 700;
+            color: #4c1d95;
+        }
+
+        .review-date {
+            font-size: 0.85rem;
+            color: #8b5cf6;
+        }
+
+        .star-row {
+            color: #fbbf24;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .review-body {
+            color: #4b5563;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .book-content {
+                grid-template-columns: 1fr;
+                padding: 30px 25px;
+            }
+            .book-image-section { align-items: center; }
+            .book-image-wrapper { max-width: 250px; }
+            .book-title, .book-author { text-align: center; }
+            
+            .reviews-container {
+                grid-template-columns: 1fr; /* Stack form and list */
+                padding: 25px;
+            }
+        }
+        .add-to-library {
+            position: relative;
+        }
+
+        .add-btn {
+            margin-top: 15px;
+            padding: 12px 18px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .shelf-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            background: white;
+            padding: 20px;
+            width: 250px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        .shelf-select, .shelf-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .add-confirm-btn {
+            width: 100%;
+            padding: 10px;
+            background: #6d28d9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .add-confirm-btn:hover {
+            background: #5b21b6;
         }
     </style>
 </head>
 <body>
+    
     {% include "nav_page.html" %}
-    <div class="book-container">
-        <div class="book-image">
-            <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}">
+    
+    <div class="container-wrapper">
+        
+        <div class="book-container">
+            <div class="book-content">
+                <div class="book-image-section">
+                    <div class="book-image-wrapper">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}" alt="{{ book.title }}">
+                        <!-- <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png')}}" alt="{{ book.title }}"> -->
+                    </div>
+                </div>
+
+                <div class="book-details-section">
+                    <div>
+                        <h1 class="book-title">{{ book.title }}</h1>
+                        <p class="book-author">by {{ book.author }}</p>
+                    </div>
+
+                    <div class="metadata-list">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Series</span>
+                            <span class="metadata-value">{{ book.series or 'Standalone' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Genres</span>
+                            <span class="metadata-value">{{ book.genres or 'N/A' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Language</span>
+                            <span class="metadata-value">{{ book.language or 'N/A' }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Published</span>
+                            <span class="metadata-value">{{ book.published_year }}</span>
+                        </div>
+                    </div>
+
+                    <div class="add-to-library">
+                        <button onclick="toggleShelfMenu()" class="add-btn">+ Add to Library</button>
+
+                        <div id="shelf-menu" class="shelf-menu">
+                            <form action="{{ url_for('add_to_shelf', book_id=book.book_id) }}" method="POST">
+
+                                <label>Select Shelf:</label>
+                                <select name="shelf_id" class="shelf-select">
+                                    {% for shelf in shelves %}
+                                    <option value="{{ shelf.shelf_id }}">{{ shelf.name }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <div class="divider"></div>
+
+                                <label>Create New Shelf:</label>
+                                <input type="text" name="new_shelf_name" placeholder="New shelf name..." class="shelf-input">
+
+                                <button type="submit" class="add-confirm-btn">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                    function toggleShelfMenu() {
+                        const menu = document.getElementById("shelf-menu");
+                        menu.style.display = (menu.style.display === "block") ? "none" : "block";
+                    }
+                    </script>
+
+                    <div class="divider"></div>
+
+                    <div class="description-section">
+                        <h2 class="description-title">About This Book</h2>
+                        <p class="description-text">{{ book.description or 'No description available.' }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="book-info">
-            <h1>{{ book.title }}</h1>
-            <p><span>Author:</span> {{ book.author }}</p>
-            <p><span>Series:</span> {{ book.series or 'N/A' }}</p>
-            <p><span>Genres:</span> {{ book.genres or 'N/A' }}</p>
-            <p><span>Language:</span> {{ book.language or 'N/A' }}</p>
-            <p><span>Published Year:</span> {{ book.published_year }}</p>
-            <p><span>Description:</span></p>
-            <p>{{ book.description or 'No description available.' }}</p>
+
+        <div class="reviews-container">
+    <div class="reviews-header">
+        <h2 class="reviews-title">Reviews & Ratings</h2>
+        <div class="overall-rating">
+            <span class="big-star">★</span>
+            <span class="rating-score">
+                {{ "%.1f" % avg_rating if avg_rating else "0.0" }}
+            </span>
+            <span class="metadata-label" style="color: #8b5cf6; min-width: auto; font-size: 0.95rem;">
+                ({{ total_reviews }} review{{ 's' if total_reviews != 1 else '' }})
+            </span>
         </div>
     </div>
+
+    <!-- Write / Update Review Form -->
+    {% if "user_id" in session %}
+    <div class="add-review-section">
+        <h3 class="form-title">
+            {% if user_review %}Update Your Review{% else %}Write a Review{% endif %}
+        </h3>
+        <form action="{{ url_for('add_review', book_id=book.book_id) }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Your Rating <span style="color:red;">*</span></label>
+                <select name="rating" class="form-select" required>
+                    <option value="" disabled {{ 'selected' if not user_review else '' }}>
+                        Choose your rating...
+                    </option>
+                    {% for i in range(5,0,-1) %}
+                    <option value="{{ i }}" 
+                        {{ 'selected' if user_review and user_review.ratings == i else '' }}>
+                        {{ '★' * i + '☆' * (5-i) }} — {{ i }} Star{{ 's' if i > 1 else '' }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Your Review <small style="color:#9ca3af;">(optional)</small></label>
+                <textarea name="review_text" class="form-textarea" rows="5"
+                          placeholder="What did you think about '{{ book.title }}'? Spoiler-free please!">
+                    {{ user_review.review_text if user_review else '' }}
+                </textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                {% if user_review %}Update Review{% else %}Post Review{% endif %}
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="add-review-section">
+        <p style="text-align:center; padding:28px; color:#7c3aed; font-size:1.1rem;">
+            <a href="{{ url_for('login') }}" 
+               style="color:#8b5cf6; text-decoration:underline; font-weight:600;">
+                Log in
+            </a> to write a review and rate this book
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="review-list">
+        {% if reviews %}
+            {% for r in reviews %}
+            <div class="review-card">
+                <div class="review-top">
+                    <span class="reviewer-name">{{ r.username }}</span>
+                    <span class="review-date">{{ r.review_date.strftime('%b %d, %Y') }}</span>
+                </div>
+
+                <!-- Stars + Rating Number -->
+                <div class="star-row" style="color:#fbbf24; font-size:1.2rem; margin:8px 0;">
+                    {{ '★' * r.ratings + '☆' * (5 - r.ratings) }}
+                    <span style="margin-left:10px; font-size:0.95rem; color:#6b21a8; font-weight:600;">
+                        {{ r.ratings }} / 5
+                    </span>
+                </div>
+
+                <!-- Review Text -->
+                {% if r.review_text %}
+                <p class="review-body">{{ r.review_text }}</p>
+                {% else %}
+                <p class="review-body" style="color:#9ca3af; font-style:italic;">
+                    No written review — just rated the book.
+                </p>
+                {% endif %}
+
+                <!-- Optional: Delete button for own review -->
+                {% if "user_id" in session and session["user_id"] == r.user_id %}
+                <div style="margin-top:12px; text-align:right;">
+                    <small>
+                        <a href="{{ url_for('delete_review', book_id=book.book_id) }}" 
+                           style="color:#dc2626; text-decoration:underline; font-size:0.85rem;"
+                           onclick="return confirm('Delete your review? This cannot be undone.')">
+                            Delete review
+                        </a>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align:center; padding:50px 20px; color:#9ca3af;">
+                <p style="font-size:1.1rem; font-style:italic;">
+                    No reviews yet.<br>
+                    <strong>Be the first to share your thoughts!</strong>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+    </div>
+
 </body>
 </html>
