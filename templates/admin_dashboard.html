@@ -10,8 +10,16 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <div class="logo"><img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="logo"></div>
+            <div class="logo"><img src="{{ url_for('static', filename='images/logo2.png') }}" alt="ReadNext" class="logo"> Books Admin</div>
+            <!-- In the header section, add this near the stats grid or as a separate button -->
+    <div class="section-header" style="margin-bottom: 20px;">
+        <!-- <h2 class="section-title">Quick Actions</h2> -->
+        
+    </div>
             <div class="user-info">
+                <a href="{{ url_for('admin_analytics') }}" style="text-decoration: none;">
+            <button class="add-btn">📊 View Analytics & Reports</button>
+        </a>
                 <div class="user-avatar">{{ session.username[0].upper() if session.username else 'A' }}</div>
                 <span style="color: #333; font-weight: 500;">{{ session.username }}</span>
                 <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
@@ -50,8 +58,6 @@
             <button class="nav-tab" onclick="switchTab('users')">Users</button>
             <button class="nav-tab" onclick="switchTab('genres')">Genres</button>
             <button class="nav-tab" onclick="switchTab('series')">Series</button>
-            <!-- <a href="/admin/reports"><button class="nav-tab">Reports</button></a> -->
-
         </div>
 
         <!-- Content Area -->
@@ -63,7 +69,7 @@
                     <button class="add-btn">+ Add New Book</button>
                 </div>
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search books..." onkeyup="filterTable(this)">
+                    <input type="text" class="search-input" placeholder="Search books...">
                 </div>
                 <table class="data-table">
                     <thead>
@@ -103,7 +109,7 @@
                     <button class="add-btn">+ Add New Author</button>
                 </div>
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search author..." onkeyup="filterTable(this)">
+                    <input type="text" class="search-input" placeholder="Search author...">
                 </div>
                 <table class="data-table">
                     <thead>
@@ -140,7 +146,7 @@
                     <h2 class="section-title">Manage Users</h2>
                 </div>
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search user..." onkeyup="filterTable(this)">
+                    <input type="text" class="search-input" placeholder="Search user...">
                 </div>
                 <table class="data-table">
                     <thead>
@@ -201,7 +207,7 @@
                     <h2 class="section-title">Manage Series</h2>
                 </div>
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search series..." onkeyup="filterTable(this)">
+                    <input type="text" class="search-input" placeholder="Search series...">
                 </div>
                 <table class="data-table">
                     <thead>
@@ -222,28 +228,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- Reports Tab -->
-            <div id="reports-tab" class="tab-content">
-                <div class="section-header">
-                    <h2 class="section-title">Manage Reports</h2>
-                </div>
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search reports..." onkeyup="filterTable(this)">
-                </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Report Name</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Reports data would go here -->
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
@@ -257,23 +241,6 @@
 
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
-        }
-
-        function filterTable(input) {
-            const filter = input.value.toLowerCase();
-            const table = input.closest('.tab-content').querySelector('.data-table');
-            const rows = table.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                let match = false;
-                cells.forEach(cell => {
-                    if (cell.textContent.toLowerCase().includes(filter)) {
-                        match = true;
-                    }
-                });
-                row.style.display = match ? '' : 'none';
-            });
         }
     </script>
 </body>
