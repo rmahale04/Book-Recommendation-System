@@ -7,7 +7,14 @@ import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
-import yagmail
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import matplotlib.pyplot as plt
+import io
+import base64
+from datetime import datetime, timedelta
+import os
+
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -15,44 +22,17 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 # Database configuration
 # =========================
-# netra
 db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
     "password": "Netra@432",
-    "database": "books_db2"
+    "database": "books_db1"
 }
-
-# ruchita
-# db_config = {
-#     "host": "localhost",
-#     "port": 3307,
-#     "user": "root",
-#     "password": "",
-#     "database": "books_db"
-# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
-# =========================
-# send mail function
-# =========================
-def send_email(receiver_email, subject, body):
-    try:
-        # Login with your Gmail (use app password, not raw Gmail password)
-        yag = yagmail.SMTP("tamari gmail id", "tamaro app password")
-        yag.send(
-            to=receiver_email,
-            subject=subject,
-            contents=body
-        )
-        print(f"Email sent to {receiver_email}")
-        return True
-    except Exception as e:
-        print(f"Error sending email to {receiver_email}: {e}")
-        return False
 
 # =========================
 # Utilities & validators
@@ -1773,7 +1753,7 @@ def author_register():
             "biography": request.form.get("biography", "").strip(),
             "date_of_birth": request.form.get("date_of_birth", "").strip(),
             "date_of_death": request.form.get("date_of_death", "").strip(),
-            "website": request.form.get("website", "").strip()
+            # "website": request.form.get("website", "").strip()
         }
 
         # Validation
@@ -2115,6 +2095,8 @@ def author_dashboard():
 # -------------------------
 @app.route("/author_profile/edit", methods=["GET", "POST"])
 def edit_author_profile():
+    print(f"DEBUG: Session User Type: {session.get('user_type')}")
+    print(f"DEBUG: Session Author ID: {session.get('author_id')}")
     if "author_id" not in session or session.get("user_type") != "author":
         flash("Please log in as an author.", "error")
         return redirect(url_for("author_login"))
@@ -2159,8 +2141,391 @@ def edit_author_profile():
 
 
 # -------------------------
+# Add books
+# -------------------------
+
+@app.route("/add_book", methods=["GET", "POST"])
+def add_book():
+    """Allow authors to add new books"""
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author to add books.", "error")
+        return redirect(url_for("author_login"))
+    
+    author_id = session["author_id"]
+    form_data = {}
+    errors = {}
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Get author information
+    cursor.execute("SELECT author_id, name, email FROM authors WHERE author_id = %s", (author_id,))
+    author = cursor.fetchone()
+    
+    if not author:
+        flash("Author profile not found.", "error")
+        session.clear()
+        return redirect(url_for("author_login"))
+    
+    # Fetch genres and series for the form
+    cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
+    genres = cursor.fetchall()
+    
+    cursor.execute("SELECT series_id, name FROM series ORDER BY name")
+    all_series = cursor.fetchall()
+    
+    if request.method == "POST":
+        # Collect form data
+        form_data = {
+            "title": request.form.get("title", "").strip(),
+            "published_year": request.form.get("published_year", "").strip(),
+            "language": request.form.get("language", "").strip(),
+            "isbn": request.form.get("isbn", "").strip(),
+            "series_id": request.form.get("series_id", "").strip(),
+            "description": request.form.get("description", "").strip(),
+            "cover_image_url": request.form.get("cover_image_url", "").strip(),
+            "genres": request.form.getlist("genres")
+        }
+        
+        # Validation
+        if not form_data["title"] or len(form_data["title"]) < 2:
+            errors["title"] = "Title must be at least 2 characters long."
+        
+        if not form_data["published_year"]:
+            errors["published_year"] = "Published year is required."
+        else:
+            try:
+                year = int(form_data["published_year"])
+                if year < 1000 or year > 2030:
+                    errors["published_year"] = "Please enter a valid year between 1000 and 2030."
+            except ValueError:
+                errors["published_year"] = "Please enter a valid year."
+        
+        if not form_data["language"]:
+            errors["language"] = "Language is required."
+        elif form_data["language"] not in ["English", "Hindi", "Gujarati", "Marathi"]:
+            errors["language"] = "Please select a valid language."
+        
+        if not form_data["description"] or len(form_data["description"]) < 50:
+            errors["description"] = "Description must be at least 50 characters long."
+        elif len(form_data["description"]) > 2000:
+            errors["description"] = "Description must not exceed 2000 characters."
+        
+        if not form_data["genres"] or len(form_data["genres"]) == 0:
+            errors["genres"] = "Please select at least one genre."
+        
+        # If no errors, insert the book
+        if not errors:
+            try:
+                # Insert book
+                cursor.execute("""
+                    INSERT INTO books 
+                    (title, author_id, series_id, published_year, language, description, cover_image_url, isbn)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    form_data["title"],
+                    author_id,
+                    form_data["series_id"] if form_data["series_id"] else None,
+                    form_data["published_year"],
+                    form_data["language"],
+                    form_data["description"],
+                    form_data["cover_image_url"] if form_data["cover_image_url"] else None,
+                    form_data["isbn"] if form_data["isbn"] else None
+                ))
+                
+                book_id = cursor.lastrowid
+                
+                # Insert book genres
+                for genre_id in form_data["genres"]:
+                    cursor.execute("""
+                        INSERT INTO book_genres (book_id, genre_id)
+                        VALUES (%s, %s)
+                    """, (book_id, genre_id))
+                
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                flash(f"Book '{form_data['title']}' has been successfully added to your library!", "success")
+                return redirect(url_for("author_dashboard"))
+                
+            except Error as e:
+                conn.rollback()
+                errors["database"] = f"Database error: {str(e)}"
+    
+    cursor.close()
+    conn.close()
+    
+    return render_template("add_book.html",
+                         author=author,
+                         form_data=form_data,
+                         errors=errors,
+                         genres=genres,
+                         all_series=all_series)
+
+
+
+# -------------------------
+# Admin Analytics
+# -------------------------
+
+
+
+# Add this route to your app.py
+@app.route("/admin/analytics")
+def admin_analytics():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied. Admins only.")
+        return redirect(url_for("home"))
+    
+    time_range = request.args.get('time_range', 'month')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Calculate date filter
+    now = datetime.now()
+    if time_range == 'week':
+        date_filter = now - timedelta(days=7)
+    elif time_range == 'month':
+        date_filter = now - timedelta(days=30)
+    elif time_range == 'year':
+        date_filter = now - timedelta(days=365)
+    else:
+        date_filter = datetime(2000, 1, 1)
+    
+    # Get basic stats
+    cursor.execute("SELECT COUNT(*) AS total FROM users")
+    total_users = cursor.fetchone()["total"]
+    
+    cursor.execute("SELECT COUNT(*) AS total FROM books")
+    total_books = cursor.fetchone()["total"]
+    
+    cursor.execute("SELECT COUNT(*) AS total FROM authors")
+    total_authors = cursor.fetchone()["total"]
+    
+    cursor.execute("SELECT COUNT(*) AS total FROM reviews")
+    total_reviews = cursor.fetchone()["total"]
+    
+    cursor.execute("SELECT AVG(ratings) AS avg FROM reviews WHERE ratings IS NOT NULL")
+    avg_rating = cursor.fetchone()["avg"] or 0
+    
+    cursor.execute("SELECT COUNT(*) AS total FROM genres")
+    total_genres = cursor.fetchone()["total"]
+    
+    # New users this month
+    cursor.execute("""
+        SELECT COUNT(*) AS total FROM users 
+        WHERE join_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    """)
+    new_users = cursor.fetchone()["total"]
+    new_users_percent = round((new_users / total_users * 100) if total_users > 0 else 0, 1)
+    
+    # Active authors (who have books)
+    cursor.execute("SELECT COUNT(DISTINCT author_id) AS total FROM books")
+    active_authors = cursor.fetchone()["total"]
+    
+    # Generate charts
+    generate_charts(cursor, time_range)
+    
+    # Top rated books
+    cursor.execute("""
+        SELECT 
+            b.title,
+            a.name AS author,
+            b.language,
+            AVG(r.ratings) AS avg_rating,
+            COUNT(r.review_id) AS review_count
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN reviews r ON b.book_id = r.book_id
+        GROUP BY b.book_id
+        HAVING review_count > 0
+        ORDER BY avg_rating DESC, review_count DESC
+        LIMIT 10
+    """)
+    top_books = cursor.fetchall()
+    
+    # Most active users
+    cursor.execute("""
+        SELECT 
+            u.username,
+            u.join_date,
+            COUNT(DISTINCT r.review_id) AS review_count,
+            COUNT(DISTINCT usb.book_id) AS shelf_count
+        FROM users u
+        LEFT JOIN reviews r ON u.user_id = r.user_id
+        LEFT JOIN shelves s ON u.user_id = s.user_id
+        LEFT JOIN user_shelf_books usb ON s.shelf_id = usb.shelf_id
+        WHERE u.role != 'Admin'
+        GROUP BY u.user_id
+        ORDER BY review_count DESC, shelf_count DESC
+        LIMIT 10
+    """)
+    active_users = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return render_template("admin_analytics.html",
+                         total_users=total_users,
+                         total_books=total_books,
+                         total_authors=total_authors,
+                         total_reviews=total_reviews,
+                         avg_rating=round(avg_rating, 1),
+                         total_genres=total_genres,
+                         new_users_percent=new_users_percent,
+                         active_authors=active_authors,
+                         top_books=top_books,
+                         active_users=active_users,
+                         time_range=time_range,
+                         timestamp=int(datetime.now().timestamp()))
+
+
+def generate_charts(cursor, time_range):
+    """Generate all matplotlib charts and save them"""
+    
+    # Create charts directory if it doesn't exist
+    chart_dir = os.path.join('static', 'charts')
+    os.makedirs(chart_dir, exist_ok=True)
+    
+    # 1. Genre Distribution Pie Chart
+    cursor.execute("""
+        SELECT g.genre_name, COUNT(bg.book_id) AS book_count
+        FROM genres g
+        LEFT JOIN book_genres bg ON g.genre_id = bg.genre_id
+        GROUP BY g.genre_id
+        HAVING book_count > 0
+        ORDER BY book_count DESC
+        LIMIT 10
+    """)
+    genre_data = cursor.fetchall()
+    
+    plt.figure(figsize=(10, 8))
+    labels = [row['genre_name'] for row in genre_data]
+    sizes = [row['book_count'] for row in genre_data]
+    colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', 
+              '#feca57', '#ff6b6b', '#a29bfe', '#5f27cd', '#00d2d3']
+    
+    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', 
+            startangle=90, textprops={'fontsize': 10})
+    plt.title('Books Distribution by Genre', fontsize=16, fontweight='bold', pad=20)
+    plt.axis('equal')
+    plt.tight_layout()
+    plt.savefig(os.path.join(chart_dir, 'genre_distribution.png'), dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    # 2. Language Distribution Bar Chart
+    cursor.execute("""
+        SELECT language, COUNT(*) AS book_count
+        FROM books
+        GROUP BY language
+        ORDER BY book_count DESC
+    """)
+    lang_data = cursor.fetchall()
+    
+    plt.figure(figsize=(10, 6))
+    languages = [row['language'] for row in lang_data]
+    counts = [row['book_count'] for row in lang_data]
+    colors_lang = ['#667eea', '#f093fb', '#4facfe', '#43e97b']
+    
+    bars = plt.bar(languages, counts, color=colors_lang[:len(languages)], edgecolor='white', linewidth=2)
+    plt.title('Books by Language', fontsize=16, fontweight='bold', pad=20)
+    plt.xlabel('Language', fontsize=12, fontweight='bold')
+    plt.ylabel('Number of Books', fontsize=12, fontweight='bold')
+    plt.grid(axis='y', alpha=0.3, linestyle='--')
+    
+    # Add value labels on bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                f'{int(height)}',
+                ha='center', va='bottom', fontsize=11, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(chart_dir, 'language_distribution.png'), dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    # 3. User Growth Over Time (Line Chart)
+    cursor.execute("""
+        SELECT 
+            DATE_FORMAT(join_date, '%Y-%m') AS month,
+            COUNT(*) AS user_count
+        FROM users
+        WHERE join_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY month
+        ORDER BY month
+    """)
+    growth_data = cursor.fetchall()
+    
+    plt.figure(figsize=(12, 6))
+    months = [row['month'] for row in growth_data]
+    user_counts = [row['user_count'] for row in growth_data]
+    
+    # Cumulative sum
+    cumulative = []
+    total = 0
+    for count in user_counts:
+        total += count
+        cumulative.append(total)
+    
+    plt.plot(months, cumulative, marker='o', linewidth=3, markersize=8, 
+             color='#667eea', label='Total Users')
+    plt.fill_between(months, cumulative, alpha=0.3, color='#667eea')
+    
+    plt.title('User Growth Over Time', fontsize=16, fontweight='bold', pad=20)
+    plt.xlabel('Month', fontsize=12, fontweight='bold')
+    plt.ylabel('Total Users', fontsize=12, fontweight='bold')
+    plt.xticks(rotation=45)
+    plt.grid(True, alpha=0.3, linestyle='--')
+    plt.legend(fontsize=11)
+    plt.tight_layout()
+    plt.savefig(os.path.join(chart_dir, 'user_growth.png'), dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    # 4. Reviews Activity (Bar Chart)
+    cursor.execute("""
+        SELECT 
+            DATE_FORMAT(review_date, '%Y-%m') AS month,
+            COUNT(*) AS review_count,
+            AVG(ratings) AS avg_rating
+        FROM reviews
+        WHERE review_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY month
+        ORDER BY month
+    """)
+    review_data = cursor.fetchall()
+    
+    plt.figure(figsize=(12, 6))
+    months = [row['month'] for row in review_data]
+    review_counts = [row['review_count'] for row in review_data]
+    avg_ratings = [row['avg_rating'] for row in review_data]
+    
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    
+    # Bar chart for review counts
+    color = '#667eea'
+    ax1.set_xlabel('Month', fontsize=12, fontweight='bold')
+    ax1.set_ylabel('Number of Reviews', fontsize=12, fontweight='bold', color=color)
+    bars = ax1.bar(months, review_counts, color=color, alpha=0.7, label='Reviews')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.tick_params(axis='x', rotation=45)
+    
+    # Line chart for average rating
+    ax2 = ax1.twinx()
+    color = '#f093fb'
+    ax2.set_ylabel('Average Rating', fontsize=12, fontweight='bold', color=color)
+    ax2.plot(months, avg_ratings, color=color, marker='o', linewidth=3, 
+             markersize=8, label='Avg Rating')
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.set_ylim([0, 5])
+    
+    plt.title('Reviews Activity & Average Ratings', fontsize=16, fontweight='bold', pad=20)
+    fig.tight_layout()
+    plt.savefig(os.path.join(chart_dir, 'reviews_activity.png'), dpi=150, bbox_inches='tight')
+    plt.close()
+# -------------------------
 # Run app
 # -------------------------
 if __name__ == "__main__":
     app.run(debug=True)
-
