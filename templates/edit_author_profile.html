@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - {{ author.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --author-primary: #667eea;
+            --author-secondary: #764ba2;
+            --author-accent: #f093fb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--author-primary) 0%, var(--author-secondary) 100%);
+            color: white;
+            padding: 30px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .page-header .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--author-primary);
+            color: white;
+            border: 2px solid var(--author-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--author-secondary);
+            border-color: var(--author-secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: 2px solid #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            border-color: #5a6268;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #dc3545;
+            margin-left: 3px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--author-primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+            line-height: 1.6;
+        }
+
+        .form-group .form-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-group .error {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-group.has-error input,
+        .form-group.has-error textarea {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .flash-messages {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .char-counter {
+            font-size: 12px;
+            color: #999;
+            float: right;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #ffc107;
+        }
+
+        .char-counter.success {
+            color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .page-header .container {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1>✏️ Edit Your Profile</h1>
+            <a href="{{ url_for('author_dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="card">
+            <form method="POST" action="{{ url_for('edit_author_profile') }}" id="profileForm">
+                <!-- Name Field -->
+                <div class="form-group {% if errors.name %}has-error{% endif %}">
+                    <label for="name">
+                        Author Name
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        value="{{ author.name }}"
+                        required
+                        maxlength="100"
+                        placeholder="Enter your full name">
+                    {% if errors.name %}
+                        <span class="error">{{ errors.name }}</span>
+                    {% else %}
+                        <span class="form-hint">This is how your name will appear to readers</span>
+                    {% endif %}
+                </div>
+
+                <!-- Biography Field -->
+                <div class="form-group {% if errors.biography %}has-error{% endif %}">
+                    <label for="biography">
+                        Biography
+                        <span class="required">*</span>
+                    </label>
+                    <textarea 
+                        id="biography" 
+                        name="biography" 
+                        required
+                        maxlength="1000"
+                        placeholder="Tell readers about yourself, your writing journey, and what inspires you...">{{ author.biography or '' }}</textarea>
+                    <span class="char-counter" id="bioCounter">0 / 1000 characters</span>
+                    {% if errors.biography %}
+                        <span class="error">{{ errors.biography }}</span>
+                    {% else %}
+                        <span class="form-hint">Minimum 50 characters required</span>
+                    {% endif %}
+                </div>
+
+                <!-- Website Field -->
+                <div class="form-group">
+                    <label for="website">Website</label>
+                    <input 
+                        type="url" 
+                        id="website" 
+                        name="website" 
+                        value="{{ author.website or '' }}"
+                        placeholder="https://yourwebsite.com">
+                    <span class="form-hint">Optional - Your personal website or blog</span>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <a href="{{ url_for('author_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Character counter for biography
+        const bioTextarea = document.getElementById('biography');
+        const bioCounter = document.getElementById('bioCounter');
+
+        function updateCharCounter() {
+            const length = bioTextarea.value.length;
+            bioCounter.textContent = `${length} / 1000 characters`;
+            
+            if (length < 50) {
+                bioCounter.className = 'char-counter';
+            } else if (length >= 50 && length < 900) {
+                bioCounter.className = 'char-counter success';
+            } else {
+                bioCounter.className = 'char-counter warning';
+            }
+        }
+
+        bioTextarea.addEventListener('input', updateCharCounter);
+        
+        // Initialize counter on page load
+        updateCharCounter();
+
+        // Form validation
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const biography = document.getElementById('biography').value.trim();
+            
+            if (name.length < 3) {
+                e.preventDefault();
+                alert('Name must be at least 3 characters long.');
+                return;
+            }
+            
+            if (biography.length < 50) {
+                e.preventDefault();
+                alert('Biography must be at least 50 characters long.');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>
