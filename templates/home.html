@@ -55,7 +55,7 @@
                 <span class="genre-tag" onclick="toggleGenre(this)">Biography</span>
                 <span class="genre-tag" onclick="toggleGenre(this)">History</span>
                 <span class="genre-tag" onclick="toggleGenre(this)">Fantasy</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Self-Help</span>
+                <span class="genre-tag" onclick="toggleGenre(this)">Self Help</span>
             </div>
 
             <button class="discover-btn" id="discoverBtn">
@@ -63,5 +63,49 @@
             </button>
         </div>
     </main>
+    <script>
+        let selectedGenre = "";
+
+        function toggleGenre(element) {
+            // remove active class from all
+            document.querySelectorAll(".genre-tag").forEach(tag => {
+                tag.classList.remove("active");
+            });
+
+            // toggle selected
+            if (selectedGenre === element.innerText) {
+                selectedGenre = "";
+            } else {
+                selectedGenre = element.innerText;
+                element.classList.add("active");
+            }
+        }
+
+        document.getElementById("discoverBtn").addEventListener("click", function () {
+            const searchText = document.getElementById("searchInput").value.trim();
+            let query = "";
+
+            if (searchText && selectedGenre) {
+                query = searchText + " " + selectedGenre;
+            } else if (searchText) {
+                query = searchText;
+            } else if (selectedGenre) {
+                query = selectedGenre;
+            }
+
+            if (query) {
+                window.location.href = `/books?q=${encodeURIComponent(query)}`;
+            } else {
+                window.location.href = "/books";
+            }
+        });
+
+        // Optional: press Enter to search
+        document.getElementById("searchInput").addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                document.getElementById("discoverBtn").click();
+            }
+        });
+    </script>
 </body>
 </html>
