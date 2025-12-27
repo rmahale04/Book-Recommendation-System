@@ -153,16 +153,19 @@
                 </button>
             </form>
 
-            <!-- Role Switch -->
-            <div class="role-switch">
-                Not an author?
-                <a href="{{ url_for('login') }}">Sign in as Reader</a>
-            </div>
-
             <!-- Sign Up Link -->
             <div class="signup-link">
                 Don't have an author account?
-                <a href="{{ url_for('author_register') }}">Register as Author</a>
+                <a href="{{ url_for('author_register') }}">Sign up</a>
+            </div>
+
+            <!-- Role Switch -->
+            <div class="role-switch">
+                Not an author?
+                <a href="{{ url_for('login') }}">Sign in</a>
+                or
+                <a href="{{ url_for('register') }}">Sign up</a>
+                as Reader
             </div>
         </div>
     </div>
