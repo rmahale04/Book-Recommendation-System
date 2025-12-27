@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Recommender - Sign In</title>
+    <title>ReadNext - Sign In</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}">
 </head>
 <body>
@@ -32,9 +32,9 @@
             <ul class="features-list">
                 <li>Discover new books through personalized recommendations</li>
                 <li>Keep track of books you want to read</li>
-                <li>Join book clubs and connect with other readers</li>
-                <li>Read reviews from our community of book lovers</li>
-                <li>Set reading goals and track your progress</li>
+                <li>Connect with other readers</li>
+                <li>Read reviews from other book lovers</li>
+                <!-- <li>Set reading goals and track your progress</li> -->
             </ul>
         </div>
 
@@ -80,9 +80,18 @@
 
             <!-- Sign Up Link -->
             <div class="signup-link">
-                Not a member? 
+                Not a member?
                 <a href="{{ url_for('register') }}">Sign up</a>
             </div>
+
+            <div class="signup-link" style="margin-top: 10px;">
+                Are you an author?
+                <a href="{{ url_for('author_login') }}">Sign in</a>
+                or
+                <a href="{{ url_for('author_register') }}">Sign up</a>
+                as Author
+            </div>
+
         </div>
     </div>
 </body>
