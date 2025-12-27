@@ -7,6 +7,7 @@ import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+import yagmail
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
@@ -14,6 +15,7 @@ import io
 import base64
 from datetime import datetime, timedelta
 import os
+from difflib import SequenceMatcher
 
 
 app = Flask(__name__)
@@ -22,17 +24,45 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 # Database configuration
 # =========================
+
+# netra
+# db_config = {
+#     "host": "localhost",
+#     "port": 3306,
+#     "user": "root",
+#     "password": "Netra@432",
+#     "database": "books_db1"
+# }
+
+# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3306,
+    "port": 3307,
     "user": "root",
-    "password": "Netra@432",
-    "database": "books_db1"
+    "password": "",
+    "database": "books_db"
 }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+# =========================
+# send mail function
+# =========================
+def send_email(receiver_email, subject, body):
+    try:
+        # Login with your Gmail (use app password, not raw Gmail password)
+        yag = yagmail.SMTP("tamari gmail id", "tamaro app password")
+        yag.send(
+            to=receiver_email,
+            subject=subject,
+            contents=body
+        )
+        print(f"Email sent to {receiver_email}")
+        return True
+    except Exception as e:
+        print(f"Error sending email to {receiver_email}: {e}")
+        return False
 
 # =========================
 # Utilities & validators
@@ -69,6 +99,12 @@ def validate_registration(form_data):
 
     return errors
 
+# =========================
+# Calculate similarity between two strings
+# =========================
+def similarity(a, b):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+    # Convert both strings to lowercase to make comparison case-insensitive
 
 # =========================
 # ROUTES
@@ -78,7 +114,6 @@ def validate_registration(form_data):
 def index():
     # default to login
     return redirect(url_for("login"))
-
 
 # -------------------------
 # Registration
@@ -123,6 +158,7 @@ def register():
             # pwd hash
             hashed_pw = generate_password_hash(form_data["password"])
 
+            # new user data insert 
             cursor.execute(
                 "INSERT INTO users (first_name, last_name, username, email, password_hash) VALUES (%s, %s, %s, %s, %s)",
                 (form_data["first_name"], form_data["last_name"], form_data["username"], form_data["email"], hashed_pw)
@@ -131,6 +167,7 @@ def register():
             conn.commit()
             user_id = cursor.lastrowid
 
+            # default shelves create
             cursor.execute("""
                 INSERT INTO shelves (user_id, name, is_default) VALUES
                 (%s, 'Currently Reading', TRUE),
@@ -180,6 +217,7 @@ def login():
         user = cursor.fetchone()
         conn.close()
 
+        # check user in table
         if user:
             if check_password_hash(user["password_hash"], password):
                 session["user_id"] = user["user_id"]
@@ -321,6 +359,7 @@ def view_books():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # Save search history
     if "user_id" in session and search_query:
         cursor.execute(
             "INSERT INTO user_search_history (user_id, search_query) VALUES (%s, %s)",
@@ -348,24 +387,82 @@ def view_books():
                 a.name LIKE %s OR 
                 s.name LIKE %s OR 
                 b.language LIKE %s OR 
-                b.description LIKE %s
+                b.description LIKE %s OR
+                SOUNDEX(b.title) = SOUNDEX(%s) OR
+                SOUNDEX(a.name) = SOUNDEX(%s) OR
+                SOUNDEX(g.genre_name) = SOUNDEX(%s)
         """
         like_pattern = f"%{search_query}%"
-        params = (like_pattern, like_pattern, like_pattern, like_pattern, like_pattern)
+        params = (
+            like_pattern,   # title LIKE
+            like_pattern,   # author LIKE
+            like_pattern,   # series LIKE
+            like_pattern,   # language LIKE
+            like_pattern,   # description LIKE
+            search_query,   # SOUNDEX(title)
+            search_query,   # SOUNDEX(author)
+            search_query    # SOUNDEX(genre)
+        )
 
     base_query += """
         GROUP BY b.book_id
         ORDER BY b.title
     """
 
+    # main search
     cursor.execute(base_query, params)
     books = cursor.fetchall()
+
+    # suggestion logic
+    suggestion = None
+
+    # if search_query and books:
+    #     cursor = conn.cursor()
+    #     cursor.execute("""
+    #         SELECT DISTINCT genre_name
+    #         FROM genres
+    #         WHERE SOUNDEX(genre_name) = SOUNDEX(%s)
+    #         LIMIT 1
+    #     """, (search_query,))
+    #     row = cursor.fetchone()
+    #     if row:
+    #         suggestion = row[0]
+
+    if search_query:
+        candidate_strings = set()
+
+        # fetch possible meaningful values
+        cursor.execute("SELECT DISTINCT name FROM authors")
+        candidate_strings.update(row["name"] for row in cursor.fetchall())
+
+        cursor.execute("SELECT DISTINCT title FROM books")
+        candidate_strings.update(row["title"] for row in cursor.fetchall())
+
+        cursor.execute("SELECT DISTINCT genre_name FROM genres")
+        candidate_strings.update(row["genre_name"] for row in cursor.fetchall())
+
+        best_match = None
+        best_score = 0
+
+        for candidate in candidate_strings:
+            score = similarity(search_query, candidate)
+            if score > best_score:
+                best_score = score
+                best_match = candidate
+
+        # threshold prevents junk like "rnc"
+        if best_score >= 0.65 and search_query.lower().strip() != best_match.lower().strip():
+            suggestion = best_match
 
     cursor.close()
     conn.close()
 
-    return render_template("view_books.html", books=books, search_query=search_query)
-
+    return render_template(
+        "view_books.html", 
+        books=books, 
+        search_query=search_query, 
+        suggestion=suggestion
+    )
 
 # -------------------------
 # Book detail
@@ -2524,6 +2621,7 @@ def generate_charts(cursor, time_range):
     fig.tight_layout()
     plt.savefig(os.path.join(chart_dir, 'reviews_activity.png'), dpi=150, bbox_inches='tight')
     plt.close()
+
 # -------------------------
 # Run app
 # -------------------------
