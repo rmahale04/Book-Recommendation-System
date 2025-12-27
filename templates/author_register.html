@@ -132,6 +132,11 @@
             margin-top: 5px;
         }
 
+        .auth-divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 15px 0;
+        }
+        
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -256,14 +261,14 @@
                                max="{{ today }}"
                                required>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="date_of_death">Date of Death (Optional)</label>
                         <input type="date" 
                                id="date_of_death" 
                                name="date_of_death" 
                                value="{{ form_data.date_of_death if form_data else '' }}"
                                max="{{ today }}">
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="form-group">
@@ -282,12 +287,18 @@
 
             <!-- Sign In Link -->
             <div class="signup-link">
-                Already registered? 
-                <a href="{{ url_for('login') }}">Sign in</a>
+                Already have an account? 
+                <a href="{{ url_for('author_login') }}">Sign in</a>
             </div>
+
+            <div class="auth-divider"></div>
+
             <div class="signup-link" style="margin-top: 10px; border-top: none; padding-top: 5px;">
-                Register as a reader? 
-                <a href="{{ url_for('register') }}">Reader Registration</a>
+                Are you a reader? 
+                <a href="{{ url_for('login') }}">Sign in</a>
+                or
+                <a href="{{ url_for('register') }}">Sign up</a>
+                as Reader
             </div>
         </div>
     </div>
