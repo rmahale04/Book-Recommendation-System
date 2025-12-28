@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Genre</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/book_form.css') }}">
+    <style>
+       * {
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Card container */
+.form-container {
+    background: #fff;
+    width: 400px;
+    padding: 35px;
+    border-radius: 14px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Heading */
+.form-container h2 {
+    text-align: center;
+    color: #6f7ae0;
+    margin-bottom: 25px;
+}
+
+/* Labels */
+label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Input fields */
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 18px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #6f7ae0;
+}
+
+/* Submit button */
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Back link */
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #6f7ae0;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Edit Genre</h2>
+
+    <form method="POST">
+    <label>Genre Name</label>
+    <input type="text" name="genre_name"
+           value="{{ genre.genre_name }}" required>
+
+    <button type="submit">Update Genre</button>
+</form>
+
+
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">
+        ← Back to Dashboard
+    </a>
+</div>
+
+</body>
+</html>
