@@ -7,6 +7,7 @@ import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+import yagmail
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
@@ -14,6 +15,7 @@ import io
 import base64
 from datetime import datetime, timedelta
 import os
+from difflib import SequenceMatcher
 
 
 app = Flask(__name__)
@@ -22,6 +24,8 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 # Database configuration
 # =========================
+
+# netra
 db_config = {
     "host": "localhost",
     "port": 3306,
@@ -30,9 +34,35 @@ db_config = {
     "database": "books_db1"
 }
 
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db"
+# }
+
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+# =========================
+# send mail function
+# =========================
+def send_email(receiver_email, subject, body):
+    try:
+        # Login with your Gmail (use app password, not raw Gmail password)
+        yag = yagmail.SMTP("tamari gmail id", "tamaro app password")
+        yag.send(
+            to=receiver_email,
+            subject=subject,
+            contents=body
+        )
+        print(f"Email sent to {receiver_email}")
+        return True
+    except Exception as e:
+        print(f"Error sending email to {receiver_email}: {e}")
+        return False
 
 # =========================
 # Utilities & validators
@@ -69,6 +99,12 @@ def validate_registration(form_data):
 
     return errors
 
+# =========================
+# Calculate similarity between two strings
+# =========================
+def similarity(a, b):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+    # Convert both strings to lowercase to make comparison case-insensitive
 
 # =========================
 # ROUTES
@@ -78,7 +114,6 @@ def validate_registration(form_data):
 def index():
     # default to login
     return redirect(url_for("login"))
-
 
 # -------------------------
 # Registration
@@ -123,6 +158,7 @@ def register():
             # pwd hash
             hashed_pw = generate_password_hash(form_data["password"])
 
+            # new user data insert 
             cursor.execute(
                 "INSERT INTO users (first_name, last_name, username, email, password_hash) VALUES (%s, %s, %s, %s, %s)",
                 (form_data["first_name"], form_data["last_name"], form_data["username"], form_data["email"], hashed_pw)
@@ -131,6 +167,7 @@ def register():
             conn.commit()
             user_id = cursor.lastrowid
 
+            # default shelves create
             cursor.execute("""
                 INSERT INTO shelves (user_id, name, is_default) VALUES
                 (%s, 'Currently Reading', TRUE),
@@ -180,6 +217,7 @@ def login():
         user = cursor.fetchone()
         conn.close()
 
+        # check user in table
         if user:
             if check_password_hash(user["password_hash"], password):
                 session["user_id"] = user["user_id"]
@@ -321,6 +359,7 @@ def view_books():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # Save search history
     if "user_id" in session and search_query:
         cursor.execute(
             "INSERT INTO user_search_history (user_id, search_query) VALUES (%s, %s)",
@@ -348,24 +387,82 @@ def view_books():
                 a.name LIKE %s OR 
                 s.name LIKE %s OR 
                 b.language LIKE %s OR 
-                b.description LIKE %s
+                b.description LIKE %s OR
+                SOUNDEX(b.title) = SOUNDEX(%s) OR
+                SOUNDEX(a.name) = SOUNDEX(%s) OR
+                SOUNDEX(g.genre_name) = SOUNDEX(%s)
         """
         like_pattern = f"%{search_query}%"
-        params = (like_pattern, like_pattern, like_pattern, like_pattern, like_pattern)
+        params = (
+            like_pattern,   # title LIKE
+            like_pattern,   # author LIKE
+            like_pattern,   # series LIKE
+            like_pattern,   # language LIKE
+            like_pattern,   # description LIKE
+            search_query,   # SOUNDEX(title)
+            search_query,   # SOUNDEX(author)
+            search_query    # SOUNDEX(genre)
+        )
 
     base_query += """
         GROUP BY b.book_id
         ORDER BY b.title
     """
 
+    # main search
     cursor.execute(base_query, params)
     books = cursor.fetchall()
+
+    # suggestion logic
+    suggestion = None
+
+    # if search_query and books:
+    #     cursor = conn.cursor()
+    #     cursor.execute("""
+    #         SELECT DISTINCT genre_name
+    #         FROM genres
+    #         WHERE SOUNDEX(genre_name) = SOUNDEX(%s)
+    #         LIMIT 1
+    #     """, (search_query,))
+    #     row = cursor.fetchone()
+    #     if row:
+    #         suggestion = row[0]
+
+    if search_query:
+        candidate_strings = set()
+
+        # fetch possible meaningful values
+        cursor.execute("SELECT DISTINCT name FROM authors")
+        candidate_strings.update(row["name"] for row in cursor.fetchall())
+
+        cursor.execute("SELECT DISTINCT title FROM books")
+        candidate_strings.update(row["title"] for row in cursor.fetchall())
+
+        cursor.execute("SELECT DISTINCT genre_name FROM genres")
+        candidate_strings.update(row["genre_name"] for row in cursor.fetchall())
+
+        best_match = None
+        best_score = 0
+
+        for candidate in candidate_strings:
+            score = similarity(search_query, candidate)
+            if score > best_score:
+                best_score = score
+                best_match = candidate
+
+        # threshold prevents junk like "rnc"
+        if best_score >= 0.65 and search_query.lower().strip() != best_match.lower().strip():
+            suggestion = best_match
 
     cursor.close()
     conn.close()
 
-    return render_template("view_books.html", books=books, search_query=search_query)
-
+    return render_template(
+        "view_books.html", 
+        books=books, 
+        search_query=search_query, 
+        suggestion=suggestion
+    )
 
 # -------------------------
 # Book detail
@@ -1092,7 +1189,7 @@ def edit_profile(username):
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT user_id, first_name, last_name, username, email, bio, about_me, profile_image_url FROM users WHERE username=%s", (username,))
+    cursor.execute("SELECT user_id, first_name, last_name, username, email, bio, about_me, profile_image_url, gender, date_of_birth, profession FROM users WHERE username=%s", (username,))
     user = cursor.fetchone()
     if not user:
         cursor.close()
@@ -1107,6 +1204,9 @@ def edit_profile(username):
         bio = request.form.get('bio', '').strip()
         about_me = request.form.get('about_me', '').strip()
         profile_image_url = request.form.get('profile_image_url', '').strip()
+        gender = request.form.get('gender', '').strip()
+        date_of_birth = request.form.get('date_of_birth', '').strip()
+        profession = request.form.get('profession', '').strip()
 
         if not first_name:
             errors['first_name'] = "First name is required."
@@ -1117,9 +1217,11 @@ def edit_profile(username):
             try:
                 cursor.execute("""
                     UPDATE users
-                    SET first_name=%s, last_name=%s, bio=%s, about_me=%s, profile_image_url=%s
+                    SET first_name=%s, last_name=%s, bio=%s, about_me=%s, profile_image_url=%s, 
+                        gender=%s, date_of_birth=%s, profession=%s
                     WHERE user_id=%s
-                """, (first_name, last_name, bio or None, about_me or None, profile_image_url or None, user['user_id']))
+                """, (first_name, last_name, bio or None, about_me or None, profile_image_url or None, 
+                      gender or None, date_of_birth or None, profession or None, user['user_id']))
                 conn.commit()
                 flash("Profile updated successfully.")
                 cursor.close()
@@ -1131,8 +1233,6 @@ def edit_profile(username):
     cursor.close()
     conn.close()
     return render_template('edit_profile.html', user=user, errors=errors)
-
-
 # -------------------------
 # Change password (logged-in user)
 # -------------------------
@@ -2450,7 +2550,7 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'genre_distribution.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 2. Gender Distribution Pie Chart
+    # 2. Gender Distribution of user Pie Chart
     cursor.execute("""
         SELECT gender, COUNT(*) AS user_count
         FROM users
@@ -2467,7 +2567,7 @@ def generate_charts(cursor, time_range):
         colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
         # explode = [0.05] * len(labels)  # Slight separation for all slices
         
-        plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.1f%%', 
+        plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
                 startangle=90, textprops={'fontsize': 12},
                 shadow=True)
         plt.title('User Distribution by Gender', fontsize=16, fontweight='bold', pad=20)
@@ -2475,8 +2575,34 @@ def generate_charts(cursor, time_range):
         plt.tight_layout()
         plt.savefig(os.path.join(chart_dir, 'gender_distribution.png'), dpi=150, bbox_inches='tight')
         plt.close()
+
+    # 3. Gender Distribution of author Pie Chart
+    cursor.execute("""
+        SELECT gender, COUNT(*) AS author_count
+        FROM authors
+        WHERE gender IS NOT NULL
+        GROUP BY gender
+        ORDER BY author_count DESC
+    """)
+    gender_data_author = cursor.fetchall()
     
-    # 3. Language Distribution Bar Chart
+    if gender_data_author:  # Only create chart if there's data
+        plt.figure(figsize=(10, 8))
+        labels = [row['gender'] for row in gender_data_author]
+        sizes = [row['author_count'] for row in gender_data_author]
+        colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
+        # explode = [0.05] * len(labels)  # Slight separation for all slices
+        
+        plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
+                startangle=90, textprops={'fontsize': 12},
+                shadow=True)
+        plt.title('Author Distribution by Gender', fontsize=16, fontweight='bold', pad=20)
+        plt.axis('equal')
+        plt.tight_layout()
+        plt.savefig(os.path.join(chart_dir, 'gender_distribution_author.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+    
+    # 4. Language Distribution Bar Chart
     cursor.execute("""
         SELECT language, COUNT(*) AS book_count
         FROM books
@@ -2507,7 +2633,7 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'language_distribution.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 4. User Growth Over Time (Line Chart)
+    # 5. User Growth Over Time (Line Chart)
     cursor.execute("""
         SELECT 
             DATE_FORMAT(join_date, '%Y-%m') AS month,
@@ -2544,7 +2670,7 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'user_growth.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 5. Reviews Activity (Bar Chart)
+    # 6. Reviews Activity (Bar Chart)
     cursor.execute("""
         SELECT 
             DATE_FORMAT(review_date, '%Y-%m') AS month,
