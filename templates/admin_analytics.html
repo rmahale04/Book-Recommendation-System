@@ -105,7 +105,7 @@
 
         .charts-section {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 30px;
             margin-bottom: 30px;
         }
@@ -115,10 +115,6 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .chart-card.full-width {
-            grid-column: 1 / -1;
         }
 
         .chart-card h2 {
@@ -277,7 +273,7 @@
             </div>
         </div>
 
-        <!-- Charts Section -->
+        <!-- Charts Section - All Side by Side -->
         <div class="charts-section">
             <!-- Genre Distribution Pie Chart -->
             <div class="chart-card">
@@ -292,19 +288,33 @@
                 <img src="{{ url_for('static', filename='charts/language_distribution.png') }}?t={{ timestamp }}" 
                      alt="Language Distribution" class="chart-img">
             </div>
-
+           
             <!-- User Growth Over Time -->
-            <div class="chart-card full-width">
+            <div class="chart-card">
                 <h2>📈 User Growth Over Time</h2>
                 <img src="{{ url_for('static', filename='charts/user_growth.png') }}?t={{ timestamp }}" 
                      alt="User Growth" class="chart-img">
             </div>
 
             <!-- Reviews Per Month -->
-            <div class="chart-card full-width">
+            <div class="chart-card">
                 <h2>💬 Reviews Activity</h2>
                 <img src="{{ url_for('static', filename='charts/reviews_activity.png') }}?t={{ timestamp }}" 
                      alt="Reviews Activity" class="chart-img">
+            </div>
+
+            <!-- Gender Distribution of user -->
+            <div class="chart-card">
+                <h2>👥 Gender Distribution of user</h2>
+                <img src="{{ url_for('static', filename='charts/gender_distribution.png') }}?t={{ timestamp }}" 
+                    alt="Gender Distribution" class="chart-img">
+            </div>
+
+            <!-- Gender Distribution of authore -->
+            <div class="chart-card">
+                <h2>👥 Gender Distribution of author</h2>
+                <img src="{{ url_for('static', filename='charts/gender_distribution_author.png') }}?t={{ timestamp }}" 
+                    alt="Gender Distribution" class="chart-img">
             </div>
         </div>
 
