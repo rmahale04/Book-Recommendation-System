@@ -31,7 +31,7 @@ app.secret_key = "NextRead_2025_LoginKey!"
 #     "port": 3306,
 #     "user": "root",
 #     "password": "Netra@432",
-#     "database": "books_db1"
+#     "database": "books_db2"
 # }
 
 # ruchita
@@ -52,7 +52,7 @@ def get_db_connection():
 def send_email(receiver_email, subject, body):
     try:
         # Login with your Gmail (use app password, not raw Gmail password)
-        yag = yagmail.SMTP("tamari gmail id", "tamaro app password")
+        yag = yagmail.SMTP("sanjaymahale2004@gmail.com", "vmph ujqw gymf flgx")
         yag.send(
             to=receiver_email,
             subject=subject,
@@ -338,6 +338,470 @@ def admin_dashboard():
     )
 
 
+#add admin book
+@app.route("/admin/books/add", methods=["GET", "POST"])
+def admin_add_book():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch authors for dropdown
+    cursor.execute("SELECT author_id, name FROM authors")
+    authors = cursor.fetchall()
+
+    # Fetch series for dropdown
+    cursor.execute("SELECT series_id, name FROM series ORDER BY name")
+    series = cursor.fetchall()
+
+    if request.method == "POST":
+        title = request.form["title"].strip()
+        author_id = request.form["author_id"]
+        series_id = request.form["series_id"] or None
+        published_year = request.form["published_year"]
+        language = request.form["language"]
+        description = request.form["description"]
+        isbn = request.form["isbn"]
+        cover_image_url = request.form["cover_image_url"]
+
+        try:
+            cursor.execute("""
+                INSERT INTO books (title, author_id, series_id, published_year, language, description, isbn, cover_image_url)
+                VALUES (%s, %s, %s, %s)
+            """, (title, author_id, series_id, published_year, language, description, isbn, cover_image_url))
+
+            conn.commit()
+
+            flash("Book added successfully!", "success")
+            return redirect(url_for("admin_dashboard"))
+
+        except Exception as e:
+            conn.rollback()
+            flash("Error adding book.", "danger")
+
+    cursor.close()
+    conn.close()
+
+    return render_template("admin_add_book.html", authors=authors, series=series)
+
+
+#books edit   
+@app.route("/admin/books/edit/<int:book_id>", methods=["GET", "POST"])
+def edit_book(book_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "POST":
+        title = request.form["title"]
+        language = request.form["language"]
+        year = request.form["published_year"]
+
+        cursor.execute("""
+            UPDATE books
+            SET title=%s, language=%s, published_year=%s
+            WHERE book_id=%s
+        """, (title, language, year, book_id))
+
+        conn.commit()
+        flash("Book updated successfully.")
+        return redirect(url_for("admin_dashboard"))
+
+    cursor.execute("SELECT * FROM books WHERE book_id=%s", (book_id,))
+    book = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("edit_book.html", book=book)
+
+#books delete
+@app.route("/admin/books/delete/<int:book_id>", methods=["POST"])
+def delete_book(book_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # 1️⃣ Delete from child table first
+        cursor.execute("DELETE FROM book_genres WHERE book_id=%s", (book_id,))
+
+        # 2️⃣ Then delete from parent table
+        cursor.execute("DELETE FROM books WHERE book_id=%s", (book_id,))
+
+        conn.commit()
+        flash("Book deleted successfully.")
+
+    except Exception as e:
+        conn.rollback()
+        flash("Error deleting book.")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+#admin add new author
+@app.route("/admin/authors/add", methods=["GET", "POST"])
+def admin_add_author():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "POST":
+        name = request.form["name"].strip()
+        gender = request.form.get("gender") or None
+        biography = request.form.get("biography") or None
+        date_of_birth = request.form["date_of_birth"]
+        date_of_death = request.form.get("date_of_death") or None
+        profile_image_url = request.form.get("profile_image_url") or None
+
+        # Check duplicate author
+        cursor.execute(
+            "SELECT author_id FROM authors WHERE LOWER(name) = LOWER(%s)",
+            (name,)
+        )
+        if cursor.fetchone():
+            flash("Author already exists!", "warning")
+        else:
+            cursor.execute("""
+                INSERT INTO authors 
+                (name, gender, biography, date_of_birth, date_of_death, profile_image_url)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (name, gender, biography, date_of_birth, date_of_death, profile_image_url))
+
+            conn.commit()
+
+            flash("Author added successfully!", "success")
+            
+            cursor.close()
+            conn.close()
+            
+            return redirect(url_for("admin_dashboard"))
+
+    cursor.close()
+    conn.close()
+    return render_template("admin_add_author.html")
+
+# DELETE AUTHOR
+@app.route("/admin/authors/delete/<int:author_id>", methods=["POST"])
+def delete_author(author_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # 1️⃣ Remove author reference from books
+        cursor.execute(
+            "UPDATE books SET author_id=NULL WHERE author_id=%s",
+            (author_id,)
+        )
+
+        # 2️⃣ Delete author
+        cursor.execute(
+            "DELETE FROM authors WHERE author_id=%s",
+            (author_id,)
+        )
+
+        conn.commit()
+        flash("Author deleted successfully.")
+
+    except Exception:
+        conn.rollback()
+        flash("Error deleting author.")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+#edit author
+
+@app.route("/admin/authors/edit/<int:author_id>", methods=["GET", "POST"])
+def edit_author(author_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "POST":
+        name = request.form["name"]
+        dob = request.form.get("date_of_birth") or None
+        dod = request.form.get("date_of_death") or None
+
+        try:
+            cursor.execute("""
+                UPDATE authors
+                SET name=%s, date_of_birth=%s, date_of_death=%s
+                WHERE author_id=%s
+            """, (name, dob, dod, author_id))
+
+            conn.commit()
+            flash("Author updated successfully.")
+            return redirect(url_for("admin_dashboard"))
+
+        except Exception:
+            conn.rollback()
+            flash("Error updating author.")
+
+    # GET request → fetch author
+    cursor.execute("SELECT * FROM authors WHERE author_id=%s", (author_id,))
+    author = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("edit_author.html", author=author)
+
+#admin add new genre
+@app.route("/admin/genres/add", methods=["GET", "POST"])
+def admin_add_genre():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "POST":
+        genre_name = request.form["genre_name"].strip()
+
+        # Duplicate check
+        cursor.execute(
+            "SELECT genre_id FROM genres WHERE LOWER(genre_name) = LOWER(%s)",
+            (genre_name,)
+        )
+        if cursor.fetchone():
+            flash("Genre already exists!", "warning")
+        else:
+            cursor.execute(
+                "INSERT INTO genres (genre_name) VALUES (%s)",
+                (genre_name,)
+            )
+            conn.commit()
+            flash("Genre added successfully!", "success")
+            cursor.close()
+            conn.close()
+            return redirect(url_for("admin_dashboard"))
+
+    cursor.close()
+    conn.close()
+    return render_template("admin_add_genre.html")
+
+#edit Genre
+@app.route("/admin/genres/edit/<int:genre_id>", methods=["GET", "POST"])
+def edit_genre(genre_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch current genre
+    cursor.execute("SELECT * FROM genres WHERE genre_id = %s", (genre_id,))
+    genre = cursor.fetchone()
+
+    if not genre:
+        cursor.close()
+        conn.close()
+        flash("Genre not found.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        new_name = request.form["genre_name"].strip()
+
+        # If name is unchanged → allow update
+        if new_name.lower() == genre["genre_name"].lower():
+            flash("No changes detected.", "info")
+            cursor.close()
+            conn.close()
+            return redirect(url_for("admin_dashboard"))
+
+        # Check duplicate (exclude current genre)
+        cursor.execute("""
+            SELECT genre_id FROM genres
+            WHERE LOWER(genre_name) = LOWER(%s)
+            AND genre_id != %s
+        """, (new_name, genre_id))
+
+        if cursor.fetchone():
+            flash("Genre already exists!", "warning")
+        else:
+            cursor.execute("""
+                UPDATE genres
+                SET genre_name = %s
+                WHERE genre_id = %s
+            """, (new_name, genre_id))
+            conn.commit()
+
+            cursor.close()
+            conn.close()
+
+            flash("Genre updated successfully!", "success")
+            return redirect(url_for("admin_dashboard"))
+
+    cursor.close()
+    conn.close()
+    return render_template("edit_genre.html", genre=genre)
+
+
+#delete genre
+
+@app.route("/admin/genres/delete/<int:genre_id>", methods=["POST"])
+def delete_genre(genre_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # delete from child table first (important)
+        cursor.execute("DELETE FROM book_genres WHERE genre_id = %s", (genre_id,))
+        cursor.execute("DELETE FROM genres WHERE genre_id = %s", (genre_id,))
+
+        conn.commit()
+        flash("Genre deleted successfully.")
+
+    except Exception as e:
+        conn.rollback()
+        flash("Cannot delete genre. It is linked with books.")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+#admin add new series
+
+@app.route("/admin/series/add", methods=["GET", "POST"])
+def admin_add_series():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == "POST":
+        name = request.form["name"].strip()
+        description = request.form["description"].strip()
+
+        # Duplicate check
+        cursor.execute(
+            "SELECT series_id FROM series WHERE LOWER(name) = LOWER(%s)",
+            (name,)
+        )
+        if cursor.fetchone():
+            flash("Series already exists!", "warning")
+        else:
+            cursor.execute(
+                "INSERT INTO series (name, description) VALUES (%s, %s)",
+                (name, description)
+            )
+            conn.commit()
+            flash("Series added successfully!", "success")
+            cursor.close()
+            conn.close()
+            return redirect(url_for("admin_dashboard"))
+
+    cursor.close()
+    conn.close()
+    return render_template("admin_add_series.html")
+
+
+# edit series
+@app.route("/admin/series/edit/<int:series_id>", methods=["GET", "POST"])
+def edit_series(series_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch series
+    cursor.execute("SELECT * FROM series WHERE series_id = %s", (series_id,))
+    series = cursor.fetchone()
+
+    if not series:
+        flash("Series not found.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        name = request.form["name"].strip()
+        description = request.form["description"].strip()
+
+        # Check duplicate name (except itself)
+        cursor.execute("""
+            SELECT series_id FROM series
+            WHERE LOWER(name) = LOWER(%s)
+            AND series_id != %s
+        """, (name, series_id))
+
+        if cursor.fetchone():
+            flash("Series name already exists!", "warning")
+        else:
+            cursor.execute("""
+                UPDATE series
+                SET name = %s, description = %s
+                WHERE series_id = %s
+            """, (name, description, series_id))
+            conn.commit()
+            flash("Series updated successfully!", "success")
+            return redirect(url_for("admin_dashboard"))
+
+    cursor.close()
+    conn.close()
+    return render_template("edit_series.html", series=series)
+
+#delete series
+@app.route("/admin/series/delete/<int:series_id>")
+def delete_series(series_id):
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM series WHERE series_id = %s", (series_id,))
+        conn.commit()
+        flash("Series deleted successfully!", "success")
+    except:
+        conn.rollback()
+        flash("Cannot delete series. It may be linked to books.", "danger")
+
+    cursor.close()
+    conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+
+
 # -------------------------
 # Home
 # -------------------------
@@ -356,6 +820,15 @@ def home():
 @app.route("/books")
 def view_books():
     search_query = request.args.get("q", "").strip()
+    year = request.args.get("year")
+    language = request.args.get("language")
+    genres = request.args.getlist("genres")
+    rating = request.args.get("rating")
+    sort = request.args.get("sort")
+    author_gender = request.args.get("author_gender")
+    # year_from = request.args.get("year_from")
+    # year_to = request.args.get("year_to")
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -367,71 +840,118 @@ def view_books():
         )
         conn.commit()
 
-    base_query = """
+    query = """
         SELECT 
-            b.book_id, b.title, a.name AS author, s.name AS series,
-            b.published_year, b.cover_image_url, b.language, b.description,
+            b.book_id,
+            b.title,
+            a.name AS author,
+            s.name AS series,
+            b.published_year,
+            b.cover_image_url,
+            b.language,
+            b.description,
+            ROUND(AVG(r.ratings),1) AS avg_rating,
             GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
         LEFT JOIN series s ON b.series_id = s.series_id
         LEFT JOIN book_genres bg ON b.book_id = bg.book_id
         LEFT JOIN genres g ON bg.genre_id = g.genre_id
+        LEFT JOIN reviews r ON b.book_id = r.book_id
+        WHERE 1=1
     """
 
-    params = ()
+    params = []
+
+    # 🔍 SEARCH + SOUNDEX
     if search_query:
-        base_query += """
-            WHERE 
-                b.title LIKE %s OR 
-                a.name LIKE %s OR 
-                s.name LIKE %s OR 
-                b.language LIKE %s OR 
+        query += """
+            AND (
+                b.title LIKE %s OR
+                a.name LIKE %s OR
+                s.name LIKE %s OR
+                b.language LIKE %s OR
                 b.description LIKE %s OR
                 SOUNDEX(b.title) = SOUNDEX(%s) OR
                 SOUNDEX(a.name) = SOUNDEX(%s) OR
                 SOUNDEX(g.genre_name) = SOUNDEX(%s)
+            )
         """
-        like_pattern = f"%{search_query}%"
-        params = (
-            like_pattern,   # title LIKE
-            like_pattern,   # author LIKE
-            like_pattern,   # series LIKE
-            like_pattern,   # language LIKE
-            like_pattern,   # description LIKE
-            search_query,   # SOUNDEX(title)
-            search_query,   # SOUNDEX(author)
-            search_query    # SOUNDEX(genre)
-        )
+        like = f"%{search_query}%"
+        params.extend([
+            like, like, like, like, like,
+            search_query, search_query, search_query
+        ])
 
-    base_query += """
-        GROUP BY b.book_id
-        ORDER BY b.title
-    """
+    # Year filter
+    if year:
+        query += " AND b.published_year = %s"
+        params.append(year)
+    # if year_from and year_to:
+    #     try:
+    #         year_from = int(year_from)
+    #         year_to = int(year_to)
 
-    # main search
-    cursor.execute(base_query, params)
+    #         if year_from > year_to:
+    #             flash("Published year 'From' cannot be greater than 'To'.", "warning")
+    #         else:
+    #             base_query += " AND b.published_year BETWEEN %s AND %s"
+    #             params.extend([year_from, year_to])
+
+    #     except ValueError:
+    #         pass  # ignore invalid input safely
+
+    # elif year_from:
+    #     query += " AND b.published_year >= %s"
+    #     params.append(int(year_from))
+
+    # elif year_to:
+    #     query += " AND b.published_year <= %s"
+    #     params.append(int(year_to))
+
+
+    #  Language filter
+    if language:
+        query += " AND b.language = %s"
+        params.append(language)
+
+    # Genre filter (multi-select)
+    if genres:
+        placeholders = ",".join(["%s"] * len(genres))
+        query += f" AND g.genre_name IN ({placeholders})"
+        params.extend(genres)
+    
+    # gender of author
+    if author_gender:
+        query += " AND a.gender = %s"
+        params.append(author_gender)
+
+    # GROUP BY always required because of AVG()
+    query += " GROUP BY b.book_id"
+
+    # Rating filter
+    if rating:
+        query += " HAVING AVG(r.ratings) >= %s"
+        params.append(rating)
+
+    # Sorting
+    if sort == "rating_desc":
+        query += " ORDER BY avg_rating DESC"
+    elif sort == "year_desc":
+        query += " ORDER BY b.published_year DESC"
+    elif sort == "year_asc":
+        query += " ORDER BY b.published_year ASC"
+    else:
+        query += " ORDER BY b.title ASC"
+
+    cursor.execute(query, params)
     books = cursor.fetchall()
 
-    # suggestion logic
+    # 🔮 Suggestion logic (unchanged)
     suggestion = None
-
-    # if search_query and books:
-    #     cursor = conn.cursor()
-    #     cursor.execute("""
-    #         SELECT DISTINCT genre_name
-    #         FROM genres
-    #         WHERE SOUNDEX(genre_name) = SOUNDEX(%s)
-    #         LIMIT 1
-    #     """, (search_query,))
-    #     row = cursor.fetchone()
-    #     if row:
-    #         suggestion = row[0]
-
     if search_query:
         candidate_strings = set()
 
-        # fetch possible meaningful values
         cursor.execute("SELECT DISTINCT name FROM authors")
         candidate_strings.update(row["name"] for row in cursor.fetchall())
 
@@ -443,26 +963,201 @@ def view_books():
 
         best_match = None
         best_score = 0
-
         for candidate in candidate_strings:
             score = similarity(search_query, candidate)
             if score > best_score:
                 best_score = score
                 best_match = candidate
 
-        # threshold prevents junk like "rnc"
-        if best_score >= 0.65 and search_query.lower().strip() != best_match.lower().strip():
+        if best_score >= 0.65 and search_query.lower() != best_match.lower():
             suggestion = best_match
+
+    # Auto-correct search if no results found
+    if not books and suggestion:
+        search_query = suggestion
+
+        # Rebuild params for corrected search
+        params = []
+        like = f"%{search_query}%"
+
+        params.extend([
+            like, like, like, like, like,
+            search_query, search_query, search_query
+        ])
+
+        cursor.execute(query, params)
+        books = cursor.fetchall()
+
+
+
+    # All genres for filter UI
+    cursor.execute("SELECT genre_name FROM genres ORDER BY genre_name")
+    all_genres = [row["genre_name"] for row in cursor.fetchall()]
 
     cursor.close()
     conn.close()
 
     return render_template(
-        "view_books.html", 
-        books=books, 
-        search_query=search_query, 
-        suggestion=suggestion
+        "view_books.html",
+        books=books,
+        search_query=search_query,
+        suggestion=suggestion,
+        all_genres=all_genres
     )
+
+# @app.route("/books")
+# def view_books():
+#     search_query = request.args.get("q", "").strip()
+#     year = request.args.get("year")
+#     language = request.args.get("language")
+#     genres = request.args.getlist("genres")
+#     rating = request.args.get("rating")
+#     sort = request.args.get("sort")
+
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     # Save search history
+#     if "user_id" in session and search_query:
+#         cursor.execute(
+#             "INSERT INTO user_search_history (user_id, search_query) VALUES (%s, %s)",
+#             (session["user_id"], search_query)
+#         )
+#         conn.commit()
+
+#     base_query = """
+#         SELECT 
+#             b.book_id, 
+#             b.title, 
+#             a.name AS author, 
+#             s.name AS series,
+#             b.published_year, 
+#             b.cover_image_url, 
+#             b.language, 
+#             b.description,
+#             ROUND(AVG(r.ratings),1) AS avg_rating,
+#             GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
+#         FROM books b
+#         LEFT JOIN authors a ON b.author_id = a.author_id
+#         LEFT JOIN series s ON b.series_id = s.series_id
+#         LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+#         LEFT JOIN genres g ON bg.genre_id = g.genre_id
+#         LEFT JOIN reviews r ON b.book_id = r.book_id
+#         WHERE 1=1
+#     """
+
+#     params = []
+#     if search_query:
+#         base_query += """
+#             WHERE 
+#                 b.title LIKE %s OR 
+#                 a.name LIKE %s OR 
+#                 s.name LIKE %s OR 
+#                 b.language LIKE %s OR 
+#                 b.description LIKE %s OR
+#                 SOUNDEX(b.title) = SOUNDEX(%s) OR
+#                 SOUNDEX(a.name) = SOUNDEX(%s) OR
+#                 SOUNDEX(g.genre_name) = SOUNDEX(%s)
+#         """
+#         like = f"%{search_query}%"
+#         params.extend = ([
+#             like,   # title LIKE
+#             like,   # author LIKE
+#             like,   # series LIKE
+#             like,   # language LIKE
+#             like,   # description LIKE
+#             search_query,   # SOUNDEX(title)
+#             search_query,   # SOUNDEX(author)
+#             search_query    # SOUNDEX(genre)
+#         ])
+
+#     # year filter
+#     if year:
+#         base_query += " AND b.published_year = %s"
+#         params.append(year)
+
+#     # Language filter
+#     if language:
+#         base_query += " AND b.language = %s"
+#         params.append(language)
+
+#     # Genre (multi-select)
+#     if genres:
+#         placeholders = ",".join(["%s"] * len(genres))
+#         base_query += f" AND g.genre_name IN ({placeholders})"
+#         params.extend(genres)
+
+#     # Minimum rating
+#     if rating:
+#         base_query += " HAVING AVG(r.ratings) >= %s"
+#         params.append(rating)
+#     else:
+#         base_query += " GROUP BY b.book_id"
+
+#     # Sorting
+#     if sort == "rating_desc":
+#         base_query += " ORDER BY avg_rating DESC"
+#     elif sort == "year_desc":
+#         base_query += " ORDER BY b.published_year DESC"
+#     elif sort == "year_asc":
+#         base_query += " ORDER BY b.published_year ASC"
+#     else:
+#         base_query += " ORDER BY b.title ASC"
+
+
+
+#     # base_query += """
+#     #     GROUP BY b.book_id
+#     #     ORDER BY b.title
+#     # """
+
+#     # main search
+#     cursor.execute(base_query, params)
+#     books = cursor.fetchall()
+
+#     # suggestion logic
+#     suggestion = None
+
+#     if search_query:
+#         candidate_strings = set()
+
+#         # fetch possible meaningful values
+#         cursor.execute("SELECT DISTINCT name FROM authors")
+#         candidate_strings.update(row["name"] for row in cursor.fetchall())
+
+#         cursor.execute("SELECT DISTINCT title FROM books")
+#         candidate_strings.update(row["title"] for row in cursor.fetchall())
+
+#         cursor.execute("SELECT DISTINCT genre_name FROM genres")
+#         candidate_strings.update(row["genre_name"] for row in cursor.fetchall())
+
+#         best_match = None
+#         best_score = 0
+
+#         for candidate in candidate_strings:
+#             score = similarity(search_query, candidate)
+#             if score > best_score:
+#                 best_score = score
+#                 best_match = candidate
+
+#         # threshold prevents junk like "rnc"
+#         if best_score >= 0.65 and search_query.lower().strip() != best_match.lower().strip():
+#             suggestion = best_match
+
+#     # All genres for filter UI
+#     cursor.execute("SELECT genre_name FROM genres ORDER BY genre_name")
+#     all_genres = [row["genre_name"] for row in cursor.fetchall()]
+
+#     cursor.close()
+#     conn.close()
+
+#     return render_template(
+#         "view_books.html", 
+#         books=books, 
+#         search_query=search_query, 
+#         suggestion=suggestion,
+#         all_genres=all_genres
+#     )
 
 # -------------------------
 # Book detail
@@ -474,7 +1169,7 @@ def book_details(book_id):
 
     # --- Book details ---
     cursor.execute("""
-        SELECT b.book_id, b.title, a.name AS author, s.name AS series,
+        SELECT b.book_id, b.author_id, b.title, a.name AS author, s.name AS series,
                b.published_year, b.cover_image_url, b.language, b.description,
                GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
@@ -1483,6 +2178,40 @@ def recommendations():
         """, params)
         search_books = cursor.fetchall()
 
+    # --- 5️ Books Your Friends Like (NEW) ---
+    friends_books = []
+    cursor.execute("""
+        SELECT DISTINCT 
+            b.book_id,
+            b.title,
+            a.name AS author,
+            b.cover_image_url,
+            COUNT(DISTINCT usb.shelf_id) AS friend_count,
+            MAX(usb.added_date) AS last_added
+        FROM friend_requests fr
+        JOIN shelves s ON (
+            (fr.requester_id = %s AND s.user_id = fr.requestee_id) OR
+            (fr.requestee_id = %s AND s.user_id = fr.requester_id)
+        )
+        JOIN user_shelf_books usb ON s.shelf_id = usb.shelf_id
+        JOIN books b ON usb.book_id = b.book_id
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        WHERE fr.status = 'accepted'
+        AND s.user_id != %s
+        AND b.book_id NOT IN (
+            SELECT usb2.book_id 
+            FROM user_shelf_books usb2
+            JOIN shelves s2 ON usb2.shelf_id = s2.shelf_id
+            WHERE s2.user_id = %s
+        )
+        GROUP BY b.book_id, b.title, a.name, b.cover_image_url
+        ORDER BY friend_count DESC, last_added DESC
+        LIMIT 10
+    """, (
+        session["user_id"], session["user_id"], session["user_id"], session["user_id"]
+        ))
+    friends_books = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -1491,6 +2220,7 @@ def recommendations():
         search_books=search_books,
         genre_books=genre_books,
         continue_books=continue_books,
+        friends_books=friends_books,
         active_page="recommendations"
     )
 
@@ -1844,18 +2574,22 @@ def author_register():
     if request.method == "POST":
         form_data = {
             "name": request.form.get("name", "").strip(),
+            "gender": request.form.get("gender", "").strip(),
             "email": request.form.get("email", "").strip(),
             "password": request.form.get("password", "").strip(),
             "confirm_password": request.form.get("confirm_password", "").strip(),
             "biography": request.form.get("biography", "").strip(),
             "date_of_birth": request.form.get("date_of_birth", "").strip(),
-            "date_of_death": request.form.get("date_of_death", "").strip(),
+            # "date_of_death": request.form.get("date_of_death", "").strip(),
             # "website": request.form.get("website", "").strip()
         }
 
         # Validation
         if not form_data["name"] or len(form_data["name"]) < 3:
             errors["name"] = "Name must be at least 3 characters long."
+
+        if form_data["gender"] not in ["Male", "Female", "Other"]:
+            errors["gender"] = "Please select a valid gender."
         
         if not form_data["email"]:
             errors["email"] = "Email is required."
@@ -1876,15 +2610,15 @@ def author_register():
             errors["confirm_password"] = "Passwords do not match."
 
         # Date validation
-        if form_data["date_of_birth"] and form_data["date_of_death"]:
-            try:
-                from datetime import datetime
-                dob = datetime.strptime(form_data["date_of_birth"], "%Y-%m-%d")
-                dod = datetime.strptime(form_data["date_of_death"], "%Y-%m-%d")
-                if dod <= dob:
-                    errors["date_of_death"] = "Date of death must be after date of birth."
-            except ValueError:
-                errors["date_of_birth"] = "Invalid date format."
+        # if form_data["date_of_birth"] and form_data["date_of_death"]:
+        #     try:
+        #         from datetime import datetime
+        #         dob = datetime.strptime(form_data["date_of_birth"], "%Y-%m-%d")
+        #         dod = datetime.strptime(form_data["date_of_death"], "%Y-%m-%d")
+        #         if dod <= dob:
+        #             errors["date_of_death"] = "Date of death must be after date of birth."
+        #     except ValueError:
+        #         errors["date_of_birth"] = "Invalid date format."
 
         if errors:
             return render_template("author_register.html", 
@@ -1898,6 +2632,7 @@ def author_register():
 
             # Check if email already exists in authors table
             cursor.execute("SELECT * FROM authors WHERE email=%s", (form_data["email"],))
+
             if cursor.fetchone():
                 errors["email"] = "This email is already registered as an author."
                 conn.close()
@@ -1909,33 +2644,45 @@ def author_register():
             # Hash password
             hashed_pw = generate_password_hash(form_data["password"])
 
-            # Insert into authors table
+            cursor.execute("SELECT status FROM author_requests WHERE email=%s", (form_data["email"],))
+            existing = cursor.fetchone()
+
+            if existing:
+                errors["email"] = "An author request with this email already exists."
+                conn.close()
+                return render_template(
+                    "author_register.html",
+                    form_data=form_data,
+                    errors=errors,
+                    today=date.today().isoformat()
+                )
+
+            # Insert into author_requests table
             cursor.execute("""
-                INSERT INTO authors 
-                (name, email, password_hash, biography, date_of_birth, date_of_death, website)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO author_requests 
+                (name, gender, email, password_hash, biography, date_of_birth)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 form_data["name"],
+                form_data["gender"],
                 form_data["email"],
                 hashed_pw,
                 form_data["biography"],
-                form_data["date_of_birth"] or None,
-                form_data["date_of_death"] or None,
-                form_data["website"] or None
+                form_data["date_of_birth"] or None
             ))
             
             conn.commit()
-            author_id = cursor.lastrowid
+            # author_id = cursor.lastrowid
             conn.close()
 
             # Set session for author
-            session["author_id"] = author_id
-            session["author_name"] = form_data["name"]
-            session["author_email"] = form_data["email"]
-            session["user_type"] = "author"  # Distinguish from regular users
+            # session["author_id"] = author_id
+            # session["author_name"] = form_data["name"]
+            # session["author_email"] = form_data["email"]
+            # session["user_type"] = "author"  # Distinguish from regular users
 
-            flash("Author account created successfully! Welcome to your dashboard.", "success")
-            return redirect(url_for("author_dashboard"))
+            flash("Your author request has been submitted. Please wait for admin approval.", "info")
+            return redirect(url_for("author_pending"))
 
         except Error as e:
             errors["database"] = str(e)
@@ -1949,6 +2696,66 @@ def author_register():
                          errors=errors,
                          today=date.today().isoformat())
 
+# -------------------------
+# request Pending page
+# -------------------------
+
+@app.route("/author/pending")
+def author_pending():
+    return render_template("author_pending.html")
+
+# -------------------------
+# author details
+# -------------------------
+@app.route("/author/<int:author_id>")
+def author_details(author_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Author info
+    cursor.execute("""
+        SELECT 
+            author_id,
+            name,
+            gender,
+            biography,
+            date_of_birth,
+            date_of_death,
+            profile_image_url
+        FROM authors
+        WHERE author_id = %s
+    """, (author_id,))
+    author = cursor.fetchone()
+
+    if not author:
+        cursor.close()
+        conn.close()
+        abort(404)
+
+    # Books by this author
+    cursor.execute("""
+        SELECT 
+            b.book_id,
+            b.title,
+            b.cover_image_url,
+            b.published_year,
+            ROUND(AVG(r.ratings),1) AS avg_rating
+        FROM books b
+        LEFT JOIN reviews r ON b.book_id = r.book_id
+        WHERE b.author_id = %s
+        GROUP BY b.book_id
+        ORDER BY b.published_year DESC
+    """, (author_id,))
+    books = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "author_details.html",
+        author=author,
+        books=books
+    )
 
 # -------------------------
 # Author Login
@@ -1966,23 +2773,38 @@ def author_login():
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
+
         cursor.execute("SELECT * FROM authors WHERE email=%s", (email,))
         author = cursor.fetchone()
-        print(f"DEBUG: Session Author ID: {author}")
-        conn.close()
-        print(check_password_hash(author["password_hash"], password) )
 
-            # In author_login route:
-        if author and check_password_hash(author["password_hash"], password):
+        # print(f"DEBUG: Session Author ID: {author}")
+
+        # print(check_password_hash(author["password_hash"], password) )
+
+        # In author_login route:
+        if author and author["password_hash"] and check_password_hash(author["password_hash"], password):
             session.clear()
             # Ensure 'author_id' matches your SQL column name exactly
             session["author_id"] = author["author_id"] 
             session["author_name"] = author["name"]
             session["user_type"] = "author"
-            session.modified = True 
-            print(f"DEBUG: Session User Type: {session.get('user_type')}")
-            print(f"DEBUG: Session Author ID: {session.get('author_id')}")
+            # session.modified = True 
+            # print(f"DEBUG: Session User Type: {session.get('user_type')}")
+            # print(f"DEBUG: Session Author ID: {session.get('author_id')}")
             return redirect(url_for("author_dashboard"))
+
+        # If not in authors → check pending requests
+        cursor.execute("SELECT status FROM author_requests WHERE email=%s", (email,))
+        req = cursor.fetchone()
+
+        conn.close()
+
+        if req:
+            if req["status"] == "pending":
+                return redirect(url_for("author_pending"))
+            elif req["status"] == "rejected":
+                flash("Your author request was rejected. Please check your email.", "error")
+                return redirect(url_for("author_login"))
 
         errors["email"] = "Invalid email or password."
 
@@ -2002,12 +2824,111 @@ def author_logout():
 
 
 # -------------------------
+# admin view author request
+# -------------------------
+@app.route("/admin/author_requests")
+def admin_author_requests():
+    if session.get("role", "").lower() != "admin":
+        abort(403)
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM author_requests WHERE status='pending'")
+    requests = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("admin_author_requests.html", requests=requests)
+
+# accept author request
+@app.route("/admin/author_requests/approve/<int:request_id>", methods=["POST"])
+def approve_author(request_id):
+    if session.get("role", "").lower() != "admin":
+        abort(403)
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM author_requests WHERE request_id=%s", (request_id,))
+    req = cursor.fetchone()
+
+    if not req:
+        flash("Author request not found or already processed.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("admin_author_requests"))
+
+    cursor.execute("SELECT author_id FROM authors WHERE email=%s", (req["email"],))
+    if cursor.fetchone():
+        flash("Author with this email already exists.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("admin_author_requests"))
+
+    cursor.execute("""
+        INSERT INTO authors (name, gender, email, password_hash, biography, date_of_birth)
+        VALUES (%s,%s,%s,%s,%s, %s)
+    """, (
+        req["name"], req["gender"], req["email"], req["password_hash"],
+        req["biography"], req["date_of_birth"]
+    ))
+
+    cursor.execute("""
+        UPDATE author_requests SET status='approved', reviewed_at=NOW()
+        WHERE request_id=%s
+    """, (request_id,))
+
+    send_email(
+        req["email"],
+        "Author Registration Approved – ReadNext",
+        "Congratulations! Your author account has been approved. You can now log in."
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin_author_requests"))
+
+# reject author request
+@app.route("/admin/author_requests/reject/<int:request_id>", methods=["POST"])
+def reject_author(request_id):
+    if session.get("role", "").lower() != "admin":
+        abort(403)
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        UPDATE author_requests SET status='rejected', reviewed_at=NOW()
+        WHERE request_id=%s
+    """, (request_id,))
+
+    cursor.execute("SELECT email FROM author_requests WHERE request_id=%s", (request_id,))
+    email = cursor.fetchone()["email"]
+
+    send_email(
+        email,
+        "Author Registration Rejected – ReadNext",
+        "We regret to inform you that your author request was not approved."
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin_author_requests"))
+
+
+# -------------------------
 # Update Author Dashboard to require authentication
 # -------------------------
 @app.route("/author_dashboard")
 def author_dashboard():
-    print(f"DEBUG: Session User Type: {session.get('user_type')}")
-    print(f"DEBUG: Session Author ID: {session.get('author_id')}")
+    # print(f"DEBUG: Session User Type: {session.get('user_type')}")
+    # print(f"DEBUG: Session Author ID: {session.get('author_id')}")
     """Dashboard for authors to view their books, reviews, and statistics"""
     # Check if logged in as author
     if "author_id" not in session or session.get("user_type") != "author":
@@ -2021,8 +2942,7 @@ def author_dashboard():
     
     # Get author information
     cursor.execute("""
-        SELECT author_id, name, email, biography, date_of_birth, date_of_death, 
-               website, created_at
+        SELECT author_id, name, email, biography, date_of_birth, date_of_death, created_at
         FROM authors
         WHERE author_id = %s
     """, (author_id,))
@@ -2048,17 +2968,17 @@ def author_dashboard():
     # author_id = session["author_id"]
     # author_id = 1
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    # conn = get_db_connection()
+    # cursor = conn.cursor(dictionary=True)
     
     # Get author information
-    cursor.execute("""
-        SELECT author_id, name, email, biography, date_of_birth, date_of_death, 
-               website, created_at
-        FROM authors
-        WHERE author_id = %s
-    """, (author_id,))
-    author = cursor.fetchone()
+    # cursor.execute("""
+    #     SELECT author_id, name, email, biography, date_of_birth, date_of_death, 
+    #            website, created_at
+    #     FROM authors
+    #     WHERE author_id = %s
+    # """, (author_id,))
+    # author = cursor.fetchone()
     
     if not author:
         flash("Author profile not found.", "error")
@@ -2205,7 +3125,7 @@ def edit_author_profile():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         biography = request.form.get("biography", "").strip()
-        website = request.form.get("website", "").strip()
+        # website = request.form.get("website", "").strip()
         
         errors = {}
         if not name or len(name) < 3:
@@ -2216,9 +3136,9 @@ def edit_author_profile():
         if not errors:
             cursor.execute("""
                 UPDATE authors 
-                SET name=%s, biography=%s, website=%s
+                SET name=%s, biography=%s
                 WHERE author_id=%s
-            """, (name, biography, website or None, author_id))
+            """, (name, biography or None, author_id))
             conn.commit()
             
             session["author_name"] = name
@@ -2228,7 +3148,7 @@ def edit_author_profile():
         
         conn.close()
         return render_template("edit_author_profile.html", errors=errors, 
-                             author={"name": name, "biography": biography, "website": website})
+                             author={"name": name, "biography": biography})
     
     cursor.execute("SELECT * FROM authors WHERE author_id=%s", (author_id,))
     author = cursor.fetchone()
@@ -2365,8 +3285,6 @@ def add_book():
 # -------------------------
 # Admin Analytics
 # -------------------------
-
-
 
 # Add this route to your app.py
 @app.route("/admin/analytics")
