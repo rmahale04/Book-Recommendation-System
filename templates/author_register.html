@@ -4,104 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Author Registration - ReadNext</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}">
     <style>
-        .form-group textarea {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .split-container {
+            display: flex;
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
-            transition: border-color 0.2s;
+            min-height: 100vh;
         }
 
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
+        /* Left Side - Brand */
+        .brand-side {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .form-group input[type="date"],
-        .form-group input[type="url"] {
+        .brand-side::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+        }
+
+        .brand-side::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -100px;
+            left: -100px;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 500px;
+            padding-top: 40px;
+        }
+
+        .logo-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+
+        .logo-wrapper img {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-content h1 {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .brand-content p {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        /* Right Side - Form */
+        .form-side {
+            flex: 1;
+            background: #ffffff;
+            padding: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 540px;
+        }
+
+        .author-badge-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .author-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 24px;
             font-size: 14px;
-            cursor: pointer;
-            transition: border-color 0.2s;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
-        .form-group input[type="date"]:focus,
-        .form-group input[type="url"]:focus {
-            outline: none;
-            border-color: #667eea;
+        .form-header {
+            margin-bottom: 32px;
+            text-align: center;
         }
 
-        .bio-counter {
-            text-align: right;
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+        .form-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            font-size: 16px;
+            color: #718096;
         }
 
         .info-note {
             background: rgba(102, 126, 234, 0.1);
             border-left: 4px solid #667eea;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
             font-size: 14px;
-            color: #555;
+            color: #4a5568;
         }
 
         .info-note strong {
             color: #667eea;
+            font-weight: 600;
         }
 
-        .error-list {
-            background: #fee;
-            color: #c00;
-            padding: 12px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            border: 1px solid #fcc;
+        .flashes, .error-list {
             list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .flashes li {
+            background: #d4edda;
+            color: #155724;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            border-left: 4px solid #28a745;
         }
 
         .error-list li {
-            margin-bottom: 5px;
-        }
-
-        .error-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        .flashes {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
             font-size: 14px;
-            border: 1px solid #c3e6cb;
-            list-style: none;
+            border-left: 4px solid #dc3545;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            color: #2d3748;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .bio-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #718096;
+            margin-top: 6px;
         }
 
         .password-strength {
             height: 4px;
-            background: #e0e0e0;
+            background: #e2e8f0;
             border-radius: 2px;
-            margin-top: 5px;
+            margin-top: 8px;
             overflow: hidden;
         }
 
@@ -128,130 +278,233 @@
 
         .password-hint {
             font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            color: #718096;
+            margin-top: 6px;
         }
 
-        .auth-divider {
-            border-top: 1px solid #e0e0e0;
-            margin: 15px 0;
+        .sign-in-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
         }
-        
-        @media (max-width: 768px) {
+
+        .sign-in-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .sign-in-btn:active {
+            transform: translateY(0);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 15px;
+            color: #4a5568;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .reader-cta {
+            margin-top: 32px;
+            padding: 24px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .reader-cta p {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .reader-links {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .reader-links a {
+            padding: 10px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .reader-links a:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .split-container {
+                flex-direction: column;
+            }
+
+            .brand-side {
+                min-height: 30vh;
+                padding: 40px 30px;
+            }
+
+            .brand-content h1 {
+                font-size: 36px;
+            }
+
+            .form-side {
+                padding: 40px 30px;
+            }
+
             .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .reader-links {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Main Content -->
-    <div class="main-container">
-        <!-- Left Side Content -->
-        <div class="left-content">
-            <h1 class="welcome-title">Join as an Author</h1>
-            <p class="welcome-subtitle">
-                Share your literary works and connect with readers around the world.
-            </p>
-            <ul class="features-list">
-                <li>Create your author profile and showcase your bibliography</li>
-                <li>Connect directly with your readers and fans</li>
-                <li>Share insights about your writing journey</li>
-                <li>Receive feedback and reviews from the community</li>
-                <li>Participate in author events and book clubs</li>
-                <li>Track your book's popularity and reader engagement</li>
-            </ul>
+    <div class="split-container">
+        <!-- Left Side - Brand -->
+        <div class="brand-side">
+            <div class="brand-content">
+                <div class="logo-wrapper">
+                    <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext Logo">
+                </div>
+                <h1>Join as Author</h1>
+                <p>Share your literary works and connect with readers around the world</p>
+            </div>
         </div>
 
-        <!-- Right Side - Registration Form -->
-        <div class="login-container">
-            <h2 class="login-title">Author Registration</h2>
-            
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <ul class="flashes">
-                  {% for message in messages %}
-                    <li>{{ message }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            {% endwith %}
-
-            {% if errors %}
-              <ul class="error-list">
-                {% for field, error in errors.items() %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-
-            <div class="info-note">
-                <strong>Note:</strong> All fields marked with * are required. Your biography will be visible to readers on your author profile.
-            </div>
-
-            <!-- Author Registration Form -->
-            <form id="author_register_form" action="{{ url_for('author_register') }}" method="POST">
-                <div class="form-group">
-                    <label for="name">Full Name / Pen Name *</label>
-                    <input type="text" 
-                           id="name" 
-                           name="name" 
-                           value="{{ form_data.name if form_data else '' }}" 
-                           placeholder="Enter your full name or pen name"
-                           required
-                           minlength="3">
+        <!-- Right Side - Form -->
+        <div class="form-side">
+            <div class="form-container">
+                <div class="author-badge-container">
+                    <span class="author-badge">
+                        ✍️ AUTHOR REGISTRATION
+                    </span>
                 </div>
 
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           value="{{ form_data.email if form_data else '' }}" 
-                           placeholder="your.email@example.com"
-                           required>
+                <div class="form-header">
+                    <h2>Create your author profile</h2>
+                    <p>Join our community of talented authors</p>
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Password *</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           placeholder="Create a strong password"
-                           required
-                           oninput="checkPasswordStrength()">
-                    <div class="password-strength">
-                        <div class="password-strength-bar" id="strengthBar"></div>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <ul class="flashes">
+                      {% for message in messages %}
+                        <li>{{ message }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                {% endwith %}
+
+                {% if errors %}
+                  <ul class="error-list">
+                    {% for field, error in errors.items() %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+
+                <div class="info-note">
+                    <strong>Note:</strong> All fields marked with * are required. Your biography will be visible to readers on your profile.
+                </div>
+
+                <form id="author_register_form" action="{{ url_for('author_register') }}" method="POST">
+                    <div class="form-group">
+                        <label for="name">Full Name / Pen Name *</label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               value="{{ form_data.name if form_data else '' }}" 
+                               required
+                               minlength="3">
                     </div>
-                    <div class="password-hint">
-                        Must be 8-16 characters with uppercase, lowercase, number, and special character
+
+                    <div class="form-group">
+                        <label for="gender">Gender *</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male" {% if form_data and form_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if form_data and form_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if form_data and form_data.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="confirm_password">Confirm Password *</label>
-                    <input type="password" 
-                           id="confirm_password" 
-                           name="confirm_password" 
-                           placeholder="Re-enter your password"
-                           required>
-                </div>
-
-                <div class="form-group">
-                    <label for="biography">Biography *</label>
-                    <textarea id="biography" 
-                              name="biography" 
-                              placeholder="Tell readers about yourself, your writing style, inspirations, and notable works..."
-                              required
-                              minlength="50"
-                              maxlength="2000"
-                              oninput="updateBioCounter()">{{ form_data.biography if form_data else '' }}</textarea>
-                    <div class="bio-counter">
-                        <span id="bioCount">0</span> / 2000 characters
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               value="{{ form_data.email if form_data else '' }}" 
+                               required>
                     </div>
-                </div>
 
-                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               required
+                               oninput="checkPasswordStrength()">
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="strengthBar"></div>
+                        </div>
+                        <div class="password-hint">
+                            Must be 8-16 characters with uppercase, lowercase, number, and special character
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password *</label>
+                        <input type="password" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="biography">Biography *</label>
+                        <textarea id="biography" 
+                                  name="biography" 
+                                  required
+                                  minlength="50"
+                                  maxlength="2000"
+                                  oninput="updateBioCounter()">{{ form_data.biography if form_data else '' }}</textarea>
+                        <div class="bio-counter">
+                            <span id="bioCount">0</span> / 2000 characters
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="date_of_birth">Date of Birth *</label>
                         <input type="date" 
@@ -261,44 +514,23 @@
                                max="{{ today }}"
                                required>
                     </div>
-                    <!-- <div class="form-group">
-                        <label for="date_of_death">Date of Death (Optional)</label>
-                        <input type="date" 
-                               id="date_of_death" 
-                               name="date_of_death" 
-                               value="{{ form_data.date_of_death if form_data else '' }}"
-                               max="{{ today }}">
-                    </div> -->
+
+                    <button type="submit" class="sign-in-btn" id="author_register_btn">
+                        Register as Author
+                    </button>
+                </form>
+
+                <div class="signup-link">
+                    Already have an account? <a href="{{ url_for('author_login') }}">Sign in</a>
                 </div>
 
-                <div class="form-group">
-                    <label for="website">Website / Portfolio (Optional)</label>
-                    <input type="url" 
-                           id="website" 
-                           name="website" 
-                           value="{{ form_data.website if form_data else '' }}" 
-                           placeholder="https://yourwebsite.com">
+                <div class="reader-cta">
+                    <p>Are you a reader?</p>
+                    <div class="reader-links">
+                        <a href="{{ url_for('login') }}">Reader Sign In</a>
+                        <a href="{{ url_for('register') }}">Reader Sign Up</a>
+                    </div>
                 </div>
-
-                <button type="submit" class="sign-in-btn" id="author_register_btn">
-                    Register as Author
-                </button>
-            </form>
-
-            <!-- Sign In Link -->
-            <div class="signup-link">
-                Already have an account? 
-                <a href="{{ url_for('author_login') }}">Sign in</a>
-            </div>
-
-            <div class="auth-divider"></div>
-
-            <div class="signup-link" style="margin-top: 10px; border-top: none; padding-top: 5px;">
-                Are you a reader? 
-                <a href="{{ url_for('login') }}">Sign in</a>
-                or
-                <a href="{{ url_for('register') }}">Sign up</a>
-                as Reader
             </div>
         </div>
     </div>
@@ -337,24 +569,6 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateBioCounter();
-            
-            // Validate date of death is after date of birth
-            const dobInput = document.getElementById('date_of_birth');
-            const dodInput = document.getElementById('date_of_death');
-            
-            dobInput.addEventListener('change', validateDates);
-            dodInput.addEventListener('change', validateDates);
-            
-            function validateDates() {
-                const dob = new Date(dobInput.value);
-                const dod = new Date(dodInput.value);
-                
-                if (dodInput.value && dob && dod && dod <= dob) {
-                    dodInput.setCustomValidity('Date of death must be after date of birth');
-                } else {
-                    dodInput.setCustomValidity('');
-                }
-            }
 
             // Form validation
             const form = document.getElementById('author_register_form');
