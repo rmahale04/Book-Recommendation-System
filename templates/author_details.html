@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ author.name }} - ReadNext</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container-wrapper {
+    max-width: 900px;
+    margin: 50px auto;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(139,92,246,0.15);
+    margin-bottom: 30px;
+}
+
+.author-header {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.author-img img {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.author-name {
+    font-size: 2.2rem;
+    color: #6b21a8;
+    font-weight: 700;
+}
+
+.meta {
+    margin-top: 10px;
+    color: #7c3aed;
+    font-size: 0.95rem;
+}
+
+.bio {
+    margin-top: 30px;
+    background: #faf5ff;
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 4px solid #a855f7;
+    color: #581c87;
+    line-height: 1.7;
+}
+
+.section-title {
+    font-size: 1.6rem;
+    color: #6b21a8;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+    gap: 25px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 14px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+
+.book-card:hover {
+    transform: translateY(-6px);
+}
+
+.book-card img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.book-title {
+    font-weight: 600;
+    color: #4c1d95;
+    font-size: 0.95rem;
+}
+
+.rating {
+    color: #fbbf24;
+    font-size: 0.9rem;
+}
+</style>
+</head>
+
+<body>
+{% include "nav_page.html" %}
+
+<div class="container-wrapper">
+
+    <!-- Author Info -->
+    <div class="card author-header">
+        <div class="author-img">
+            <img src="{{ author.profile_image_url or url_for('static', filename='images/default_author.png') }}">
+        </div>
+
+        <div>
+            <div class="author-name">{{ author.name }}</div>
+            <div class="meta">
+                Gender: {{ author.gender or 'N/A' }}<br>
+                Born: {{ author.date_of_birth or 'Unknown' }}<br>
+                {% if author.date_of_death %}
+                    Died: {{ author.date_of_death }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Biography -->
+    <div class="card">
+        <h2 class="section-title">Biography</h2>
+        <p class="bio">
+            {{ author.biography or 'Biography not available.' }}
+        </p>
+    </div>
+
+    <!-- Books -->
+    <div class="card">
+        <h2 class="section-title">Books by {{ author.name }}</h2>
+
+        <div class="books-grid">
+            {% for b in books %}
+            <a href="{{ url_for('book_details', book_id=b.book_id) }}" style="text-decoration:none;">
+                <div class="book-card">
+                    <img src="{{ b.cover_image_url or url_for('static', filename='images/default_book.png') }}">
+                    <div class="book-title">{{ b.title }}</div>
+                    <div class="rating">
+                        ★ {{ b.avg_rating or '0.0' }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
