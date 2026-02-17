@@ -1332,7 +1332,115 @@ REFERENCES users(user_id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
 
+ALTER TABLE books
+ADD COLUMN buy_link VARCHAR(500);
 
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Godaan+Premchand' WHERE book_id = 1; -- Godaan
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Harry+Potter+and+the+Philosopher%27s+Stone+J.K.+Rowling' WHERE book_id = 2; -- Harry Potter and the Philosopher's Stone
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Yayati+V.S.+Khandekar' WHERE book_id = 3; -- Yayati
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Sapiens+A+Brief+History+of+Humankind+Yuval+Noah+Harari' WHERE book_id = 4; -- Sapiens: A Brief History of Humankind
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=India+After+Gandhi+Ramachandra+Guha' WHERE book_id = 5; -- India After Gandhi
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Pride+and+Prejudice+Jane+Austen' WHERE book_id = 6; -- Pride and Prejudice
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Da+Vinci+Code+Dan+Brown' WHERE book_id = 7; -- The Da Vinci Code
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Feluda+Samagra+Satyajit+Ray' WHERE book_id = 8; -- Feluda Samagra
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Shock+of+the+New+Robert+Hughes' WHERE book_id = 9; -- The Shock of the New
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=It+Stephen+King' WHERE book_id = 10; -- It
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Rashmirathi+Ramdhari+Singh+Dinkar' WHERE book_id = 11; -- Rashmirathi
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Fellowship+of+the+Ring+J.R.R.+Tolkien' WHERE book_id = 12; -- The Fellowship of the Ring
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Lion+the+Witch+and+the+Wardrobe+C.S.+Lewis' WHERE book_id = 13; -- The Lion, the Witch and the Wardrobe
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Immortals+of+Meluha+Amish+Tripathi' WHERE book_id = 14; -- The Immortals of Meluha
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Hunger+Games+Suzanne+Collins' WHERE book_id = 15; -- The Hunger Games
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Marvel+Comics+Spider-Man+Stan+Lee' WHERE book_id = 16; -- Marvel Comics: Spider-Man
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Common+Man+Cartoons+R.K.+Laxman' WHERE book_id = 17; -- The Common Man Cartoons
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Steve+Jobs+Walter+Isaacson' WHERE book_id = 18; -- Steve Jobs
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+History+of+Sikhs+Khushwant+Singh' WHERE book_id = 19; -- The History of Sikhs
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Last+Mughal+William+Dalrymple' WHERE book_id = 20; -- The Last Mughal
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Indian+Economy+under+Early+British+Rule+Irfan+Habib' WHERE book_id = 21; -- Indian Economy under Early British Rule 1757–1857
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Playing+It+My+Way+Sachin+Tendulkar' WHERE book_id = 22; -- Playing It My Way
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Game+of+Thrones+George+R.R.+Martin' WHERE book_id = 23; -- A Song of Ice and Fire: A Game of Thrones
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Twisted+Love+Ana+Huang' WHERE book_id = 24; -- Twisted Love
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=It+Ends+with+Us+Colleen+Hoover' WHERE book_id = 25; -- It Ends with Us
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Court+of+Thorns+and+Roses+Sarah+J.+Maas' WHERE book_id = 26; -- A Court of Thorns and Roses
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Mistborn+The+Final+Empire+Brandon+Sanderson' WHERE book_id = 27; -- Mistborn: The Final Empire
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=I+Too+Had+a+Love+Story+Ravinder+Singh' WHERE book_id = 28; -- I Too Had a Love Story
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Fault+in+Our+Stars+John+Green' WHERE book_id = 29; -- The Fault in Our Stars
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Divergent+Veronica+Roth' WHERE book_id = 30; -- Divergent
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Alchemist+Paulo+Coelho' WHERE book_id = 31; -- The Alchemist
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Kite+Runner+Khaled+Hosseini' WHERE book_id = 32; -- The Kite Runner
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Norwegian+Wood+Haruki+Murakami' WHERE book_id = 33; -- Norwegian Wood
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Blue+Umbrella+Ruskin+Bond' WHERE book_id = 34; -- The Blue Umbrella
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Half+Girlfriend+Chetan+Bhagat' WHERE book_id = 35; -- Half Girlfriend
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Percy+Jackson+The+Lightning+Thief+Rick+Riordan' WHERE book_id = 36; -- Percy Jackson: The Lightning Thief
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Seven+Husbands+of+Evelyn+Hugo+Taylor+Jenkins+Reid' WHERE book_id = 37; -- The Seven Husbands of Evelyn Hugo
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Me+Before+You+Jojo+Moyes' WHERE book_id = 38; -- Me Before You
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Forty+Rules+of+Love+Elif+Shafak' WHERE book_id = 39; -- The Forty Rules of Love
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=And+Then+There+Were+None+Agatha+Christie' WHERE book_id = 40; -- And Then There Were None
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Murder+on+the+Orient+Express+Agatha+Christie' WHERE book_id = 41; -- Murder on the Orient Express
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Study+in+Scarlet+Arthur+Conan+Doyle' WHERE book_id = 42; -- A Study in Scarlet
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=1984+George+Orwell' WHERE book_id = 43; -- 1984
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Animal+Farm+George+Orwell' WHERE book_id = 44; -- Animal Farm
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=To+Kill+a+Mockingbird+Harper+Lee' WHERE book_id = 45; -- To Kill a Mockingbird
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Great+Gatsby+F.+Scott+Fitzgerald' WHERE book_id = 46; -- The Great Gatsby
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Crime+and+Punishment+Fyodor+Dostoevsky' WHERE book_id = 47; -- Crime and Punishment
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=One+Hundred+Years+of+Solitude+Gabriel+Garcia+Marquez' WHERE book_id = 48; -- One Hundred Years of Solitude
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Wise+and+Otherwise+Sudha+Murty' WHERE book_id = 49; -- Wise and Otherwise
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Dollar+Bahu+Sudha+Murty' WHERE book_id = 50; -- Dollar Bahu
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Wings+of+Fire+A.P.J.+Abdul+Kalam' WHERE book_id = 51; -- Wings of Fire
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+God+of+Small+Things+Arundhati+Roy' WHERE book_id = 52; -- The God of Small Things
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=2+States+Chetan+Bhagat' WHERE book_id = 53; -- 2 States
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Five+Point+Someone+Chetan+Bhagat' WHERE book_id = 54; -- Five Point Someone
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+3+Mistakes+of+My+Life+Chetan+Bhagat' WHERE book_id = 55; -- The 3 Mistakes of My Life
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Train+to+Pakistan+Khushwant+Singh' WHERE book_id = 56; -- Train to Pakistan
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Room+on+the+Roof+Ruskin+Bond' WHERE book_id = 57; -- The Room on the Roof
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Harry+Potter+and+the+Chamber+of+Secrets+J.K.+Rowling' WHERE book_id = 58; -- Harry Potter and the Chamber of Secrets
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Harry+Potter+and+the+Prisoner+of+Azkaban+J.K.+Rowling' WHERE book_id = 59; -- Harry Potter and the Prisoner of Azkaban
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Harry+Potter+and+the+Goblet+of+Fire+J.K.+Rowling' WHERE book_id = 60; -- Harry Potter and the Goblet of Fire
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Hobbit+J.R.R.+Tolkien' WHERE book_id = 61; -- The Hobbit
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Two+Towers+J.R.R.+Tolkien' WHERE book_id = 62; -- The Two Towers
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Return+of+the+King+J.R.R.+Tolkien' WHERE book_id = 63; -- The Return of the King
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Clash+of+Kings+George+R.R.+Martin' WHERE book_id = 64; -- A Clash of Kings
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Storm+of+Swords+George+R.R.+Martin' WHERE book_id = 65; -- A Storm of Swords
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Dune+Frank+Herbert' WHERE book_id = 66; -- Dune
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Sea+of+Monsters+Rick+Riordan' WHERE book_id = 67; -- The Sea of Monsters
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Titan%27s+Curse+Rick+Riordan' WHERE book_id = 68; -- The Titan's Curse
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Insurgent+Veronica+Roth' WHERE book_id = 69; -- Insurgent
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Allegiant+Veronica+Roth' WHERE book_id = 70; -- Allegiant
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Throne+of+Glass+Sarah+J.+Maas' WHERE book_id = 71; -- Throne of Glass
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Crown+of+Midnight+Sarah+J.+Maas' WHERE book_id = 72; -- Crown of Midnight
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Way+of+Kings+Brandon+Sanderson' WHERE book_id = 73; -- The Way of Kings
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Gone+Girl+Gillian+Flynn' WHERE book_id = 74; -- Gone Girl
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Silent+Patient+Alex+Michaelides' WHERE book_id = 75; -- The Silent Patient
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Angels+and+Demons+Dan+Brown' WHERE book_id = 76; -- Angels & Demons
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Inferno+Dan+Brown' WHERE book_id = 77; -- Inferno
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Shining+Stephen+King' WHERE book_id = 78; -- The Shining
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Misery+Stephen+King' WHERE book_id = 79; -- Misery
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Pet+Sematary+Stephen+King' WHERE book_id = 80; -- Pet Sematary
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Verity+Colleen+Hoover' WHERE book_id = 81; -- Verity
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Ugly+Love+Colleen+Hoover' WHERE book_id = 82; -- Ugly Love
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Reminders+of+Him+Colleen+Hoover' WHERE book_id = 83; -- Reminders of Him
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Daisy+Jones+and+The+Six+Taylor+Jenkins+Reid' WHERE book_id = 84; -- Daisy Jones & The Six
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Malibu+Rising+Taylor+Jenkins+Reid' WHERE book_id = 85; -- Malibu Rising
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Kafka+on+the+Shore+Haruki+Murakami' WHERE book_id = 86; -- Kafka on the Shore
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Homo+Deus+Yuval+Noah+Harari' WHERE book_id = 87; -- Homo Deus
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=21+Lessons+for+the+21st+Century+Yuval+Noah+Harari' WHERE book_id = 88; -- 21 Lessons for the 21st Century
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Twisted+Games+Ana+Huang' WHERE book_id = 89; -- Twisted Games
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Twisted+Hate+Ana+Huang' WHERE book_id = 90; -- Twisted Hate
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Twisted+Lies+Ana+Huang' WHERE book_id = 91; -- Twisted Lies
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Slammed+Colleen+Hoover' WHERE book_id = 92; -- Slammed
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Point+of+Retreat+Colleen+Hoover' WHERE book_id = 93; -- Point of Retreat
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=This+Girl+Colleen+Hoover' WHERE book_id = 94; -- This Girl
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Hopeless+Colleen+Hoover' WHERE book_id = 95; -- Hopeless
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=A+Shot+At+History+Abhinav+Bindra' WHERE book_id = 96; -- A Shot At History
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Thinking+Fast+and+Slow+Daniel+Kahneman' WHERE book_id = 97; -- Thinking, Fast and Slow
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Man+and+His+Symbols+Carl+Jung' WHERE book_id = 98; -- Man and His Symbols
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=How+to+Win+Friends+and+Influence+People+Dale+Carnegie' WHERE book_id = 99; -- How to Win Friends and Influence People
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=Atomic+Habits+James+Clear' WHERE book_id = 100; -- Atomic Habits
+UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Monk+Who+Sold+His+Ferrari+Robin+Sharma' WHERE book_id = 101; -- The Monk Who Sold His Ferrari
+
+-- Verify
+SELECT book_id, title, buy_link FROM books ORDER BY book_id;
+-- Verify
+SELECT book_id, title, buy_link FROM books ORDER BY book_id;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
