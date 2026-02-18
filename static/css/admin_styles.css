@@ -36,14 +36,15 @@ body {
 }
 
 .logo img {
-    height: 45px;
+    height: 30px;
     width: auto;
     object-fit: contain;
     display: block;
     transform: scale(2.5);
     transform-origin: left center;
-    transition: all 0.3s ease;
-    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+    background: transparent;
+    /* transition: all 0.3s ease;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1)); */
 }
 
 .logo img:hover {
