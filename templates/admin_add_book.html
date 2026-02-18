@@ -3,117 +3,241 @@
 <head>
     <title>Add New Book</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
-        }
+<style>
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
 
-        body {
-            margin: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+body {
+    margin: 0;
+    background: linear-gradient(135deg, #6a78e6, #7a4bb8);
+    min-height: 100vh;
+}
 
-        .form-container {
-            background: #fff;
-            width: 400px;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
+/* Wrapper */
+.page-wrapper {
+    padding: 80px 20px;
+    display: flex;
+    justify-content: center;
+}
 
-        h2 {
-            text-align: center;
-            color: #6f7ae0;
-            margin-bottom: 25px;
-        }
+/* Card */
+.form-container {
+    background: #ffffff;
+    width: 900px;
+    padding: 40px 50px;
+    border-radius: 18px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
 
-        label {
-            font-weight: 600;
-            font-size: 14px;
-            color: #333;
-        }
+/* Title */
+.form-container h2 {
+    color: #5f6ee6;
+    font-size: 26px;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            margin-bottom: 18px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-        }
+.form-container p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 25px;
+}
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #6f7ae0;
-        }
+/* Section title */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #5f6ee6;
+    margin-bottom: 12px;
+}
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+.section-title::before {
+    content: "";
+    width: 4px;
+    height: 20px;
+    background: #5f6ee6;
+    border-radius: 4px;
+}
 
-        button:hover {
-            opacity: 0.9;
-        }
+/* Divider */
+.divider {
+    height: 2px;
+    background: #e5e7ff;
+    margin-bottom: 30px;
+}
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #6f7ae0;
-            text-decoration: none;
-            font-weight: 500;
-        }
+/* Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Inputs */
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #dcdcdc;
+    font-size: 14px;
+    background: #fafafa;
+    transition: 0.3s;
+}
+
+textarea {
+    resize: none;
+    height: 110px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #5f6ee6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(95,110,230,0.15);
+}
+
+/* Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+button {
+    padding: 14px 30px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6a78e6, #7a4bb8);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+/* Back link */
+.back-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: #5f6ee6;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+</style>
 </head>
 
 <body>
 
+<div class="page-wrapper">
 <div class="form-container">
-    <h2>Add New Book</h2>
+
+    <center><h2>Book Information</h2></center>
+    <!-- <p>Fill in the details about your book. Fields marked with * are required.</p>
+
+    <div class="section-title">Basic Information</div> -->
+    <div class="divider"></div>
 
     <form method="POST">
+        <div class="form-grid">
 
-        <label>Book Title</label>
-        <input type="text" name="title" required>
+            <div class="full-width">
+                <label>Book Title *</label>
+                <input type="text" name="title" required>
+            </div>
 
-        <label>Author</label>
-        <select name="author_id" required>
-            <option value="">-- Select Author --</option>
-            {% for a in authors %}
-                <option value="{{ a.author_id }}">{{ a.name }}</option>
-            {% endfor %}
-        </select>
+            <div>
+                <label>Published Year</label>
+                <input type="number" name="published_year">
+            </div>
 
-        <label>Published Year</label>
-        <input type="number" name="published_year" required>
+            <div>
+                <label>Language *</label>
+                <select name="language" required>
+                    <option value="">Select Language</option>
+                    <option>English</option>
+                    <option>Hindi</option>
+                    <option>Gujarati</option>
+                    <option>Marathi</option>
+                </select>
+            </div>
 
-        <label>Language</label>
-        <input type="text" name="language" required>
+            <div>
+                <label>Author</label>
+                <select name="author_id">
+                    <option value="">Select Author</option>
+                    {% for a in authors %}
+                        <option value="{{ a.author_id }}">{{ a.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <button type="submit">Add Book</button>
+            <div>
+                <label>Series</label>
+                <select name="series_id">
+                    <option value="">None</option>
+                    {% for s in series %}
+                        <option value="{{ s.series_id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="full-width">
+                <label>Description</label>
+                <textarea name="description"></textarea>
+            </div>
+
+            <div>
+                <label>ISBN</label>
+                <input type="text" name="isbn">
+            </div>
+
+            <div>
+                <label>Cover Image URL</label>
+                <input type="text" name="cover_image_url">
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Add Book</button>
+        </div>
     </form>
 
     <a href="{{ url_for('admin_dashboard') }}" class="back-link">
         ← Back to Dashboard
     </a>
+
+</div>
 </div>
 
 </body>
