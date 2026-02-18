@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Author Approval Pending - ReadNext</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}">
+    <style>
+        .pending-box {
+            text-align: center;
+            padding: 40px;
+        }
+        .pending-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .pending-box p {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .info {
+            background: rgba(102,126,234,0.1);
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="pending-box">
+            <h2>⏳ Approval in Progress</h2>
+            <p>
+                Thank you for registering as an author on <strong>ReadNext</strong>.
+            </p>
+            <p>
+                Your profile is currently under review by our admin team.
+            </p>
+
+            <div class="info">
+                📩 Please check your email regularly for approval or rejection updates.
+            </div>
+
+            <p style="margin-top: 20px;">
+                You will be able to log in only after approval.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
