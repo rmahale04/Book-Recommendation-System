@@ -1884,7 +1884,7 @@ def edit_profile(username):
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT user_id, first_name, last_name, username, email, bio, about_me, profile_image_url FROM users WHERE username=%s", (username,))
+    cursor.execute("SELECT user_id, first_name, last_name, username, email, bio, about_me, profile_image_url, gender, date_of_birth, profession FROM users WHERE username=%s", (username,))
     user = cursor.fetchone()
     if not user:
         cursor.close()
@@ -1899,6 +1899,9 @@ def edit_profile(username):
         bio = request.form.get('bio', '').strip()
         about_me = request.form.get('about_me', '').strip()
         profile_image_url = request.form.get('profile_image_url', '').strip()
+        gender = request.form.get('gender', '').strip()
+        date_of_birth = request.form.get('date_of_birth', '').strip()
+        profession = request.form.get('profession', '').strip()
 
         if not first_name:
             errors['first_name'] = "First name is required."
@@ -1909,9 +1912,11 @@ def edit_profile(username):
             try:
                 cursor.execute("""
                     UPDATE users
-                    SET first_name=%s, last_name=%s, bio=%s, about_me=%s, profile_image_url=%s
+                    SET first_name=%s, last_name=%s, bio=%s, about_me=%s, profile_image_url=%s, 
+                        gender=%s, date_of_birth=%s, profession=%s
                     WHERE user_id=%s
-                """, (first_name, last_name, bio or None, about_me or None, profile_image_url or None, user['user_id']))
+                """, (first_name, last_name, bio or None, about_me or None, profile_image_url or None, 
+                      gender or None, date_of_birth or None, profession or None, user['user_id']))
                 conn.commit()
                 flash("Profile updated successfully.")
                 cursor.close()
@@ -1923,7 +1928,6 @@ def edit_profile(username):
     cursor.close()
     conn.close()
     return render_template('edit_profile.html', user=user, errors=errors)
-
 
 # -------------------------
 # Change password (logged-in user)
@@ -3430,7 +3434,59 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'genre_distribution.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 2. Language Distribution Bar Chart
+    # 2. Gender Distribution of user Pie Chart
+    cursor.execute("""
+        SELECT gender, COUNT(*) AS user_count
+        FROM users
+        WHERE gender IS NOT NULL
+        GROUP BY gender
+        ORDER BY user_count DESC
+    """)
+    gender_data = cursor.fetchall()
+    
+    if gender_data:  # Only create chart if there's data
+        plt.figure(figsize=(10, 8))
+        labels = [row['gender'] for row in gender_data]
+        sizes = [row['user_count'] for row in gender_data]
+        colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
+        # explode = [0.05] * len(labels)  # Slight separation for all slices
+        
+        plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
+                startangle=90, textprops={'fontsize': 12},
+                shadow=True)
+        plt.title('User Distribution by Gender', fontsize=16, fontweight='bold', pad=20)
+        plt.axis('equal')
+        plt.tight_layout()
+        plt.savefig(os.path.join(chart_dir, 'gender_distribution.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+
+    # 3. Gender Distribution of author Pie Chart
+    cursor.execute("""
+        SELECT gender, COUNT(*) AS author_count
+        FROM authors
+        WHERE gender IS NOT NULL
+        GROUP BY gender
+        ORDER BY author_count DESC
+    """)
+    gender_data_author = cursor.fetchall()
+    
+    if gender_data_author:  # Only create chart if there's data
+        plt.figure(figsize=(10, 8))
+        labels = [row['gender'] for row in gender_data_author]
+        sizes = [row['author_count'] for row in gender_data_author]
+        colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
+        # explode = [0.05] * len(labels)  # Slight separation for all slices
+        
+        plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
+                startangle=90, textprops={'fontsize': 12},
+                shadow=True)
+        plt.title('Author Distribution by Gender', fontsize=16, fontweight='bold', pad=20)
+        plt.axis('equal')
+        plt.tight_layout()
+        plt.savefig(os.path.join(chart_dir, 'gender_distribution_author.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+    
+    # 4. Language Distribution Bar Chart
     cursor.execute("""
         SELECT language, COUNT(*) AS book_count
         FROM books
@@ -3461,7 +3517,7 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'language_distribution.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 3. User Growth Over Time (Line Chart)
+    # 5. User Growth Over Time (Line Chart)
     cursor.execute("""
         SELECT 
             DATE_FORMAT(join_date, '%Y-%m') AS month,
@@ -3498,7 +3554,7 @@ def generate_charts(cursor, time_range):
     plt.savefig(os.path.join(chart_dir, 'user_growth.png'), dpi=150, bbox_inches='tight')
     plt.close()
     
-    # 4. Reviews Activity (Bar Chart)
+    # 6. Reviews Activity (Bar Chart)
     cursor.execute("""
         SELECT 
             DATE_FORMAT(review_date, '%Y-%m') AS month,
@@ -3539,7 +3595,6 @@ def generate_charts(cursor, time_range):
     fig.tight_layout()
     plt.savefig(os.path.join(chart_dir, 'reviews_activity.png'), dpi=150, bbox_inches='tight')
     plt.close()
-
 # -------------------------
 # Run app
 # -------------------------
