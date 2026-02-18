@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Add New Author</title>
@@ -96,4 +96,123 @@ button {
 </div>
 
 </body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Author</title>
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .form-container {
+            background: #ffffff;
+            width: 500px;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 11px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 90px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.95;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #5a67d8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-container">
+    <h2>Add New Author</h2>
+
+    <form method="POST">
+
+        <label>Author Name</label>
+        <input type="text" name="name" required>
+
+        <label>Gender</label>
+        <select name="gender">
+            <option value="">-- Select Gender --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label>Date of Birth</label>
+        <input type="date" name="date_of_birth" required>
+
+        <label>Date of Death</label>
+        <input type="date" name="date_of_death">
+
+        <label>Biography</label>
+        <textarea name="biography"></textarea>
+
+        <label>Profile Image URL</label>
+        <input type="text" name="profile_image_url" placeholder="https://example.com/image.jpg">
+
+        <button type="submit">Add Author</button>
+    </form>
+
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">
+        ← Back to Dashboard
+    </a>
+</div>
+
+</body>
 </html>
+
