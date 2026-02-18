@@ -35,12 +35,43 @@
             align-items: center;
         }
 
+        .logo {
+            height: 30px;              /* fixed height for consistency */
+            width: auto;               /* keeps aspect ratio */
+            object-fit: contain;       /* prevents distortion */
+            display: block;
+            transform-origin: left center; /* grows from left edge */
+            background: transparent;   /* ensures no background mismatch */
+        }
+
+        .header-logo {
+            height: 85px;          /* controlled size */
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;        /* prevents shrinking */
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .author-info h1 {
             margin: 0 0 10px 0;
             font-size: 32px;
         }
 
         .author-info p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .author-text h1 {
+            margin: 0 0 5px 0;
+        }
+
+        .author-text p {
             margin: 0;
             opacity: 0.9;
         }
@@ -337,11 +368,15 @@
     <div class="author-header">
         <div class="container">
             <div class="author-info">
-                <h1>
-                    {{ author.name }}
-                    <span class="author-badge">✍️ AUTHOR</span>
-                </h1>
-                <p>{{ author.email }}</p>
+                <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="header-logo">
+                
+                <div class="author-text">
+                    <h1>
+                        {{ author.name }}
+                        <span class="author-badge">✍️ AUTHOR</span>
+                    </h1>
+                    <p>{{ author.email }}</p>
+                </div>
             </div>
             <div class="author-actions">
                 
