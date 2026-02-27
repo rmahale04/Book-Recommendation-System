@@ -1439,8 +1439,6 @@ UPDATE books SET buy_link = 'https://www.amazon.com/s?k=The+Monk+Who+Sold+His+Fe
 
 -- Verify
 SELECT book_id, title, buy_link FROM books ORDER BY book_id;
--- Verify
-SELECT book_id, title, buy_link FROM books ORDER BY book_id;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
