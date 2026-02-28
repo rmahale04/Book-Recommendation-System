@@ -26,22 +26,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-# db_config = {
-#     "host": "localhost",
-#     "port": 3306,
-#     "user": "root",
-#     "password": "Netra@432",
-#     "database": "books_db2"
-# }
-
-# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
-    "database": "books_db"
+    "password": "Netra@432",
+    "database": "books_db1"
 }
+
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db"
+# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -1170,7 +1170,7 @@ def book_details(book_id):
     # --- Book details ---
     cursor.execute("""
         SELECT b.book_id, b.author_id, b.title, a.name AS author, s.name AS series,
-               b.published_year, b.cover_image_url, b.language, b.description,
+               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,
                GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
