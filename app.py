@@ -2216,6 +2216,35 @@ def recommendations():
         ))
     friends_books = cursor.fetchall()
 
+
+    # --- 5️ Recommend based on favourite authors ---
+    author_books = []
+    cursor.execute("""
+        SELECT DISTINCT
+            b.book_id,
+            b.title,
+            a.name AS author,
+            b.cover_image_url,
+            a.author_id,
+            b.published_year
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        JOIN books shelved_b ON usb.book_id = shelved_b.book_id
+        JOIN authors a ON shelved_b.author_id = a.author_id
+        JOIN books b ON b.author_id = a.author_id
+        LEFT JOIN authors a2 ON b.author_id = a2.author_id
+        WHERE s.user_id = %s
+        AND b.book_id NOT IN (
+            SELECT usb2.book_id
+            FROM user_shelf_books usb2
+            JOIN shelves s2 ON usb2.shelf_id = s2.shelf_id
+            WHERE s2.user_id = %s
+        )
+        ORDER BY a.name, b.published_year DESC
+        LIMIT 10
+    """, (session["user_id"], session["user_id"]))
+    author_books = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -2225,6 +2254,7 @@ def recommendations():
         genre_books=genre_books,
         continue_books=continue_books,
         friends_books=friends_books,
+        author_books = author_books,
         active_page="recommendations"
     )
 
