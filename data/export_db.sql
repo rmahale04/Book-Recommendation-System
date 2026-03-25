@@ -1,0 +1,484 @@
+-- MySQL dump 10.13  Distrib 8.0.32, for Win64 (x86_64)
+--
+-- Host: localhost    Database: books_db1
+-- ------------------------------------------------------
+-- Server version	8.0.32
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `author_requests`
+--
+
+DROP TABLE IF EXISTS `author_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `author_requests` (
+  `request_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` enum('Male','Female','Others') COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `biography` text COLLATE utf8mb4_general_ci NOT NULL,
+  `date_of_birth` date NOT NULL,
+  `status` enum('pending','approved','rejected') COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`request_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `author_requests`
+--
+
+LOCK TABLES `author_requests` WRITE;
+/*!40000 ALTER TABLE `author_requests` DISABLE KEYS */;
+INSERT INTO `author_requests` VALUES (1,'Eiichiro Oda','Male','ru-- chitamahale180904@gmail.com','scrypt:32768:8:1$XxGu0KSjtQAj8DcX$c96e0d6dd6e631fb03a2c3c8ed973a8f3b221ed243437ca29b652d851a5ab228ee40f957b4760f0e5034cc47c23453f48202f66658f438138ed43ad423399a3d','Eiichiro Oda is a Japanese manga artist best known as the creator of One Piece, one of the most successful manga series of all time. Born in Kumamoto, Japan, he showed an early interest in drawing and storytelling and began his professional career in his late teens. Oda gained major recognition after One Piece debuted in 1997. He is praised for his imaginative world-building, memorable characters, and emotional storytelling. The series has broken multiple records, cementing Oda’s influence in modern manga culture.','1975-01-01','approved','2025-12-29 11:21:09','2025-12-29 11:24:40'),(2,'Eiichiro Oda','Male','ruchitamahale180904@gmail.com','scrypt:32768:8:1$XxGu0KSjtQAj8DcX$c96e0d6dd6e631fb03a2c3c8ed973a8f3b221ed243437ca29b652d851a5ab228ee40f957b4760f0e5034cc47c23453f48202f66658f438138ed43ad423399a3d','Eiichiro Oda is a Japanese manga artist best known as the creator of One Piece, one of the most successful manga series of all time. Born in Kumamoto, Japan, he showed an early interest in drawing and storytelling and began his professional career in his late teens. Oda gained major recognition after One Piece debuted in 1997. He is praised for his imaginative world-building, memorable characters, and emotional storytelling. The series has broken multiple records, cementing Oda’s influence in modern manga culture.','1975-01-01','approved','2025-12-29 11:21:09','2025-12-29 11:24:40'),(3,'lowen','Female','lowen@gmail.com','scrypt:32768:8:1$LObgEVGmCrDEoZ6f$2946633dcd52adadf3dbd6a5c23002f90a7d070492a6dede86c64c2a867fffed8084d5991bbba0a28f647c518c80286af86681f065b68fb44da8f99848b58f67','hii its good to meet you fdjfkdjfkldsjfkldsfjkdsfjkdlfjdsklfjsdklfjsdkkkkkkkkkkkkkkkkkkkkkkkkkkkkkdfsdnkldsnfnvfvnmcxvnsfjoh fghsjlhsd fhsdjfhsdjfhsjfdshjlhjjhhdfjf hj fhadjfhsdj  dfhjdsfhjasdfh  dfjsdjfsdjfhdsjfh d dfadsfsdf','2002-02-20','approved','2026-03-18 06:18:11','2026-03-18 06:18:59');
+/*!40000 ALTER TABLE `author_requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `authors`
+--
+
+DROP TABLE IF EXISTS `authors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `authors` (
+  `author_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` enum('Male','Female','Other') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `biography` text COLLATE utf8mb4_general_ci,
+  `email` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `date_of_birth` date NOT NULL,
+  `date_of_death` date DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `profile_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`author_id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `authors`
+--
+
+LOCK TABLES `authors` WRITE;
+/*!40000 ALTER TABLE `authors` DISABLE KEYS */;
+INSERT INTO `authors` VALUES (1,'Premchand','Male','Pioneer of modern Hindi fiction, wrote social realism novels like Godaan.',NULL,'','1880-07-31','1936-10-08','2025-12-23 17:50:40','',NULL),(2,'J.K. Rowling','Female','British author of the Harry Potter fantasy series.','ruchi04ta@gmail.com','','1965-07-31',NULL,'2025-12-23 17:50:40','',NULL),(3,'Vishnu Sakharam Khandekar','Male','Marathi novelist, first Marathi author to win Jnanpith Award.',NULL,'','1898-01-11','1976-09-02','2025-12-23 17:50:40','',NULL),(4,'Yuval Noah Harariiiii','Male','Israeli historian and author of Sapiens and Homo Deus.','netrajigneshpatel@gmail.com','scrypt:32768:8:1$tQVT1oK7iMACd92W$e2962590852ca703af99fdb190c01c9da0a1e61fbd64e04d9d992837753fa9dbfe0e0af6f1384ac673985b5ec26e2413d9417224e607546a247b945d440d0051','1976-02-24',NULL,'2025-12-23 17:50:40','','http://127.0.0.1:5000/author_profile/edit'),(5,'Ramachandra Guha','Male','Indian historian and biographer.','keyurimakwana7@gmail.com','','1958-04-29',NULL,'2025-12-23 17:50:40','',NULL),(6,'Jane Austen','Female','English author famous for Pride and Prejudice and other romance novels.',NULL,'','1775-12-16','1817-07-18','2025-12-23 17:50:40','',NULL),(7,'Dan Brown','Male','American author of thriller novels like The Da Vinci Code.','dan_brown@gmail.com','','1964-06-22',NULL,'2025-12-23 17:50:40','',NULL),(8,'Satyajit Ray','Male','Indian filmmaker and author of thriller stories (Feluda series).',NULL,'','1921-05-02','1992-04-23','2025-12-23 17:50:40','',NULL),(9,'Robert Hughes','Male','Art critic and author of The Shock of the New.',NULL,'','1938-07-28','2012-08-06','2025-12-23 17:50:40','',NULL),(10,'Subodh Gupta','Male','Contemporary Indian artist and writer on modern Indian art.','subodh_gupta@gmail.com','','1964-11-04',NULL,'2025-12-23 17:50:40','',NULL),(11,'Stephen King','Male','American author of horror, supernatural fiction, and thrillers.','stephen_king@gmail.com','','1947-09-21',NULL,'2025-12-23 17:50:40','',NULL),(12,'Ramdhari Singh Dinkar','Male','Hindi poet and writer who explored darker themes.',NULL,'','1908-09-23','1974-04-24','2025-12-23 17:50:40','',NULL),(13,'J.R.R. Tolkien','Male','British author of The Lord of the Rings and The Hobbit.',NULL,'','1892-01-03','1973-09-02','2025-12-23 17:50:40','',NULL),(14,'C.S. Lewis','Male','British author of The Chronicles of Narnia series.',NULL,'','1898-11-29','1963-11-22','2025-12-23 17:50:40','',NULL),(15,'Amish Tripathi','Male','Indian author known for the Shiva Trilogy, fantasy novels in English.','amish_tripathi@gmail.com','','1974-10-18',NULL,'2025-12-23 17:50:40','',NULL),(16,'Suzanne Collins','Female','American author of The Hunger Games series.','suzanne_collins@gmail.com','','1962-08-10',NULL,'2025-12-23 17:50:40','',NULL),(17,'Anuja Chauhan','Female','Indian novelist writing YA/fiction in English and Hindi.','anuja_chauhan@gmail.com','','1970-06-10',NULL,'2025-12-23 17:50:40','',NULL),(18,'Stan Lee','Male','American comic book writer, co-creator of Marvel superheroes.',NULL,'','1922-12-28','2018-11-12','2025-12-23 17:50:40','',NULL),(19,'R.K. Laxman','Male','Indian cartoonist, creator of The Common Man.',NULL,'','1921-10-24','2015-01-26','2025-12-23 17:50:40','',NULL),(20,'Walter Isaacson','Male','American author of biographies on Steve Jobs, Einstein, Leonardo da Vinci.','walter_isaacson@gmail.com','','1952-05-20',NULL,'2025-12-23 17:50:40','',NULL),(21,'Khushwant Singh','Male','Indian writer and biographer.',NULL,'','1915-02-02','2014-03-20','2025-12-23 17:50:40','',NULL),(22,'William Dalrymple','Male','British historian and author of books on Indian history.','william_dalrymple@gmail.com','','1965-05-20',NULL,'2025-12-23 17:50:40','',NULL),(23,'Irfan Habib','Male','Indian historian specializing in medieval India.','irfan_habib@gmail.com','','1931-08-03',NULL,'2025-12-23 17:50:40','',NULL),(24,'Bipan Chandra','Male','Indian historian and author of modern Indian history books.',NULL,'','1928-08-14','2014-08-30','2025-12-23 17:50:40','',NULL),(25,'Abhinav Bindra','Male','Indian Olympic gold medalist, author of autobiography.','abhinav_bindra@gmail.com','','1982-09-28',NULL,'2025-12-23 17:50:40','',NULL),(26,'Sachin Tendulkar','Male','Indian cricketer, author of autobiography and sports books.','sachin_tendulkar@gmail.com','','1973-04-24',NULL,'2025-12-23 17:50:40','',NULL),(27,'George R.R. Martin','Male','American author known for the A Song of Ice and Fire series.','george_martin@gmail.com','','1948-09-20',NULL,'2025-12-23 17:50:40','',NULL),(28,'Ana Huang','Female','Contemporary romance novelist, known for the Twisted series.','ana_huang@gmail.com','','0000-00-00',NULL,'2025-12-23 17:50:40','',NULL),(29,'Colleen Hoover','Female','American author of contemporary romance and emotional fiction.','colleen_hoover@gmail.com','','1979-12-11',NULL,'2025-12-23 17:50:40','',NULL),(30,'Sarah J. Maas','Female','American fantasy author, known for ACOTAR and TOG series.','sarah_maas@gmail.com','','1986-03-05',NULL,'2025-12-23 17:50:40','',NULL),(31,'Brandon Sanderson','Male','American epic fantasy author, Mistborn and Cosmere universe.','brandon_sanderson@gmail.com','','1975-12-19',NULL,'2025-12-23 17:50:40','',NULL),(32,'Ravinder Singh','Male','Indian romance author known for emotional love stories.','ravinder_singh@gmail.com','','1982-02-04',NULL,'2025-12-23 17:50:40','',NULL),(33,'John Green','Male','American author of YA novels like The Fault in Our Stars.','john_green@gmail.com','','1977-08-24',NULL,'2025-12-23 17:50:40','',NULL),(34,'Veronica Roth','Female','American YA author known for Divergent series.','veronica_roth@gmail.com','','1988-08-19',NULL,'2025-12-23 17:50:40','',NULL),(35,'Paulo Coelho','Male','Brazilian novelist known for The Alchemist.','paulo_coelho@gmail.com','','1947-08-24',NULL,'2025-12-23 17:50:40','',NULL),(36,'Khaled Hosseini','Male','Afghan-American novelist known for The Kite Runner.','khaled_hosseini@gmail.com','','1965-03-04',NULL,'2025-12-23 17:50:40','',NULL),(37,'Haruki Murakami','Male','Japanese author known for surreal fiction.','haruki_murami@gmail.com','','1949-01-12',NULL,'2025-12-23 17:50:40','',NULL),(38,'Ruskin Bond','Male','Indian author of children’s and fiction books.','ruskin_bond@gmail.com','','1934-05-19',NULL,'2025-12-23 17:50:40','',NULL),(39,'Chetan Bhagat','Male','Indian author of contemporary fiction.','chetan_bhagat@gmail.com','','1974-04-22',NULL,'2025-12-23 17:50:40','',NULL),(40,'Rick Riordan','Male','American author of Percy Jackson series.','rick_riordan@gmail.com','','1964-06-05',NULL,'2025-12-23 17:50:40','',NULL),(41,'Taylor Jenkins Reid','Female','American author known for celebrity-driven fiction.','taylor_reid@gmail.com','','1983-12-20',NULL,'2025-12-23 17:50:40','',NULL),(42,'Jojo Moyes','Female','British romance author.','jojo_moyes@gmail.com','','1969-08-04',NULL,'2025-12-23 17:50:40','',NULL),(43,'Elif Shafak','Female','Turkish-British novelist known for multicultural themes.','elif_shafak@gmail.com','','1971-10-25',NULL,'2025-12-23 17:50:40','',NULL),(44,'Agatha Christie','Female','British writer known for her 66 detective novels.',NULL,'','1890-09-15','1976-01-12','2025-12-23 17:50:40','',NULL),(45,'Arthur Conan Doyle','Male','British writer, creator of Sherlock Holmes.',NULL,'','1859-05-22','1930-07-07','2025-12-23 17:50:40','',NULL),(46,'George Orwell','Male','English novelist, essayist, journalist and critic.',NULL,'','1903-06-25','1950-01-21','2025-12-23 17:50:40','',NULL),(47,'Harper Lee','Female','American novelist known for To Kill a Mockingbird.',NULL,'','1926-04-28','2016-02-19','2025-12-23 17:50:40','',NULL),(48,'F. Scott Fitzgerald','Male','American novelist of the Jazz Age.',NULL,'','1896-09-24','1940-12-21','2025-12-23 17:50:40','',NULL),(49,'Sudha Murty','Female','Indian educator, author and philanthropist.','sudha_murty@gmail.com','','1950-08-19',NULL,'2025-12-23 17:50:40','',NULL),(50,'A.P.J. Abdul Kalam','Male','Indian aerospace scientist and statesman.',NULL,'','1931-10-15','2015-07-27','2025-12-23 17:50:40','',NULL),(51,'Arundhati Roy','Female','Indian author and political activist.','arundhati_roy@gmail.com','','1961-11-24',NULL,'2025-12-23 17:50:40','',NULL),(52,'Frank Herbert','Male','American science fiction author.',NULL,'','1920-10-08','1986-02-11','2025-12-23 17:50:40','',NULL),(53,'Gillian Flynn','Female','American author known for thriller novels.','gillian_flynn@gmail.com','','1971-02-24',NULL,'2025-12-23 17:50:40','',NULL),(54,'Alex Michaelides','Male','Cypriot-American author of thrillers.','alex_michaelides@gmail.com','','1977-09-04',NULL,'2025-12-23 17:50:40','',NULL),(55,'Fyodor Dostoevsky','Male','Russian novelist and philosopher.',NULL,'','1821-11-11','1881-02-09','2025-12-23 17:50:40','',NULL),(56,'Gabriel García Márquez','Male','Colombian novelist and Nobel laureate.',NULL,'','1927-03-06','2014-04-17','2025-12-23 17:50:40','',NULL),(57,'Daniel Kahneman','Male','Daniel Kahneman was an Israeli-American psychologist and Nobel Prize winner (2002), known for his work on behavioral economics. He co-developed Prospect Theory and the concepts of heuristics and cognitive biases, which explain common decision-making errors. He was a professor emeritus of psychology at Princeton University.','','','1934-03-05','2024-03-27','2025-12-24 21:52:25','https://images.squarespace-cdn.com/content/v1/5e9dffafb55f6258d0337a4b/1645805107374-C2GW98DESOO1R8SVBWGE/Daniel+Kahneman+Headshot.jpg',NULL),(58,'C.G. Jung','Male','Carl Gustav Jung was a Swiss psychiatrist and psychotherapist who founded analytical psychology. He introduced influential concepts such as introversion and extraversion, archetypes, the collective unconscious, individuation, and synchronicity, and his ideas inspired tools like the Myers-Briggs Type Indicator (MBTI).\r\n\r\nWhile a practicing clinician, Jung also explored philosophy, religion, mythology, alchemy, and the arts. Though sometimes seen as a mystic, he viewed himself as a scientist. His work has had a lasting impact on psychology, spirituality, and modern thought.',NULL,'','1875-07-26','1961-06-06','2025-12-24 21:52:25','https://www.jungiananalysts.org/img/jung.jpg',NULL),(59,'Dale Carnegie','Male','Dale Carnegie was an American writer and teacher of courses in self-improvement, salesmanship, corporate training, public speaking, and interpersonal skills. Born into poverty on a farm in Missouri, he was the author of How to Win Friends and Influence People (1936), a bestseller that remains popular today. He also wrote How to Stop Worrying and Start Living (1948), Lincoln the Unknown (1932), and several other books.\r\nOne of the core ideas in his books is that it is possible to change other people\'s behavior by changing one\'s behavior towards them.',NULL,'','1888-11-24','1955-11-01','2025-12-24 22:00:18',NULL,NULL),(60,'James Clear','Male','James Clear is the author of Atomic Habits, a bestselling guide to building good habits and breaking bad ones.\r\nHe writes about habits, decision-making, and continuous improvement at jamesclear.com, which attracts millions of readers and a large email audience.\r\nHis work has appeared in major publications like The New York Times and Time, and he regularly speaks to Fortune 500 companies and professional sports teams.','james_clear@gmail.com','','1986-01-01',NULL,'2025-12-24 22:00:18',NULL,NULL),(63,'Robin Sharma','Male','Robin Sharma is a Canadian author, leadership expert, and motivational speaker best known for The Monk Who Sold His Ferrari. A former lawyer, he left his legal career to focus on personal mastery, leadership, and self-improvement. His books have sold millions of copies worldwide, and he regularly speaks to global organizations and Fortune 500 companies on leadership and performance.','robin_sharma@gmail.com','','1964-06-16',NULL,'2025-12-24 22:08:39','https://images.gr-assets.com/authors/1245404621p8/24678.jpg',NULL),(64,'Agatha Christie','Female','Agatha Christie was an English writer famed for 66 detective novels and 14 short story collections, featuring iconic characters like Hercule Poirot and Miss Marple. Known as the “Queen of Crime,” she also wrote The Mousetrap, the world’s longest-running play. Knighted in 1971, she is the best-selling fiction writer of all time, with over two billion copies sold.',NULL,'','1890-09-15','1976-01-12','2025-12-24 22:08:39','https://images.gr-assets.com/authors/1589991473p8/123715.jpg',NULL),(65,'Sanjeev Kapoor','Male','Sanjeev Kapoor is a renowned Indian chef, entrepreneur, and television personality best known for hosting the long-running cookery show Khana Khazana. He has played a major role in popularizing Indian cuisine globally through his cookbooks, restaurants, and media presence. Awarded the Padma Shri in 2017, Kapoor is one of the most influential and recognizable chefs in India.','sanjeev_kapoor@gmail.com','','1964-04-10',NULL,'2025-12-24 22:19:19','https://images.gr-assets.com/authors/1355456907p8/95058.jpg',NULL),(66,'Tarla Dalal','Female','Tarla Dalal was a renowned Indian chef, cookbook author, and food writer who popularized vegetarian cooking in India and abroad. She authored over 170 cookbooks, many focusing on Indian, vegetarian, and health-conscious recipes, and founded the Tarla Dalal Cooking Academy. Honored with the Padma Shri in 2007, she remains one of India’s most influential culinary figures.',NULL,'','1936-06-03','2013-11-06','2025-12-24 22:19:19',NULL,NULL),(67,'Paul Theroux',NULL,'Paul Theroux is an American author and travel writer best known for books such as The Great Railway Bazaar. He has written extensively across genres, including travel writing, novels, essays, and short stories, and is regarded as one of the most influential modern travel writers.','paul_theroux@gmail.com','','1941-04-10',NULL,'2025-12-24 22:25:52','https://images.gr-assets.com/authors/1206717783p8/9599.jpg',NULL),(68,'Peter F. Drucker','Male',NULL,NULL,'','1909-11-19','2005-11-11','2025-12-24 22:25:52','https://images.gr-assets.com/authors/1318472244p8/12008.jpg',NULL),(69,'lowen','Female','hii its good to meet you fdjfkdjfkldsjfkldsfjkdsfjkdlfjdsklfjsdklfjsdkkkkkkkkkkkkkkkkkkkkkkkkkkkkkdfsdnkldsnfnvfvnmcxvnsfjoh fghsjlhsd fhsdjfhsdjfhsjfdshjlhjjhhdfjf hj fhadjfhsdj  dfhjdsfhjasdfh  dfjsdjfsdjfhdsjfh d dfadsfsdf','lowen@gmail.com','scrypt:32768:8:1$LObgEVGmCrDEoZ6f$2946633dcd52adadf3dbd6a5c23002f90a7d070492a6dede86c64c2a867fffed8084d5991bbba0a28f647c518c80286af86681f065b68fb44da8f99848b58f67','2002-02-20',NULL,'2026-03-18 06:18:59',NULL,NULL);
+/*!40000 ALTER TABLE `authors` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `book_genres`
+--
+
+DROP TABLE IF EXISTS `book_genres`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `book_genres` (
+  `book_id` int NOT NULL,
+  `genre_id` int NOT NULL,
+  PRIMARY KEY (`book_id`,`genre_id`),
+  KEY `genre_id` (`genre_id`),
+  CONSTRAINT `book_genres_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`),
+  CONSTRAINT `book_genres_ibfk_2` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`genre_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `book_genres`
+--
+
+LOCK TABLES `book_genres` WRITE;
+/*!40000 ALTER TABLE `book_genres` DISABLE KEYS */;
+INSERT INTO `book_genres` VALUES (1,1),(3,1),(6,1),(7,1),(8,1),(10,1),(11,1),(24,1),(25,1),(28,1),(31,1),(32,1),(33,1),(34,1),(35,1),(37,1),(38,1),(39,1),(41,1),(42,1),(43,1),(44,1),(45,1),(46,1),(47,1),(48,1),(50,1),(52,1),(54,1),(55,1),(56,1),(57,1),(66,1),(69,1),(70,1),(80,1),(84,1),(85,1),(86,1),(90,1),(91,1),(92,1),(93,1),(94,1),(95,1),(4,2),(5,2),(9,2),(18,2),(20,2),(21,2),(22,2),(31,2),(49,2),(51,2),(87,2),(88,2),(96,2),(97,2),(98,2),(99,2),(101,2),(2,3),(12,3),(13,3),(14,3),(15,3),(23,3),(26,3),(27,3),(30,3),(36,3),(58,3),(59,3),(60,3),(61,3),(62,3),(63,3),(64,3),(65,3),(67,3),(68,3),(71,3),(72,3),(12,4),(23,4),(27,4),(61,4),(62,4),(63,4),(64,4),(65,4),(66,4),(73,4),(6,5),(24,5),(25,5),(26,5),(28,5),(29,5),(32,5),(35,5),(38,5),(39,5),(53,5),(81,5),(82,5),(83,5),(89,5),(90,5),(91,5),(92,5),(93,5),(94,5),(95,5),(7,6),(8,6),(40,6),(41,6),(42,6),(74,6),(75,6),(76,6),(77,6),(7,7),(40,7),(47,7),(74,7),(75,7),(76,7),(77,7),(78,7),(79,7),(81,7),(10,8),(78,8),(79,8),(80,8),(18,9),(19,9),(22,9),(51,9),(96,9),(4,10),(5,10),(9,10),(19,10),(20,10),(21,10),(45,10),(56,10),(87,10),(88,10),(2,11),(13,11),(15,11),(29,11),(30,11),(36,11),(58,11),(59,11),(60,11),(67,11),(68,11),(69,11),(70,11),(71,11),(72,11),(92,11),(93,11),(94,11),(95,11),(102,11),(2,12),(34,12),(57,12),(16,13),(17,13),(16,14),(17,14),(43,15),(46,15),(50,15),(52,15),(53,15),(54,15),(55,15),(82,15),(83,15),(84,15),(85,15),(93,15),(94,15),(95,15),(39,16),(33,17),(48,17),(86,17),(3,18),(14,18),(73,18),(24,19),(81,19),(89,19),(90,19),(91,19),(97,20),(98,20),(99,20),(101,20),(96,21),(97,21),(99,21),(101,21),(97,22),(99,22),(101,22),(74,24),(75,24),(78,25),(9,27),(98,27),(101,29),(6,30),(98,30),(103,32),(103,33),(96,36),(90,38),(89,39),(91,39),(89,40),(90,40),(92,40),(92,41),(92,42),(24,45),(90,45),(89,46),(91,46),(91,47),(91,48),(24,49),(103,49),(99,52),(103,53),(22,61),(96,61),(22,62),(96,62);
+/*!40000 ALTER TABLE `book_genres` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `books`
+--
+
+DROP TABLE IF EXISTS `books`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `books` (
+  `book_id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `author_id` int DEFAULT NULL,
+  `series_id` int DEFAULT NULL,
+  `published_year` int DEFAULT NULL,
+  `language` enum('English','Hindi','Gujarati','Marathi') COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `cover_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `isbn` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `page_count` int DEFAULT NULL,
+  `buy_link` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`book_id`),
+  KEY `author_id` (`author_id`),
+  KEY `series_id` (`series_id`),
+  CONSTRAINT `books_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `authors` (`author_id`),
+  CONSTRAINT `books_ibfk_2` FOREIGN KEY (`series_id`) REFERENCES `series` (`series_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `books`
+--
+
+LOCK TABLES `books` WRITE;
+/*!40000 ALTER TABLE `books` DISABLE KEYS */;
+INSERT INTO `books` VALUES (1,'Godaan',1,7,1936,'Hindi','Classic Hindi novel on rural India and social issues.','static/images/godaan.png','9788171673135',388,'https://www.amazon.com/s?k=Godaan+Premchand'),(2,'Harry Potter and the Philosopher\'s Stone',2,1,1997,'English','The first book in the Harry Potter series.','https://covers.openlibrary.org/b/isbn/9780747532699-M.jpg','9780747532699',223,'https://www.amazon.com/s?k=Harry+Potter+and+the+Philosopher%27s+Stone+J.K.+Rowling'),(3,'Yayati',3,7,1959,'Marathi','Retelling of mythological story of Yayati.','static/images/yayati.png','9788171824506',432,'https://www.amazon.com/s?k=Yayati+V.S.+Khandekar'),(4,'Sapiens: A Brief History of Humankind',4,7,2011,'English','History and impact of Homo sapiens.','https://covers.openlibrary.org/b/isbn/9780099590088-M.jpg','9780099590088',443,'https://www.amazon.com/s?k=Sapiens+A+Brief+History+of+Humankind+Yuval+Noah+Harari'),(5,'India After Gandhi',5,7,2007,'English','History of India post-independence.','static/images/india_after_gandhi.png','9780312421036',912,'https://www.amazon.com/s?k=India+After+Gandhi+Ramachandra+Guha'),(6,'Pride and Prejudice',6,7,1813,'English','Classic romance novel by Jane Austen.','https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg','9780141439518',279,'https://www.amazon.com/s?k=Pride+and+Prejudice+Jane+Austen'),(7,'The Da Vinci Code',7,7,2003,'English','Mystery thriller about secret societies.','https://covers.openlibrary.org/b/isbn/9780385504201-M.jpg','9780385504201',454,'https://www.amazon.com/s?k=The+Da+Vinci+Code+Dan+Brown'),(8,'Feluda Samagra',8,7,1980,'Hindi','Detective stories by Satyajit Ray.','https://ia601909.us.archive.org/view_archive.php?archive=/31/items/l_covers_0013/l_covers_0013_31.zip&file=0013314988-L.jpg','9788172239565',830,'https://www.amazon.com/s?k=Feluda+Samagra+Satyajit+Ray'),(9,'The Shock of the New',9,7,1980,'English','Critical analysis of modern art.','static/images/the_shock_of_the_new.png','9780140095273',448,'https://www.amazon.com/s?k=The+Shock+of+the+New+Robert+Hughes'),(10,'It',11,7,1986,'English','Horror novel by Stephen King.','https://covers.openlibrary.org/b/isbn/9780670813025-M.jpg','9780670813025',1138,'https://www.amazon.com/s?k=It+Stephen+King'),(11,'Rashmirathi',12,7,1952,'Hindi','Epic Hindi poem with mythological themes.','static/images/rashmirathi.png','9788171670035',144,'https://www.amazon.com/s?k=Rashmirathi+Ramdhari+Singh+Dinkar'),(12,'The Fellowship of the Ring',13,6,1954,'English','First book of The Lord of the Rings.','https://covers.openlibrary.org/b/isbn/9780261103573-M.jpg','9780261103573',423,'https://www.amazon.com/s?k=The+Fellowship+of+the+Ring+J.R.R.+Tolkien'),(13,'The Lion, the Witch and the Wardrobe',14,7,1950,'English','Chronicles of Narnia fantasy novel.','https://covers.openlibrary.org/b/isbn/9780064471046-M.jpg','9780064471046',208,'https://www.amazon.com/s?k=The+Lion+the+Witch+and+the+Wardrobe+C.S.+Lewis'),(14,'The Immortals of Meluha',15,4,2010,'English','First book of the Shiva Trilogy.','https://ia904605.us.archive.org/view_archive.php?archive=/14/items/l_covers_0011/l_covers_0011_15.zip&file=0011152324-L.jpg','9780143425058',412,'https://www.amazon.com/s?k=The+Immortals+of+Meluha+Amish+Tripathi'),(15,'The Hunger Games',16,5,2008,'English','Dystopian YA novel.','https://covers.openlibrary.org/b/isbn/9780439023528-M.jpg','9780439023528',374,'https://www.amazon.com/s?k=The+Hunger+Games+Suzanne+Collins'),(16,'Marvel Comics: Spider-Man',18,7,1962,'English','Classic Marvel superhero comics.','https://ia800800.us.archive.org/view_archive.php?archive=/27/items/olcovers66/olcovers66-L.zip&file=661367-L.jpg','9780785198192',160,'https://www.amazon.com/s?k=Marvel+Comics+Spider-Man+Stan+Lee'),(17,'The Common Man Cartoons',19,7,1951,'Marathi','Cartoon series by R.K. Laxman.','https://covers.openlibrary.org/b/isbn/9788172245177-M.jpg','9788172245177',200,'https://www.amazon.com/s?k=The+Common+Man+Cartoons+R.K.+Laxman'),(18,'Steve Jobs',20,7,2011,'English','Biography of Steve Jobs by Walter Isaacson.','https://covers.openlibrary.org/b/isbn/9781451648539-M.jpg','9781451648539',656,'https://www.amazon.com/s?k=Steve+Jobs+Walter+Isaacson'),(19,'The History of Sikhs',21,7,2003,'English','Historical biography by Khushwant Singh.','https://ia600808.us.archive.org/view_archive.php?archive=/18/items/olcovers113/olcovers113-L.zip&file=1130146-L.jpg','9788171670448',440,'https://www.amazon.com/s?k=The+History+of+Sikhs+Khushwant+Singh'),(20,'The Last Mughal',22,7,2006,'English','History of the last Mughal emperor.','https://ia600100.us.archive.org/view_archive.php?archive=/5/items/l_covers_0012/l_covers_0012_46.zip&file=0012468017-L.jpg','9780143036002',608,'https://www.amazon.com/s?k=The+Last+Mughal+William+Dalrymple'),(21,'Indian Economy under Early British Rule 1757–1857',23,7,2016,'English','Historical account by Irfan Habib.','https://ia601909.us.archive.org/view_archive.php?archive=/31/items/l_covers_0013/l_covers_0013_88.zip&file=0013885619-L.jpg','9780195678149',248,'https://www.amazon.com/s?k=Indian+Economy+under+Early+British+Rule+Irfan+Habib'),(22,'Playing It My Way',26,7,2014,'English','Autobiography of Sachin Tendulkar.','https://ia800404.us.archive.org/view_archive.php?archive=/33/items/l_covers_0010/l_covers_0010_40.zip&file=0010400033-L.jpg','9780349406429',486,'https://www.amazon.com/s?k=Playing+It+My+Way+Sachin+Tendulkar'),(23,'A Song of Ice and Fire: A Game of Thrones',27,2,1996,'English','First book of A Song of Ice and Fire.','https://covers.openlibrary.org/b/isbn/9780553103540-M.jpg','9780553103540',694,'https://www.amazon.com/s?k=A+Game+of+Thrones+George+R.R.+Martin'),(24,'Twisted Love',28,3,2021,'English','Alex Volkov is a cold, driven man haunted by a tragic past, focused only on success and vengeance—until he’s tasked with watching over his best friend’s sister, Ava Chen. She’s a bright, free-spirited woman trapped by childhood nightmares, yet she still sees the good beneath his icy exterior. What begins as duty becomes an intense, forbidden connection that cracks his walls and threatens to consume them both. As their opposites-attract chemistry grows, long-buried secrets surface, endangering their love and everything they care about. A brother’s-best-friend romance with suspenseful twists, explicit content, and a morally gray, possessive hero; can be read as a standalone.','https://covers.openlibrary.org/b/isbn/9781728274867-M.jpg','9781728274867',358,'https://www.amazon.com/s?k=Twisted+Love+Ana+Huang'),(25,'It Ends with Us',29,7,2016,'English','Emotional romance novel.','https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1688011813i/27362503.jpg','9781501110368',384,'https://www.amazon.com/s?k=It+Ends+with+Us+Colleen+Hoover'),(26,'A Court of Thorns and Roses',30,8,2015,'English','Fantasy romance inspired by Beauty and the Beast.','https://covers.openlibrary.org/b/isbn/9781619634442-M.jpg','9781619634442',416,'https://www.amazon.com/s?k=A+Court+of+Thorns+and+Roses+Sarah+J.+Maas'),(27,'Mistborn: The Final Empire',31,9,2006,'English','Epic fantasy in the Cosmere universe.','https://covers.openlibrary.org/b/isbn/9780765311788-M.jpg','9780765311788',541,'https://www.amazon.com/s?k=Mistborn+The+Final+Empire+Brandon+Sanderson'),(28,'I Too Had a Love Story',32,7,2008,'English','Heartbreaking Indian romance.','https://books.google.com/books/content?id=04IlDD3rXjAC&printsec=frontcover&img=1&zoom=1&source=gbs_api','9780143418761',214,'https://www.amazon.com/s?k=I+Too+Had+a+Love+Story+Ravinder+Singh'),(29,'The Fault in Our Stars',33,7,2012,'English','YA romance about two teens with cancer.','https://covers.openlibrary.org/b/isbn/9780525478812-M.jpg','9780525478812',313,'https://www.amazon.com/s?k=The+Fault+in+Our+Stars+John+Green'),(30,'Divergent',34,11,2011,'English','YA dystopian novel.','https://covers.openlibrary.org/b/isbn/9780062024022-M.jpg','9780062024022',487,'https://www.amazon.com/s?k=Divergent+Veronica+Roth'),(31,'The Alchemist',35,7,1988,'English','Spiritual journey of Santiago.','https://covers.openlibrary.org/b/isbn/9780061122415-M.jpg','9780061122415',208,'https://www.amazon.com/s?k=The+Alchemist+Paulo+Coelho'),(32,'The Kite Runner',36,7,2003,'English','Story of friendship and redemption.','https://covers.openlibrary.org/b/isbn/9781594480003-M.jpg','9781594480003',371,'https://www.amazon.com/s?k=The+Kite+Runner+Khaled+Hosseini'),(33,'Norwegian Wood',37,7,1987,'English','A nostalgic love story.','https://covers.openlibrary.org/b/isbn/9780375704024-M.jpg','9780375704024',296,'https://www.amazon.com/s?k=Norwegian+Wood+Haruki+Murakami'),(34,'The Blue Umbrella',38,7,1980,'English','Children\'s novel set in the hills.','https://covers.openlibrary.org/b/isbn/9788171673421-M.jpg','9788171673421',90,'https://www.amazon.com/s?k=The+Blue+Umbrella+Ruskin+Bond'),(35,'Half Girlfriend',39,7,2014,'English','Romantic drama set in India.','https://covers.openlibrary.org/b/isbn/9788129135728-M.jpg','9788129135728',260,'https://www.amazon.com/s?k=Half+Girlfriend+Chetan+Bhagat'),(36,'Percy Jackson: The Lightning Thief',40,10,2005,'English','Greek mythology adventure.','https://covers.openlibrary.org/b/id/14858779-L.jpg','9780786838654',377,'https://www.amazon.com/s?k=Percy+Jackson+The+Lightning+Thief+Rick+Riordan'),(37,'The Seven Husbands of Evelyn Hugo',41,7,2017,'English','Fiction about a Hollywood icon.','https://ia800505.us.archive.org/view_archive.php?archive=/35/items/l_covers_0014/l_covers_0014_61.zip&file=0014611465-L.jpg','9781501161933',389,'https://www.amazon.com/s?k=The+Seven+Husbands+of+Evelyn+Hugo+Taylor+Jenkins+Reid'),(38,'Me Before You',42,7,2012,'English','Romantic drama.','https://covers.openlibrary.org/b/isbn/9780718157838-M.jpg','9780718157838',369,'https://www.amazon.com/s?k=Me+Before+You+Jojo+Moyes'),(39,'The Forty Rules of Love',43,7,2010,'English','Sufi-inspired love story.','https://covers.openlibrary.org/b/isbn/9780241972939-M.jpg','9780241972939',354,'https://www.amazon.com/s?k=The+Forty+Rules+of+Love+Elif+Shafak'),(40,'And Then There Were None',44,7,1939,'English','The world’s best-selling mystery novel.','https://covers.openlibrary.org/b/isbn/9780062073488-M.jpg','9780062073488',272,'https://www.amazon.com/s?k=And+Then+There+Were+None+Agatha+Christie'),(41,'Murder on the Orient Express',44,12,1934,'English','A famous mystery featuring Hercule Poirot.','https://covers.openlibrary.org/b/isbn/9780062073501-M.jpg','9780062073501',256,'https://www.amazon.com/s?k=Murder+on+the+Orient+Express+Agatha+Christie'),(42,'A Study in Scarlet',45,13,1887,'English','The first appearance of Sherlock Holmes.','https://books.google.com/books/content?id=xN2lK7oPTjYC&printsec=frontcover&img=1&zoom=1&source=gbs_api','9780140053662',120,'https://www.amazon.com/s?k=A+Study+in+Scarlet+Arthur+Conan+Doyle'),(43,'1984',46,7,1949,'English','Dystopian social science fiction.','https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg','9780451524935',328,'https://www.amazon.com/s?k=1984+George+Orwell'),(44,'Animal Farm',46,7,1945,'English','Political satire allegory.','https://covers.openlibrary.org/b/isbn/9780451526342-M.jpg','9780451526342',112,'https://www.amazon.com/s?k=Animal+Farm+George+Orwell'),(45,'To Kill a Mockingbird',47,7,1960,'English','Classic novel about racial injustice.','https://covers.openlibrary.org/b/isbn/9780061120084-M.jpg','9780061120084',281,'https://www.amazon.com/s?k=To+Kill+a+Mockingbird+Harper+Lee'),(46,'The Great Gatsby',48,7,1925,'English','A novel about the American dream.','https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg','9780743273565',180,'https://www.amazon.com/s?k=The+Great+Gatsby+F.+Scott+Fitzgerald'),(47,'Crime and Punishment',55,7,1866,'English','Psychological anguish of a dilemma.','https://covers.openlibrary.org/b/isbn/9780140449136-M.jpg','9780140449136',430,'https://www.amazon.com/s?k=Crime+and+Punishment+Fyodor+Dostoevsky'),(48,'One Hundred Years of Solitude',56,7,1967,'English','Magical realism saga of the Buendía family.','https://covers.openlibrary.org/b/isbn/9780060883287-M.jpg','9780060883287',417,'https://www.amazon.com/s?k=One+Hundred+Years+of+Solitude+Gabriel+Garcia+Marquez'),(49,'Wise and Otherwise',49,7,2002,'English','Collection of non-fiction stories.','https://covers.openlibrary.org/b/isbn/9780143062226-M.jpg','9780143062226',232,'https://www.amazon.com/s?k=Wise+and+Otherwise+Sudha+Murty'),(50,'Dollar Bahu',49,7,2005,'English','Family drama about money and relationships.','https://books.google.com/books/content?id=WcYDAQAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api','9780143103765',150,'https://www.amazon.com/s?k=Dollar+Bahu+Sudha+Murty'),(51,'Wings of Fire',50,7,1999,'English','Autobiography of A.P.J. Abdul Kalam.','https://covers.openlibrary.org/b/isbn/9788173711466-M.jpg','9788173711466',180,'https://www.amazon.com/s?k=Wings+of+Fire+A.P.J.+Abdul+Kalam'),(52,'The God of Small Things',51,7,1997,'English','Booker Prize winning novel about twins.','https://covers.openlibrary.org/b/isbn/9780679457312-M.jpg','9780679457312',340,'https://www.amazon.com/s?k=The+God+of+Small+Things+Arundhati+Roy'),(53,'2 States',39,7,2009,'English','Story about a marriage between two cultures.','https://covers.openlibrary.org/b/isbn/9788129115300-M.jpg','9788129115300',269,'https://www.amazon.com/s?k=2+States+Chetan+Bhagat'),(54,'Five Point Someone',39,7,2004,'English','Three friends in IIT.','https://books.google.com/books/content?id=wd1qQgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api','9788129135490',270,'https://www.amazon.com/s?k=Five+Point+Someone+Chetan+Bhagat'),(55,'The 3 Mistakes of My Life',39,7,2008,'English','Friendship, cricket and politics.','https://covers.openlibrary.org/b/isbn/9788129135513-M.jpg','9788129135513',258,'https://www.amazon.com/s?k=The+3+Mistakes+of+My+Life+Chetan+Bhagat'),(56,'Train to Pakistan',21,7,1956,'English','Historical novel about the Partition of India.','https://ia801601.us.archive.org/view_archive.php?archive=/1/items/olcovers56/olcovers56-L.zip&file=568646-L.jpg','9780143027758',181,'https://www.amazon.com/s?k=Train+to+Pakistan+Khushwant+Singh'),(57,'The Room on the Roof',38,7,1956,'English','Novel about an orphaned Anglo-Indian boy.','https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1398204015i/475235.jpg','9780140103411',160,'https://www.amazon.com/s?k=The+Room+on+the+Roof+Ruskin+Bond'),(58,'Harry Potter and the Chamber of Secrets',2,1,1998,'English','Second book in the Harry Potter series.','https://covers.openlibrary.org/b/isbn/9780747538493-M.jpg','9780747538493',251,'https://www.amazon.com/s?k=Harry+Potter+and+the+Chamber+of+Secrets+J.K.+Rowling'),(59,'Harry Potter and the Prisoner of Azkaban',2,1,1999,'English','Third book in the Harry Potter series.','https://covers.openlibrary.org/b/isbn/9780747542155-M.jpg','9780747542155',317,'https://www.amazon.com/s?k=Harry+Potter+and+the+Prisoner+of+Azkaban+J.K.+Rowling'),(60,'Harry Potter and the Goblet of Fire',2,1,2000,'English','Fourth book in the Harry Potter series.','https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1627044952i/58613424.jpg','9780747546245',636,'https://www.amazon.com/s?k=Harry+Potter+and+the+Goblet+of+Fire+J.K.+Rowling'),(61,'The Hobbit',13,6,1937,'English','Fantasy novel and prelude to LOTR.','https://covers.openlibrary.org/b/isbn/9780547928227-M.jpg','9780547928227',310,'https://www.amazon.com/s?k=The+Hobbit+J.R.R.+Tolkien'),(62,'The Two Towers',13,6,1954,'English','Second volume of The Lord of the Rings.','https://covers.openlibrary.org/b/isbn/9780547928203-M.jpg','9780547928203',352,'https://www.amazon.com/s?k=The+Two+Towers+J.R.R.+Tolkien'),(63,'The Return of the King',13,6,1955,'English','Final volume of The Lord of the Rings.','https://covers.openlibrary.org/b/isbn/9780547928197-M.jpg','9780547928197',416,'https://www.amazon.com/s?k=The+Return+of+the+King+J.R.R.+Tolkien'),(64,'A Clash of Kings',27,2,1998,'English','Second novel in A Song of Ice and Fire.','https://covers.openlibrary.org/b/isbn/9780553108033-M.jpg','9780553108033',768,'https://www.amazon.com/s?k=A+Clash+of+Kings+George+R.R.+Martin'),(65,'A Storm of Swords',27,2,2000,'English','Third novel in A Song of Ice and Fire.','https://covers.openlibrary.org/b/isbn/9780553106633-M.jpg','9780553106633',973,'https://www.amazon.com/s?k=A+Storm+of+Swords+George+R.R.+Martin'),(66,'Dune',52,14,1965,'English','Epic sci-fi set on the desert planet Arrakis.','https://covers.openlibrary.org/b/isbn/9780441172719-M.jpg','9780441172719',412,'https://www.amazon.com/s?k=Dune+Frank+Herbert'),(67,'The Sea of Monsters',40,10,2006,'English','Second book in Percy Jackson series.','https://books.google.com/books/content?id=gLPvoLN0meUC&printsec=frontcover&img=1&zoom=1&source=gbs_api','9780786856863',279,'https://www.amazon.com/s?k=The+Sea+of+Monsters+Rick+Riordan'),(68,'The Titan\'s Curse',40,10,2007,'English','Third book in Percy Jackson series.','https://covers.openlibrary.org/b/isbn/9781423101451-M.jpg','9781423101451',312,'https://www.amazon.com/s?k=The+Titan%27s+Curse+Rick+Riordan'),(69,'Insurgent',34,11,2012,'English','Second book in Divergent series.','https://covers.openlibrary.org/b/isbn/9780062024046-M.jpg','9780062024046',525,'https://www.amazon.com/s?k=Insurgent+Veronica+Roth'),(70,'Allegiant',34,11,2013,'English','Final book in Divergent series.','https://covers.openlibrary.org/b/isbn/9780062024060-M.jpg','9780062024060',526,'https://www.amazon.com/s?k=Allegiant+Veronica+Roth'),(71,'Throne of Glass',30,7,2012,'English','Follows a teenage assassin.','https://covers.openlibrary.org/b/isbn/9781599906959-M.jpg','9781599906959',404,'https://www.amazon.com/s?k=Throne+of+Glass+Sarah+J.+Maas'),(72,'Crown of Midnight',30,7,2013,'English','Second book in Throne of Glass series.','https://covers.openlibrary.org/b/isbn/9781619630628-M.jpg','9781619630628',418,'https://www.amazon.com/s?k=Crown+of+Midnight+Sarah+J.+Maas'),(73,'The Way of Kings',31,7,2010,'English','First book in The Stormlight Archive.','https://covers.openlibrary.org/b/isbn/9780765326355-M.jpg','9780765326355',1007,'https://www.amazon.com/s?k=The+Way+of+Kings+Brandon+Sanderson'),(74,'Gone Girl',53,7,2012,'English','Thriller about a woman who disappears.','https://covers.openlibrary.org/b/isbn/9780307588364-M.jpg','9780307588364',415,'https://www.amazon.com/s?k=Gone+Girl+Gillian+Flynn'),(75,'The Silent Patient',54,7,2019,'English','Psychological thriller about a mute patient.','https://covers.openlibrary.org/b/isbn/9781250301697-M.jpg','9781250301697',336,'https://www.amazon.com/s?k=The+Silent+Patient+Alex+Michaelides'),(76,'Angels & Demons',7,7,2000,'English','Robert Langdon\'s first adventure.','https://covers.openlibrary.org/b/isbn/9780671027353-M.jpg','9780671027353',569,'https://www.amazon.com/s?k=Angels+and+Demons+Dan+Brown'),(77,'Inferno',7,7,2013,'English','Robert Langdon solves a puzzle from Dante.','https://covers.openlibrary.org/b/isbn/9780385537858-M.jpg','9780385537858',480,'https://www.amazon.com/s?k=Inferno+Dan+Brown'),(78,'The Shining',11,7,1977,'English','Horror novel set in the Overlook Hotel.','https://covers.openlibrary.org/b/isbn/9780385121675-M.jpg','9780385121675',447,'https://www.amazon.com/s?k=The+Shining+Stephen+King'),(79,'Misery',11,7,1987,'English','Psychological horror about an obsessed fan.','https://covers.openlibrary.org/b/isbn/9780670813643-M.jpg','9780670813643',320,'https://www.amazon.com/s?k=Misery+Stephen+King'),(80,'Pet Sematary',11,7,1983,'English','Horror novel about a burial ground.','https://covers.openlibrary.org/b/isbn/9780385182447-M.jpg','9780385182447',374,'https://www.amazon.com/s?k=Pet+Sematary+Stephen+King'),(81,'Verity',29,7,2018,'English','Dark romantic thriller.','https://covers.openlibrary.org/b/isbn/9781791392796-M.jpg','9781791392796',336,'https://www.amazon.com/s?k=Verity+Colleen+Hoover'),(82,'Ugly Love',29,7,2014,'English','A story about \"friends with benefits\".','https://covers.openlibrary.org/b/isbn/9781476753188-M.jpg','9781476753188',336,'https://www.amazon.com/s?k=Ugly+Love+Colleen+Hoover'),(83,'Reminders of Him',29,7,2022,'English','Second chance romance.','https://covers.openlibrary.org/b/isbn/9781542025607-M.jpg','9781542025607',335,'https://www.amazon.com/s?k=Reminders+of+Him+Colleen+Hoover'),(84,'Daisy Jones & The Six',41,7,2019,'English','Rise and fall of a rock band.','https://covers.openlibrary.org/b/isbn/9781524798628-M.jpg','9781524798628',355,'https://www.amazon.com/s?k=Daisy+Jones+and+The+Six+Taylor+Jenkins+Reid'),(85,'Malibu Rising',41,7,2021,'English','Drama set in Malibu in 1983.','https://covers.openlibrary.org/b/isbn/9781524798659-M.jpg','9781524798659',369,'https://www.amazon.com/s?k=Malibu+Rising+Taylor+Jenkins+Reid'),(86,'Kafka on the Shore',37,7,2002,'English','Metaphysical novel by Murakami.','https://books.google.com/books/content?id=AfY51Um5FvcC&printsec=frontcover&img=1&zoom=1&source=gbs_api','9781400043662',467,'https://www.amazon.com/s?k=Kafka+on+the+Shore+Haruki+Murakami'),(87,'Homo Deus',4,7,2015,'English','A Brief History of Tomorrow.','https://covers.openlibrary.org/b/isbn/9781910701874-M.jpg','9781910701874',464,'https://www.amazon.com/s?k=Homo+Deus+Yuval+Noah+Harari'),(88,'21 Lessons for the 21st Century',4,7,2018,'English','Analysis of present day challenges.','https://covers.openlibrary.org/b/isbn/9780525512172-M.jpg','9780525512172',372,'https://www.amazon.com/s?k=21+Lessons+for+the+21st+Century+Yuval+Noah+Harari'),(89,'Twisted Games',28,3,2021,'English','Rhys Larsen is a strict, emotionally detached bodyguard—until Princess Bridget shatters his rules. She’s stubborn, fiery, and forbidden, but he wants her anyway. Bridget, bound by duty and facing a political marriage she doesn’t want, falls for the one man she can’t have: her protector. Their dangerous, forbidden attraction threatens the throne and their futures. A slow-to-medium burn royal bodyguard romance that can be read as a standalone, with a possessive alpha hero, explicit content, and strong language.','https://ia800100.us.archive.org/view_archive.php?archive=/5/items/l_covers_0012/l_covers_0012_82.zip&file=0012821461-L.jpg','9781735056661',456,'https://www.amazon.com/s?k=Twisted+Games+Ana+Huang'),(90,'Twisted Hate',28,3,2022,'English','Josh Chen, a charming soon-to-be doctor, hates Jules Ambrose almost as much as he wants her. She’s the one woman immune to his charm, yet the one he can’t stop thinking about. After one explosive night, they agree to an enemies-with-benefits deal—no jealousy, no strings, no falling in love. Jules, a determined ex–party girl studying for the bar exam, wants nothing to do with the infuriating doctor…until she starts seeing the vulnerable side beneath his arrogance. He’s her best friend’s brother, her longtime nemesis, and the only person she shouldn’t want. As past demons resurface, their fiery connection threatens to save them—or break them. A steamy enemies-to-lovers romance that can be read as a standalone, with explicit content and mature themes.','https://covers.openlibrary.org/b/id/15088612-L.jpg','9786073908634',514,'https://www.amazon.com/s?k=Twisted+Hate+Ana+Huang'),(91,'Twisted Lies',28,3,2022,'English','Christian Harper is a charming, ruthless man who hides his darkness behind tailored suits, and he’ll do anything to have the one woman he can’t stop wanting—Stella Alonso. She’s sweet, introverted, famous online, and the only person who stirs something real in him. When danger from her past forces her into his world, he breaks his rules and offers a deal she can’t refuse. What starts as fake dating becomes obsession, desire, and a bond built on secrets and lies. As truths surface, their twisted, addictive love risks falling apart. A steamy slow-to-medium burn romance that can be read as a standalone, with a morally gray hero, explicit content, violence, and sensitive themes.','https://covers.openlibrary.org/b/id/15144107-L.jpg','9781728274898',578,'https://www.amazon.com/s?k=Twisted+Lies+Ana+Huang'),(92,'Slammed',29,18,2012,'English','Layken and Will fall for each other, only to discover a secret that forces them apart, pushing them to face grief, responsibility, and forbidden love.','https://ia600100.us.archive.org/view_archive.php?archive=/5/items/l_covers_0012/l_covers_0012_66.zip&file=0012661471-L.jpg','9781468161663',317,'https://www.amazon.com/s?k=Slammed+Colleen+Hoover'),(93,'Point of Retreat',29,18,2012,'English','Layken and Will struggle to hold onto their relationship as new challenges, misunderstandings, and family struggles test their commitment.','https://covers.openlibrary.org/b/id/7614159-L.jpg','9781476715926',288,'https://www.amazon.com/s?k=Point+of+Retreat+Colleen+Hoover'),(94,'This Girl',29,18,2013,'English','Will retells their love story from his perspective, revealing hidden moments, deeper feelings, and the truth behind everything they faced.','https://ia800505.us.archive.org/view_archive.php?archive=/35/items/l_covers_0014/l_covers_0014_32.zip&file=0014328438-L.jpg','9781476746531',304,'https://www.amazon.com/s?k=This+Girl+Colleen+Hoover'),(95,'Hopeless',29,19,2012,'English','Sky’s world unravels when she meets Holder, a boy with answers to a past she can’t remember, leading to shocking revelations and emotional healing.','https://ia600404.us.archive.org/view_archive.php?archive=/33/items/l_covers_0010/l_covers_0010_54.zip&file=0010549926-L.jpg','9781471133435',406,'https://www.amazon.com/s?k=Hopeless+Colleen+Hoover'),(96,'A Shot At History: My Obsessive Journey to Olympic Gold',25,7,2013,'English','A Shot at History chronicles Abhinav Bindra’s journey to becoming India’s first individual Olympic gold medalist. After a heartbreaking loss at the 2004 Athens Olympics, Bindra reinvented himself through relentless discipline, science, and mental training to achieve gold at the 2008 Beijing Olympics. The book is a powerful story of perseverance, innovation, and the pursuit of excellence, capturing the challenges of winning, losing, and striving to be better again.','https://www.jainbookagency.com/bookimages/zip/141715.jpg','9789350291122',250,'https://www.amazon.com/s?k=A+Shot+At+History+Abhinav+Bindra'),(97,'Thinking, Fast and Slow',57,7,2011,'English','Thinking, Fast and Slow explores how the mind works through two systems: System 1, which is fast and intuitive, and System 2, which is slow and logical. Daniel Kahneman reveals how cognitive biases like overconfidence and loss aversion shape our decisions in work and daily life. The book shows when to trust intuition, when to think more carefully, and how understanding both systems can improve judgment and decision-making.','https://imgv2-2-f.scribdassets.com/img/word_document/182569769/original/216x287/fb2c0855e3/1764652337?v=1','9780374275631',499,'https://www.amazon.com/s?k=Thinking+Fast+and+Slow+Daniel+Kahneman'),(98,'Man and His Symbols',58,7,1968,'English','Man and His Symbols owes its existence to one of Jung\'s own dreams. The great psychologist dreamed that his work was understood by a wide public, rather than just by psychiatrists, and therefore he agreed to write and edit this fascinating book. Here, Jung examines the full world of the unconscious, whose language he believed to be the symbols constantly revealed in dreams. Convinced that dreams offer practical advice, sent from the unconscious to the conscious self, Jung felt that self-understanding would lead to a full and productive life. Thus, the reader will gain new insights into himself from this thoughtful volume, which also illustrates symbols throughout history. Completed just before his death by Jung and his associates, it is clearly addressed to the general reader.','https://m.media-amazon.com/images/I/61MmBj3XHML.jpg','9780440351832',432,'https://www.amazon.com/s?k=Man+and+His+Symbols+Carl+Jung'),(99,'How to Win Friends and Influence People',59,7,1998,'English','How to Win Friends and Influence People is a timeless classic that shows how to succeed by improving relationships and communication. First published in 1936, it has sold over 30 million copies and helped countless people achieve success in business and life. The book teaches practical principles for making people like you, winning others to your way of thinking, and influencing change without conflict.','https://covers.openlibrary.org/b/id/15130876-L.jpg','9788183227896',291,'https://www.amazon.com/s?k=How+to+Win+Friends+and+Influence+People+Dale+Carnegie'),(100,'Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones',60,7,2018,'English','Atomic Habits by James Clear explains how small, consistent changes can lead to remarkable results over time. The book focuses on building good habits, breaking bad ones, and mastering the systems behind behavior rather than relying on motivation alone. Using practical strategies and real-life examples, it shows how tiny improvements—“atomic habits”—can transform personal and professional life.','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-8SrFOsOtv4aBArFUoZyh50Tq-n7F0dIW-w&s','9780735211308',320,'https://www.amazon.com/s?k=Atomic+Habits+James+Clear'),(101,'The Monk Who Sold His Ferrari: A Fable About Fulfilling Your Dreams and Reaching Your Destiny',63,7,1996,'English','This inspiring tale provides a step-by-step approach to living with greater courage, balance, abundance, and joy. A wonderfully crafted fable, The Monk Who Sold His Ferrari tells the extraordinary story of Julian Mantle, a lawyer forced to confront the spiritual crisis of his out-of-balance life. On a life-changing odyssey to an ancient culture, he discovers powerful, wise, and practical lessons that teach us to: \r\n\r\nDevelop Joyful Thoughts, Follow Our Life\'s Mission and Calling, Cultivate Self-Discipline and Act Courageously, Value Time as Our Most Important Commodity, Nourish Our Relationships, and Live Fully, One Day at a Time.\r\n','https://ia800507.us.archive.org/view_archive.php?archive=/8/items/l_covers_0009/l_covers_0009_78.zip&file=0009785304-L.jpg','9780062515674 ',198,'https://www.amazon.com/s?k=The+Monk+Who+Sold+His+Ferrari+Robin+Sharma'),(102,'aaaa',4,NULL,2019,'English','ti is a lfgjofgfdkg;gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',NULL,'123456789',NULL,NULL),(103,'just trying',4,NULL,2025,'Gujarati','qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq',NULL,'123456789',NULL,NULL);
+/*!40000 ALTER TABLE `books` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `follows`
+--
+
+DROP TABLE IF EXISTS `follows`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `follows` (
+  `follow_id` int NOT NULL AUTO_INCREMENT,
+  `follower_id` int NOT NULL,
+  `following_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`follow_id`),
+  UNIQUE KEY `follower_id` (`follower_id`,`following_id`),
+  KEY `idx_following` (`following_id`),
+  KEY `idx_follower` (`follower_id`),
+  CONSTRAINT `follows_ibfk_1` FOREIGN KEY (`follower_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `follows_ibfk_2` FOREIGN KEY (`following_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `follows`
+--
+
+LOCK TABLES `follows` WRITE;
+/*!40000 ALTER TABLE `follows` DISABLE KEYS */;
+/*!40000 ALTER TABLE `follows` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `friend_requests`
+--
+
+DROP TABLE IF EXISTS `friend_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `friend_requests` (
+  `request_id` int NOT NULL AUTO_INCREMENT,
+  `requester_id` int NOT NULL,
+  `requestee_id` int NOT NULL,
+  `status` enum('pending','accepted','rejected') COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `responded_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`request_id`),
+  UNIQUE KEY `requester_id` (`requester_id`,`requestee_id`),
+  KEY `idx_requestee` (`requestee_id`),
+  KEY `idx_status` (`status`),
+  CONSTRAINT `friend_requests_ibfk_1` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `friend_requests_ibfk_2` FOREIGN KEY (`requestee_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `friend_requests`
+--
+
+LOCK TABLES `friend_requests` WRITE;
+/*!40000 ALTER TABLE `friend_requests` DISABLE KEYS */;
+INSERT INTO `friend_requests` VALUES (1,2,6,'accepted','2025-11-24 10:13:53','2025-11-24 10:15:38'),(2,12,5,'rejected','2025-11-24 10:27:20','2025-11-24 10:30:12'),(7,5,3,'accepted','2025-11-24 11:54:10','2025-11-24 12:01:41'),(8,3,11,'accepted','2025-11-24 18:19:52','2025-11-25 07:31:05'),(9,2,7,'accepted','2025-11-25 06:56:38','2025-11-25 07:10:00'),(10,2,3,'pending','2025-11-25 06:57:00',NULL),(11,5,2,'accepted','2025-11-25 07:04:07','2025-11-25 09:41:15'),(12,9,3,'pending','2025-11-25 07:16:29',NULL),(13,9,11,'accepted','2025-11-25 07:16:31','2025-11-25 07:29:12'),(14,9,12,'pending','2025-11-25 07:16:36',NULL),(15,6,4,'pending','2025-11-25 07:18:40',NULL),(16,6,9,'pending','2025-11-25 07:18:44',NULL),(17,10,4,'pending','2025-11-25 07:27:32',NULL),(18,2,8,'pending','2025-11-25 09:41:08',NULL),(19,1,4,'pending','2025-12-25 06:58:17',NULL),(20,15,10,'pending','2025-12-25 16:15:33',NULL),(21,17,15,'accepted','2025-12-25 16:28:59','2025-12-25 16:29:47'),(23,19,18,'accepted','2025-12-27 12:43:48','2025-12-29 11:12:41'),(24,17,19,'accepted','2025-12-29 12:48:42','2025-12-29 12:49:18'),(25,17,20,'accepted','2025-12-29 12:48:48','2025-12-29 12:50:11'),(26,20,18,'accepted','2025-12-29 12:50:13','2025-12-29 12:51:52'),(27,20,19,'accepted','2025-12-29 12:50:15','2025-12-29 12:50:54'),(28,21,18,'accepted','2026-02-28 15:25:50','2026-03-19 06:15:04'),(29,21,19,'pending','2026-02-28 15:25:54',NULL),(30,21,17,'accepted','2026-02-28 15:26:00','2026-03-19 06:21:41'),(31,21,20,'pending','2026-02-28 15:26:06',NULL),(32,18,17,'accepted','2026-03-19 06:21:06','2026-03-19 06:21:38');
+/*!40000 ALTER TABLE `friend_requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `genres`
+--
+
+DROP TABLE IF EXISTS `genres`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `genres` (
+  `genre_id` int NOT NULL AUTO_INCREMENT,
+  `genre_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`genre_id`),
+  UNIQUE KEY `genre_name` (`genre_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `genres`
+--
+
+LOCK TABLES `genres` WRITE;
+/*!40000 ALTER TABLE `genres` DISABLE KEYS */;
+INSERT INTO `genres` VALUES (27,'Art'),(61,'Autobiography'),(48,'Billionaire Romance'),(9,'Biography'),(54,'Brand Management'),(29,'Business'),(41,'Chick Lit'),(12,'Children’s Fiction'),(30,'Classics'),(14,'Comics'),(57,'Computer Science'),(39,'Contemporary'),(15,'Contemporary Fiction'),(40,'Contemporary Romance'),(26,'Cookbooks'),(23,'Crime Thriller'),(19,'Dark Romance'),(60,'Data Science'),(59,'Database Systems'),(45,'Enemies to Lovers'),(51,'Entrepreneurship'),(4,'Epic Fantasy'),(47,'Fake Dating'),(3,'Fantasy'),(1,'Fiction'),(46,'Forced Proximity'),(13,'Graphic Novels'),(56,'Growth Marketing'),(18,'High Fantasy'),(42,'High School'),(10,'History'),(8,'Horror'),(31,'Humour and Comedy'),(52,'Leadership'),(49,'Love'),(50,'Management'),(32,'Manga'),(53,'Marketing'),(36,'Memoir'),(33,'Music'),(6,'Mystery'),(16,'Mythological Fiction'),(38,'New Adult'),(2,'Non-Fiction'),(34,'Paranormal'),(25,'Paranormal Horror'),(22,'Personal Development'),(58,'Programming'),(24,'Psychological Thriller'),(20,'Psychology'),(35,'Religion'),(5,'Romance'),(55,'Sales & Negotiation'),(21,'Self Help'),(62,'Sports'),(17,'Surreal Fiction'),(7,'Thriller'),(28,'Travel'),(11,'Young Adult');
+/*!40000 ALTER TABLE `genres` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reviews`
+--
+
+DROP TABLE IF EXISTS `reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reviews` (
+  `review_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `book_id` int DEFAULT NULL,
+  `ratings` int NOT NULL,
+  `review_text` text COLLATE utf8mb4_general_ci,
+  `review_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`),
+  UNIQUE KEY `unique_user_book` (`user_id`,`book_id`),
+  KEY `user_id` (`user_id`),
+  KEY `book_id` (`book_id`),
+  CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reviews`
+--
+
+LOCK TABLES `reviews` WRITE;
+/*!40000 ALTER TABLE `reviews` DISABLE KEYS */;
+INSERT INTO `reviews` VALUES (1,3,53,5,'nice','2025-11-24 08:42:52'),(2,4,53,3,'It was a nice book but not my type','2025-11-24 08:53:03'),(4,5,53,4,NULL,'2025-11-24 08:53:50'),(5,2,53,5,'it was nice book','2025-11-24 08:56:59'),(6,2,7,4,'One of the amazing books I have read','2025-11-24 09:03:52'),(7,6,53,4,NULL,'2025-11-24 10:19:52'),(8,6,58,3,'too much of fantasy...far from reality','2025-11-24 10:22:08'),(9,3,10,5,'OMG!!! It\'s one of the best horror books i have \"ever\" read....I suggest everyone to try this one if you loovvveeeeee horror','2025-11-24 17:57:01'),(10,2,5,4,NULL,'2025-11-25 06:53:01'),(11,2,26,5,'Felt Goosebumps!!!','2025-11-25 06:53:50'),(12,2,4,4,'Currently reading Sapiens by Yuval Noah Harari, and wow, it’s already blowing my mind.\r\nHarari’s way of explaining human evolution, belief systems, and how societies formed is so clear and fascinating.\r\nWill update once I finish!','2025-11-25 06:55:52'),(13,7,56,3,'A poignant story set during Partition, but the emotional connection felt a bit limited for me.\r\nKhushwant Singh captures the chaos and brutality of the time very realistically, and the setting is incredibly vivid.\r\nHowever, I couldn’t fully connect with the characters, and some parts felt slow.\r\nA good, important read — just not a personal favourite.','2025-11-25 07:11:08'),(16,9,82,5,NULL,'2025-11-25 07:17:00'),(17,10,90,5,'oo god!!! the chase.....','2025-11-25 07:25:21'),(18,10,91,5,'I need my Christian Harper so badddd.......','2025-11-25 07:26:46'),(19,11,18,2,'Finished Steve Jobs.\r\nWell-researched but too long and too dry for me.\r\nI struggled to stay engaged, and the narration felt repetitive at times.\r\nA 2-star read.','2025-11-25 07:30:41'),(20,17,24,5,'I watched this disaster unfold in real time. Way too much angst, zero communication, and an unhealthy amount of emotional damage. Alex is terrifyingly devoted, Ava is too forgiving, and somehow it still works. Would I recommend this love story? No. Did I survive it? Barely.','2025-12-25 16:35:32'),(21,17,91,4,'“I knew Christian was dangerous, but watching him fall in love was… unsettling. He loves quietly, obsessively, and with terrifying patience. Stella deserved better communication, but somehow she chose him anyway. Do I trust him? No. Would I stand between them? Also no. I value my life.','2025-12-25 16:37:25'),(22,18,88,5,'love this book.........','2026-01-09 17:25:52'),(23,21,101,5,'loved it......','2026-02-28 15:25:39');
+/*!40000 ALTER TABLE `reviews` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `series`
+--
+
+DROP TABLE IF EXISTS `series`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `series` (
+  `series_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  PRIMARY KEY (`series_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `series`
+--
+
+LOCK TABLES `series` WRITE;
+/*!40000 ALTER TABLE `series` DISABLE KEYS */;
+INSERT INTO `series` VALUES (1,'Harry Potter','Fantasy series about a young wizard and his adventures at Hogwarts.'),(2,'Game of Thrones','Epic fantasy series set in the Seven Kingdoms of Westeros.'),(3,'Twisted','Contemporary romance series by Ana Huang.'),(4,'Shiva Trilogy','Indian mythological fantasy series about Lord Shiva.'),(5,'The Hunger Games','Dystopian young adult series set in Panem.'),(6,'The Lord of the Rings','Epic high-fantasy trilogy.'),(7,'Standalone','Books not part of a series.'),(8,'ACOTAR','A Court of Thorns and Roses fantasy romance series.'),(9,'Mistborn','Epic fantasy series by Brandon Sanderson.'),(10,'Percy Jackson','Greek mythology-based YA fantasy series.'),(11,'Divergent','YA dystopian series by Veronica Roth.'),(12,'Hercule Poirot','Mystery series featuring the Belgian detective Hercule Poirot.'),(13,'Sherlock Holmes','Classic detective stories featuring Sherlock Holmes and Dr. Watson.'),(14,'Dune Saga','Epic science fiction series set in the distant future.'),(15,'Kings Of Sins','The Kings of Sin series features seven billionaire, morally gray “Kings,” each inspired by a deadly sin, and the women who become their weakness. Every book delivers intense chemistry, high heat, emotional drama, and dark, addictive romance. Each story follows a new couple and can be read as a standalone.'),(16,'Gods Of The Game','Gods of the Game is a steamy sports romance series centered on elite, superstar athletes known as the “Gods,” each with fame, talent, and flaws that make them irresistible. Every book follows a different athlete and the woman who challenges him, blending high heat, drama, emotional tension, and the glamour—and darkness—of professional sports. Each story can be read as a standalone.'),(17,'If Love','The If Love series is a set of interconnected contemporary romances following friends navigating college, careers, heartbreak, and second chances. Each book focuses on a different couple and blends emotional tension, slow-burn chemistry, drama, and personal growth. Light, heartfelt, and addictive, the series explores love, friendship, and finding yourself, and each book can be read as a standalone.'),(18,'Slammed','A heartfelt new-adult romance following Layken and Will, two young people dealing with grief, family responsibilities, and a forbidden connection that tests their strength. Expect emotional twists, poetry slams, and a journey of love, loss, and healing.'),(19,'Hopeless','A deep, emotional series centered on Sky and Holder as they uncover buried trauma, dark secrets, and a past that connects them in shocking ways. It explores heartbreak, healing, identity, and second chances, with companion stories showing different perspectives.'),(20,'Maybe','A mix of music, friendship, and complicated love, this duet follows Sydney, Ridge, and their tangled relationships as they navigate loyalty, emotional conflict, and creative connection. A blend of angst, melodies, and messy, real-life love.'),(21,'It Ends With Us','A powerful, emotional journey exploring love, heartbreak, and breaking generational cycles. Lily’s relationship with Ryle and reconnection with Atlas create a story about strength, survival, and choosing better. The duet follows healing, closure, and new beginnings.'),(22,'Never Never','A mystery romance about two teens who lose their memories repeatedly and must uncover the truth behind their connection, their past, and the strange force affecting them. A blend of suspense, drama, love, and shocking twists.');
+/*!40000 ALTER TABLE `series` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `shelves`
+--
+
+DROP TABLE IF EXISTS `shelves`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `shelves` (
+  `shelf_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `is_default` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`shelf_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `shelves_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `shelves`
+--
+
+LOCK TABLES `shelves` WRITE;
+/*!40000 ALTER TABLE `shelves` DISABLE KEYS */;
+INSERT INTO `shelves` VALUES (1,1,'Currently Reading',1,'2025-11-24 06:59:52'),(2,1,'Read',1,'2025-11-24 06:59:52'),(3,1,'Want To Read',1,'2025-11-24 06:59:52'),(4,2,'Currently Reading',1,'2025-11-24 07:01:56'),(5,2,'Read',1,'2025-11-24 07:01:56'),(6,2,'Want To Read',1,'2025-11-24 07:01:56'),(7,3,'Currently Reading',1,'2025-11-24 07:24:12'),(8,3,'Read',1,'2025-11-24 07:24:12'),(9,3,'Want To Read',1,'2025-11-24 07:24:12'),(10,4,'Currently Reading',1,'2025-11-24 07:25:42'),(11,4,'Read',1,'2025-11-24 07:25:42'),(12,4,'Want To Read',1,'2025-11-24 07:25:42'),(13,5,'Currently Reading',1,'2025-11-24 07:26:43'),(14,5,'Read',1,'2025-11-24 07:26:43'),(15,5,'Want To Read',1,'2025-11-24 07:26:43'),(16,6,'Currently Reading',1,'2025-11-24 07:29:15'),(17,6,'Read',1,'2025-11-24 07:29:15'),(18,6,'Want To Read',1,'2025-11-24 07:29:15'),(19,7,'Currently Reading',1,'2025-11-24 07:30:54'),(20,7,'Read',1,'2025-11-24 07:30:54'),(21,7,'Want To Read',1,'2025-11-24 07:30:54'),(22,8,'Currently Reading',1,'2025-11-24 07:32:35'),(23,8,'Read',1,'2025-11-24 07:32:35'),(24,8,'Want To Read',1,'2025-11-24 07:32:35'),(25,9,'Currently Reading',1,'2025-11-24 07:35:43'),(26,9,'Read',1,'2025-11-24 07:35:43'),(27,9,'Want To Read',1,'2025-11-24 07:35:43'),(28,10,'Currently Reading',1,'2025-11-24 07:38:07'),(29,10,'Read',1,'2025-11-24 07:38:07'),(30,10,'Want To Read',1,'2025-11-24 07:38:07'),(31,11,'Currently Reading',1,'2025-11-24 07:40:06'),(32,11,'Read',1,'2025-11-24 07:40:06'),(33,11,'Want To Read',1,'2025-11-24 07:40:06'),(34,6,'liked',0,'2025-11-24 10:22:55'),(35,12,'Currently Reading',1,'2025-11-24 10:25:54'),(36,12,'Read',1,'2025-11-24 10:25:54'),(37,12,'Want To Read',1,'2025-11-24 10:25:54'),(38,3,'Liked',0,'2025-11-25 02:14:51'),(39,13,'Currently Reading',1,'2025-11-25 09:47:22'),(40,13,'Read',1,'2025-11-25 09:47:22'),(41,13,'Want To Read',1,'2025-11-25 09:47:22'),(42,15,'romance',0,'2025-12-25 07:10:33'),(43,15,'collen books',0,'2025-12-25 07:11:17'),(44,17,'Currently Reading',1,'2025-12-25 16:27:43'),(45,17,'Read',1,'2025-12-25 16:27:43'),(46,17,'Want To Read',1,'2025-12-25 16:27:43'),(47,18,'Currently Reading',1,'2025-12-25 16:39:59'),(48,18,'Read',1,'2025-12-25 16:39:59'),(49,18,'Want To Read',1,'2025-12-25 16:39:59'),(50,19,'Currently Reading',1,'2025-12-27 12:41:11'),(51,19,'Read',1,'2025-12-27 12:41:11'),(52,19,'Want To Read',1,'2025-12-27 12:41:11'),(53,20,'Currently Reading',1,'2025-12-27 15:18:21'),(54,20,'Read',1,'2025-12-27 15:18:21'),(55,20,'Want To Read',1,'2025-12-27 15:18:21'),(56,18,'self help',0,'2026-01-09 17:25:27'),(57,21,'Currently Reading',1,'2026-02-28 15:23:35'),(58,21,'Read',1,'2026-02-28 15:23:35'),(59,21,'Want To Read',1,'2026-02-28 15:23:35'),(60,22,'Currently Reading',1,'2026-02-28 15:41:36'),(61,22,'Read',1,'2026-02-28 15:41:36'),(62,22,'Want To Read',1,'2026-02-28 15:41:36'),(63,23,'Currently Reading',1,'2026-03-17 16:13:42'),(64,23,'Read',1,'2026-03-17 16:13:42'),(65,23,'Want To Read',1,'2026-03-17 16:13:42');
+/*!40000 ALTER TABLE `shelves` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_book_views`
+--
+
+DROP TABLE IF EXISTS `user_book_views`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_book_views` (
+  `view_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `book_id` int DEFAULT NULL,
+  `view_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`view_id`),
+  KEY `fk_views_user` (`user_id`),
+  CONSTRAINT `fk_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_book_views`
+--
+
+LOCK TABLES `user_book_views` WRITE;
+/*!40000 ALTER TABLE `user_book_views` DISABLE KEYS */;
+INSERT INTO `user_book_views` VALUES (1,1,90,'2025-12-25 06:51:48'),(2,1,24,'2025-12-25 07:00:23'),(3,1,24,'2025-12-25 07:00:38'),(4,15,25,'2025-12-25 07:09:12'),(5,15,90,'2025-12-25 07:09:54'),(6,15,90,'2025-12-25 07:10:19'),(7,15,90,'2025-12-25 07:10:34'),(8,15,25,'2025-12-25 07:11:04'),(9,15,25,'2025-12-25 07:11:17'),(10,15,25,'2025-12-25 07:48:16'),(11,15,25,'2025-12-25 07:48:25'),(12,15,25,'2025-12-25 16:18:21'),(13,15,25,'2025-12-25 16:18:31'),(14,15,25,'2025-12-25 16:20:52'),(15,15,25,'2025-12-25 16:23:06'),(16,15,100,'2025-12-25 16:24:05'),(17,15,39,'2025-12-25 16:24:25'),(18,15,56,'2025-12-25 16:24:42'),(19,17,24,'2025-12-25 16:31:12'),(20,17,24,'2025-12-25 16:35:33'),(21,17,91,'2025-12-25 16:37:14'),(22,17,91,'2025-12-25 16:37:26'),(23,18,53,'2025-12-25 16:40:56'),(24,17,24,'2025-12-25 16:42:30'),(25,17,24,'2025-12-25 16:43:01'),(26,17,91,'2025-12-25 16:43:11'),(27,17,91,'2025-12-25 16:43:18'),(28,17,89,'2025-12-25 16:43:31'),(29,17,89,'2025-12-25 16:43:36'),(30,17,50,'2025-12-26 08:12:25'),(31,19,43,'2025-12-27 12:43:37'),(32,19,26,'2025-12-29 12:45:33'),(33,19,26,'2025-12-29 12:45:41'),(34,18,24,'2025-12-29 12:47:04'),(35,18,24,'2025-12-29 12:47:11'),(36,20,100,'2025-12-29 12:50:00'),(37,20,100,'2025-12-29 12:50:06'),(38,18,88,'2026-01-09 17:24:34'),(39,18,88,'2026-01-09 17:24:56'),(40,18,88,'2026-01-09 17:25:27'),(41,18,88,'2026-01-09 17:25:52'),(42,17,88,'2026-02-17 04:50:41'),(43,17,53,'2026-02-27 16:33:09'),(44,17,53,'2026-02-27 16:33:50'),(45,17,88,'2026-02-28 04:52:35'),(46,17,88,'2026-02-28 04:55:32'),(47,17,88,'2026-02-28 04:56:58'),(48,17,88,'2026-02-28 04:57:19'),(49,17,88,'2026-02-28 04:58:24'),(50,17,88,'2026-02-28 04:58:29'),(51,17,88,'2026-02-28 04:58:32'),(52,17,88,'2026-02-28 05:01:01'),(53,17,88,'2026-02-28 05:02:35'),(54,17,88,'2026-02-28 05:02:37'),(55,17,88,'2026-02-28 05:03:07'),(56,17,88,'2026-02-28 05:03:41'),(57,17,88,'2026-02-28 05:03:57'),(58,17,88,'2026-02-28 05:05:55'),(59,17,88,'2026-02-28 05:08:15'),(60,17,64,'2026-02-28 05:08:41'),(61,17,26,'2026-02-28 05:09:06'),(62,17,72,'2026-02-28 08:42:02'),(63,17,43,'2026-02-28 08:42:58'),(64,21,22,'2026-02-28 15:24:25'),(65,21,101,'2026-02-28 15:25:17'),(66,21,101,'2026-02-28 15:25:39'),(67,21,101,'2026-02-28 15:26:22'),(68,21,101,'2026-02-28 15:26:30'),(69,23,81,'2026-03-17 16:17:19'),(70,23,101,'2026-03-17 16:19:58'),(71,17,100,'2026-03-17 16:21:57'),(72,18,50,'2026-03-19 06:19:43'),(73,18,100,'2026-03-19 06:20:04'),(74,18,26,'2026-03-19 06:20:12'),(75,18,88,'2026-03-19 06:20:51');
+/*!40000 ALTER TABLE `user_book_views` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_genres`
+--
+
+DROP TABLE IF EXISTS `user_genres`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_genres` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `genre_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`,`genre_id`),
+  KEY `genre_id` (`genre_id`),
+  CONSTRAINT `user_genres_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `user_genres_ibfk_2` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`genre_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_genres`
+--
+
+LOCK TABLES `user_genres` WRITE;
+/*!40000 ALTER TABLE `user_genres` DISABLE KEYS */;
+INSERT INTO `user_genres` VALUES (126,2,5),(125,2,6),(127,2,7),(121,2,9),(124,2,10),(123,2,13),(122,2,14),(113,3,1),(119,3,5),(116,3,6),(120,3,7),(114,3,8),(118,3,22),(112,3,23),(117,3,25),(115,3,32),(132,4,1),(131,4,3),(128,4,12),(130,4,26),(129,4,30),(37,5,4),(40,5,5),(38,5,8),(36,5,14),(41,5,17),(35,5,27),(39,5,33),(103,6,3),(98,6,9),(104,6,18),(102,6,19),(105,6,21),(101,6,23),(99,6,29),(100,6,30),(53,7,2),(50,7,10),(49,7,13),(48,7,23),(51,7,32),(52,7,33),(59,8,17),(57,8,20),(58,8,21),(55,8,22),(56,8,24),(60,8,28),(54,8,34),(134,9,15),(138,9,31),(133,9,39),(135,9,40),(136,9,45),(137,9,47),(68,10,1),(67,10,3),(70,10,5),(72,10,11),(71,10,17),(69,10,18),(66,10,19),(73,11,9),(76,11,20),(77,11,21),(75,11,22),(74,11,29),(110,12,6),(108,12,10),(107,12,14),(106,12,27),(111,12,28),(109,12,33),(141,13,3),(139,13,4),(144,13,7),(142,13,8),(143,13,17),(140,13,47),(148,15,5),(146,15,6),(150,15,11),(149,15,21),(147,15,38),(145,15,49),(156,17,5),(158,17,7),(159,17,11),(152,17,15),(154,17,19),(157,17,21),(151,17,29),(155,17,38),(153,17,40),(182,18,4),(178,18,9),(180,18,14),(181,18,19),(177,18,27),(179,18,29),(184,18,38),(183,18,47),(170,19,5),(171,19,7),(167,19,22),(169,19,24),(168,19,58),(172,20,2),(174,20,5),(176,20,11),(175,20,21),(173,20,24),(188,21,29),(186,21,48),(191,21,50),(192,21,53),(187,21,54),(190,21,59),(189,21,60),(185,21,61),(196,22,9),(193,22,27),(195,22,48),(197,22,54),(194,22,61),(200,23,19),(202,23,20),(198,23,29),(201,23,31),(199,23,57);
+/*!40000 ALTER TABLE `user_genres` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_search_history`
+--
+
+DROP TABLE IF EXISTS `user_search_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_search_history` (
+  `history_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `search_query` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `search_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`history_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_search_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_search_history`
+--
+
+LOCK TABLES `user_search_history` WRITE;
+/*!40000 ALTER TABLE `user_search_history` DISABLE KEYS */;
+INSERT INTO `user_search_history` VALUES (1,9,'Atomic Habits','2025-11-24 07:36:13'),(2,9,'Ana','2025-11-24 07:36:24'),(3,9,'Alex Volkov','2025-11-24 07:36:36'),(4,4,'Chetan Bhagat','2025-11-24 08:51:06'),(5,4,'Chetan Bhagat','2025-11-24 08:52:02'),(6,5,'Chetan Bhagat','2025-11-24 08:53:40'),(7,2,'Chetan Bhagat','2025-11-24 08:54:59'),(8,2,'fiction','2025-11-24 08:55:19'),(9,2,'Chetan Bhagat','2025-11-24 08:55:31'),(10,2,'fantasy','2025-11-24 09:02:07'),(11,2,'horro','2025-11-24 09:03:08'),(12,2,'thriller','2025-11-24 09:03:23'),(13,6,'harry porter','2025-11-24 10:20:35'),(14,6,'harry potter','2025-11-24 10:20:42'),(15,12,'history','2025-11-24 10:28:00'),(16,12,'gandhi','2025-11-24 10:28:14'),(17,3,'indian','2025-11-24 18:05:37'),(18,3,'states','2025-11-24 18:20:37'),(19,3,'twisted love','2025-11-24 18:31:41'),(20,3,'horror','2025-11-24 18:31:52'),(21,3,'twisted love','2025-11-25 02:14:33'),(22,2,'twisted','2025-11-25 03:07:49'),(23,2,'twisted','2025-11-25 03:11:37'),(24,2,'twisted','2025-11-25 03:15:54'),(25,2,'twisted','2025-11-25 03:28:26'),(26,2,'colleen hoover','2025-11-25 03:28:33'),(27,2,'colleen hoover','2025-11-25 03:39:27'),(28,2,'history','2025-11-25 06:52:30'),(29,13,'twisted lies','2025-11-25 09:49:08'),(30,3,'states','2025-12-23 18:04:26'),(31,3,'2 states','2025-12-23 18:04:47'),(32,3,'states','2025-12-23 18:05:04'),(33,3,'sttes','2025-12-23 18:05:16'),(34,3,'leson','2025-12-23 18:05:45'),(35,3,'lesson','2025-12-23 18:05:50'),(36,3,'leson','2025-12-23 18:05:57'),(37,3,'stats','2025-12-23 18:10:37'),(38,3,'states','2025-12-23 18:10:45'),(39,3,'lesson','2025-12-23 18:10:49'),(40,3,'2 states','2025-12-23 18:10:57'),(41,3,'twisted love','2025-12-23 18:11:07'),(42,3,'hate','2025-12-23 18:11:14'),(43,3,'twisted hate','2025-12-23 18:11:23'),(44,3,'twisted love','2025-12-23 18:11:32'),(45,3,'twisted lie','2025-12-23 18:11:36'),(46,3,'love','2025-12-23 18:13:27'),(47,3,'luv','2025-12-23 18:13:33'),(48,3,'luve','2025-12-23 18:13:37'),(49,3,'hate','2025-12-23 18:13:44'),(50,3,'hat','2025-12-23 18:13:47'),(51,3,'hte','2025-12-23 18:13:56'),(52,3,'leson','2025-12-23 18:14:01'),(53,3,'george martin','2025-12-24 21:18:39'),(54,3,'george','2025-12-24 21:18:42'),(55,3,'sarah maas','2025-12-24 21:24:06'),(56,3,'sarah','2025-12-24 21:24:09'),(57,3,'brandon','2025-12-24 21:24:20'),(58,3,'ravinder','2025-12-24 21:24:33'),(59,3,'john green','2025-12-24 21:24:43'),(60,3,'veronica roth','2025-12-24 21:24:52'),(61,3,'paulo','2025-12-24 21:25:01'),(62,3,'khaled','2025-12-24 21:25:08'),(63,3,'murakami','2025-12-24 21:25:14'),(64,3,'ruskin','2025-12-24 21:25:22'),(65,3,'chetan','2025-12-24 21:25:28'),(66,3,'rick','2025-12-24 21:25:35'),(67,3,'taylor','2025-12-24 21:25:42'),(68,3,'jojo','2025-12-24 21:25:49'),(69,3,'elif','2025-12-24 21:25:54'),(70,3,'agatha','2025-12-24 21:26:01'),(71,3,'arthur','2025-12-24 21:26:08'),(72,3,'orwell','2025-12-24 21:26:14'),(73,3,'harper lee','2025-12-24 21:26:21'),(74,3,'F. Scott Fitzgerald','2025-12-24 21:26:31'),(75,3,'sudha','2025-12-24 21:26:37'),(76,3,'abdul kalam','2025-12-24 21:26:46'),(77,3,'arundhati','2025-12-24 21:26:53'),(78,3,'frank','2025-12-24 21:26:59'),(79,3,'gillian','2025-12-24 21:27:05'),(80,3,'alex','2025-12-24 21:27:11'),(81,3,'fyodar','2025-12-24 21:27:29'),(82,3,'Fyodor Dostoevsky','2025-12-24 21:27:39'),(83,3,'gabriel','2025-12-24 21:27:49'),(84,3,'abhinav','2025-12-24 21:27:57'),(85,3,'abhinav','2025-12-24 21:31:56'),(86,3,'playig it my way','2025-12-24 21:32:56'),(87,3,'playing it my way','2025-12-24 21:33:01'),(88,3,'abhinav','2025-12-24 21:34:28'),(89,3,'self help','2025-12-24 21:52:55'),(90,3,'self','2025-12-24 21:52:58'),(91,3,'help','2025-12-24 21:53:04'),(92,3,'the silent patient','2025-12-24 22:09:13'),(93,3,'gillian','2025-12-24 22:09:24'),(94,3,'shining','2025-12-24 22:09:34'),(95,3,'the call','2025-12-24 22:09:40'),(96,3,'the shining','2025-12-24 22:09:52'),(97,3,'jane','2025-12-24 22:26:40'),(98,3,'Thinking, Fast and Slow','2025-12-24 22:34:29'),(99,3,'How to Win Friends and Influence People','2025-12-24 22:51:01'),(100,3,'Atomic Habits','2025-12-24 22:51:35'),(101,1,'love','2025-12-25 06:54:20'),(102,15,'ana huang','2025-12-25 07:09:34'),(103,15,'twisted','2025-12-25 07:09:49'),(104,15,'romance','2025-12-25 07:10:58'),(105,15,'train','2025-12-25 16:24:34'),(106,17,'twisted','2025-12-25 16:30:58'),(107,17,'twisted lies','2025-12-25 16:35:54'),(108,17,'lm Self Help','2026-02-27 16:32:41');
+/*!40000 ALTER TABLE `user_search_history` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_shelf_books`
+--
+
+DROP TABLE IF EXISTS `user_shelf_books`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_shelf_books` (
+  `shelf_id` int NOT NULL,
+  `book_id` int NOT NULL,
+  `added_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`shelf_id`,`book_id`),
+  KEY `book_id` (`book_id`),
+  CONSTRAINT `user_shelf_books_ibfk_1` FOREIGN KEY (`shelf_id`) REFERENCES `shelves` (`shelf_id`),
+  CONSTRAINT `user_shelf_books_ibfk_2` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_shelf_books`
+--
+
+LOCK TABLES `user_shelf_books` WRITE;
+/*!40000 ALTER TABLE `user_shelf_books` DISABLE KEYS */;
+INSERT INTO `user_shelf_books` VALUES (2,24,'2025-12-25 07:00:38'),(4,4,'2025-11-25 06:54:22'),(5,5,'2025-11-25 06:52:55'),(5,26,'2025-11-25 06:53:56'),(5,53,'2025-11-25 09:42:05'),(6,19,'2025-11-25 06:54:08'),(8,10,'2025-11-24 18:20:22'),(8,25,'2025-11-25 00:47:12'),(8,53,'2025-11-24 18:20:46'),(12,15,'2025-11-25 07:02:03'),(15,35,'2025-11-24 11:26:11'),(26,82,'2025-11-25 07:16:55'),(28,89,'2025-11-25 07:27:05'),(29,90,'2025-11-25 07:24:55'),(29,91,'2025-11-25 07:26:05'),(30,24,'2025-11-25 07:27:14'),(34,58,'2025-11-24 10:22:55'),(38,24,'2025-11-25 02:15:42'),(42,90,'2025-12-25 07:10:33'),(43,25,'2025-12-25 07:48:25'),(44,89,'2025-12-25 16:43:36'),(45,24,'2025-12-25 16:43:00'),(45,91,'2025-12-25 16:43:18'),(48,24,'2025-12-29 12:47:11'),(51,26,'2025-12-29 12:45:41'),(53,100,'2025-12-29 12:50:06'),(56,88,'2026-01-09 17:25:27'),(58,101,'2026-02-28 15:26:30');
+/*!40000 ALTER TABLE `user_shelf_books` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `first_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `last_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `join_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `bio` text COLLATE utf8mb4_general_ci,
+  `about_me` text COLLATE utf8mb4_general_ci,
+  `gender` enum('Male','Female','Other') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `profession` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `profile_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `role` enum('Admin','Reader') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Reader',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'admin101','Administration','A','mruchita38@gmail.com','scrypt:32768:8:1$YS2iAcvhwiCf9J25$da6617fbf2cbe7663b68b59132001e858049ecda9f9962ebad96fb185014137bc218719e39e4cc03974a50e17d8753292fab9b43a066d1f70b150e3d39133c43','2025-11-24 06:59:52',NULL,NULL,NULL,NULL,NULL,NULL,'Admin'),(2,'ChauhanGautam04','Gautam','Chauhan','chauhangautam176@gmail.com','scrypt:32768:8:1$TfnjkExfrH8YUeBg$303f8192a2b5f3370a774970d8ad421be65b4ef1130430d705f947fc1eae501a4fdbb142c7315603a420f189b2b49ab1fbe447de11c336780557bd4214dc207b','2025-11-24 07:01:56','Lover of soft romances, rainy days, and the smell of old books','Hi! I’m someone who finds comfort in fictional worlds, warm coffee, and slow mornings. I adore romance, light fantasy, and beautifully written stories that stay with you. Recommend me books that feel like a warm hug.','Male','2005-07-23','Student','\\static\\images\\gautam.png','Reader'),(3,'ruchita73','Ruchita','Mahale','ruchi04ta@gmail.com','scrypt:32768:8:1$NrUDHRgccfHbH2zE$f46363595203e9514efdd591d10b34204ff16337b622d8b9de5fd8d19438f8ddb87986706dccc316bbbbec472d285c8b870c9bcf5a8106563c9805b0a74084f1','2025-11-24 07:24:12','In love with morally grey characters and twisted plots','I enjoy books that leave me thinking long after I finish them. Dark romance, thrillers, and mysteries are my escape. I love unpredictable endings, intense chemistry, and intricate storylines. The darker, the better.','Female','2004-09-18','Student of Computer Science','\\static\\images\\ruchita.jpg','Admin'),(4,'netra89','Netra','Patel','netrajigneshpatel@gmail.com','scrypt:32768:8:1$A6PaPuhCkvpX29dk$343be23cd92bd796bb0813c99d4af022bdc5d0a56dc8b811267e29e24e2c2d85db46512caa6564f43bf4eed51e783d5a502bad59407f5ddbb8196cec15acf9e8','2025-11-24 07:25:42','Reader • Dreamer • Story Collector','I love reading romance, fiction, and thrillers. I enjoy emotional stories, character-driven plots, and books that make me feel something. Always looking for my next favourite read.','Female',NULL,NULL,'\\static\\images\\netra.jpeg','Reader'),(5,'keyuri75','Keyuri','Makwana','keyurimakwana75@gmail.com','scrypt:32768:8:1$s2XNWp6qmqZZ8MYc$e6c6cd72cb763e67b1d670bb57810968ddfe7fde075afa5666fe15b2e3dd8f0a22633f9c7a524c5c3a10a9c0022c5729bc0da6e79439d2f90616c32e22953913','2025-11-24 07:26:43','NEW READER, LIVING IN DELUSION,','I AM A STUDENT WHO LOVES READING BOOKS IN FREE TIME.','Female',NULL,NULL,'\\static\\images\\keyuri.jpg','Reader'),(6,'aman59','Aman','Mistri','amanmistri45@gmail.com','scrypt:32768:8:1$fykCr3bibkWodbZh$2150ab3b7184c707889ac6cbecf95db3b8a87cc83ba1901e9c83fb9222fdd1eb84198cbcf78c48ba3310301bf903a515d3169c93b3bd8062f6544aac14ebfd7f','2025-11-24 07:29:15','Hopeless romantic with a love for witty banter','I’m obsessed with fun, flirty rom-coms, messy characters, meet-cutes, and slow-burn chemistry. If it’s funny, sweet, and swoon-worthy, I’ll read it! Suggest me your cutest romance reads.','Male',NULL,NULL,'\\static\\images\\aman.jpeg','Reader'),(7,'JayP','Jay','Prajapati','jayprajapatirrr133@gmail.com','scrypt:32768:8:1$FXBNnXZxekMrc7Xz$5967d96c16b47723f2d407b1f22e6ea7f9c969ffa1239cdcffe6462b177b2d4ce67fa4fb10a3e9bb93de0ace4612ba52c27fae1e082d6b27e69b1bd06fd2cc58','2025-11-24 07:30:54','Bookworm with a big heart and a bigger TBR.','Hi! I’m just someone who loves cosy reads, sweet romances, fun mysteries, and relatable characters. If the book can make me smile, cry, or scream — I want it! Let’s share recommendations.','Male',NULL,NULL,'\\static\\images\\jay.png','Reader'),(8,'deep72','Deep','Kotak','deepmkotak1103@gmail.com','scrypt:32768:8:1$7ExwwdhrJw4ss1Wk$6ed7636e5a337589b3e63f9136a97a3d4c32967a5125d97011b5a82f929ca027e2b1fb7846c61cdc6462a5905ae0d9b3b6083d8b4f7d4f81437b26b8734859fb','2025-11-24 07:32:35',NULL,NULL,'Male',NULL,NULL,NULL,'Reader'),(9,'RhythmMahale','Rhythm','Mahale','rhythm758002@gmail.com','scrypt:32768:8:1$4WnmfhqFfOL8Qf5C$ea034e15bc39db95cdc7295cd429bf04744025e3db12eb8f5528be9d3e28192994b0fdd50679221ea5dc268535ac924a6d166394b6ba164377d63d0f81a9d894','2025-11-24 07:35:43','Coffee-fueled mind living between pages','I adore dark academia, psychological thrillers, literary fiction, and beautifully poetic writing. I enjoy deep themes, flawed characters, and hauntingly memorable stories. Recommend me books that feel atmospheric and intense.','Male',NULL,NULL,'\\static\\images\\rhythm.png','Reader'),(10,'maitri63','Maitri','Bhalala','maitribhalala@gmail.com','scrypt:32768:8:1$zgyqbH6Tkl9PncC6$3030766c0d35d04fab3cad2d667d23505ba39bb0132319d3754cf2087a0f4608948a2969d2609a7d3b4d53acf51c2aea42fe195186b71dd9b0f722ca4d05d16b','2025-11-24 07:38:07','I call myself Princess Eldora.','I love fantasy worlds, powerful heroines, dangerous villains, and romances that burn slowly but deeply.','Female',NULL,NULL,'\\static\\images\\maitri.jpeg','Reader'),(11,'rushang1999','Rushang','Mahale','rushangmahale1999@gmail.com','scrypt:32768:8:1$xupTaBG8KdZCxtvU$20a969a3443991c7ef24112ad3876a6319155f69d4eb0daac98d1cd14eb8f7816c2cbaa5cc06bc76443c43749f47dbbc1a386db1f6b80f9fced48aeaf92cc900','2025-11-24 07:40:06','Becoming 1% better every day','I’m passionate about personal growth, self-improvement, and building healthy habits. I love books that challenge my mindset, help me evolve, and push me toward becoming my best self.','Male',NULL,NULL,NULL,'Reader'),(12,'Maitri09','Maitri','Jhaveri','maitrijhaveri@gmail.com','scrypt:32768:8:1$50qc76LJfSbrcvXq$44b9a8253d28226b4a9bcbf415d93534045ef5d1f7efee6a62c5634edec2915c66374dda519976670f8fb54fbfe0171f69b27dbd1b1455813e121407e8124e42','2025-11-24 10:25:54','Faculty at Department of Computer Science, Gujarat University',NULL,'Female',NULL,'Professor',NULL,'Reader'),(13,'VaidehiVaghela','Vaidehi','Vaghela','vaidehi8@gmail.com','scrypt:32768:8:1$sn4iSpPMGw1PguCo$cd62aca0c8655539241b2fe32fd7086379a3703d82748a8c4aae1a090d84d570dd9860645468e835b4724ec2c2eb1ff76d5d0a4f0c99bcba321a103cbc07ac52','2025-11-25 09:47:22','Faculty at Department of Computer Science, Gujarat University','Found my passion at reading','Female',NULL,'Professor',NULL,'Reader'),(15,'Netra321','Netra','patellll','netrajigneshpateli@gmail.com','scrypt:32768:8:1$tQVT1oK7iMACd92W$e2962590852ca703af99fdb190c01c9da0a1e61fbd64e04d9d992837753fa9dbfe0e0af6f1384ac673985b5ec26e2413d9417224e607546a247b945d440d0051','2025-10-28 16:49:39','a book lover....',NULL,NULL,NULL,NULL,NULL,'Admin'),(17,'Jules@123','jules','ambrose','Jules_ambrose@gmail.com','scrypt:32768:8:1$rJGAqeTPOJ0nQCEQ$33f77cbfc77f4928feb6932dd2910482422ff395b393991e502d285f83b4edcd6ea4707257d474848ef0ebfae3f6d7c0d677315ece423490c1fbc443fb90de98','2025-12-25 16:27:43',NULL,NULL,NULL,NULL,NULL,NULL,'Reader'),(18,'ava@123','Ava','Chen','ava@123','scrypt:32768:8:1$9XC38tGE09Qe5EAf$0844db0e6a73c318a052fc79c265bb4413a20dccfdf1c188d0572fe3c5653fc40b9636d84a6960e51fcb77df76f331c0bbd76c70b03a9f17dfbc288a93a5c7cb','2025-12-25 16:39:59',NULL,NULL,'Female','1995-07-28','photographer',NULL,'Reader'),(19,'Bridget123','Bridget','Ascheberg','bridget123@gmail.com','scrypt:32768:8:1$oXklNnv8nKOjqe7Q$72fbb49a7ed1434aaa355b65a1521f80fd12ae07478286bd40750580095f2618ed2fe211af74254e0ab30ddda5fc1e48d351c6e6eef51807539f3c3c85cb8cd4','2025-12-27 12:41:11',NULL,NULL,NULL,NULL,NULL,NULL,'Reader'),(20,'Stella123','Stella','Alonso','stella123@gmail.com','scrypt:32768:8:1$403ROH61HWApSKzB$a3775a9aaf0b2be0e95bc6d9677dc56ebb58fce07a585153c85d8092ade94fc0802e3e25b139be91b8328fe5160016fd4ef9d53a2f6a0d4ef71d035e4503f3c4','2025-12-27 15:18:21',NULL,NULL,NULL,NULL,NULL,NULL,'Reader'),(21,'alex_123','alex','volkow','alex_123@gmail.com','scrypt:32768:8:1$doDiNrsIaSdUwstg$0fb546313319c149f08ca527e13c9781f87375ce67f50e32d78fef36a16b3110567962dba5391f1e2ca497ef1dc1a7540d7c9c3af7cf6bfe6ab2d596c464e5df','2026-02-28 15:23:35','CEO. Calculated. Unapologetically ambitious.\r\nI read stories about power, strategy, and love that’s earned the hard way.','Intentional reader with a curious mind.\r\nI enjoy books that challenge perspectives, explore growth, and leave a lasting impact.','Male','1991-07-23','CEO',NULL,'Reader'),(22,'neko_123','neko','diangalo','neko321@gmail.com','scrypt:32768:8:1$Ejqjbwm0eD4wPbRA$d99e0cf13b883555c958051768cecbb112873115679aff4f57bdbbe5665036f22d2fed7bbbfe3cb014354b80b859e7e4894ea39dfa7035ece63b468177876807','2026-02-28 15:41:36',NULL,NULL,'Other','1995-11-22',NULL,NULL,'Reader'),(23,'Monik123','monik','patel','monikpatel125@gmail.com','scrypt:32768:8:1$Fn7OAV5XvDOvEZZO$68315b8ac78ac94b167526e3f08875620de0a42e9c368c4e32dddb231347dfc29f6a0b39907ae71a043c91464942419a79dc78f384bce0ee9fc5cfe761f2792b','2026-03-17 16:13:42',NULL,NULL,NULL,NULL,NULL,NULL,'Reader');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-03-25 21:23:50
