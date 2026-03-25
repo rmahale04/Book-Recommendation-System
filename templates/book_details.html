@@ -486,6 +486,10 @@
                             <span class="metadata-label">Published</span>
                             <span class="metadata-value">{{ book.published_year }}</span>
                         </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Pages</span>
+                            <span class="metadata-value">{{ book.page_count or 'N/A' }}</span>
+                        </div>
                     </div>
 
                     <div class="add-to-library">
