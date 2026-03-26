@@ -3625,6 +3625,165 @@ def generate_charts(cursor, time_range):
     fig.tight_layout()
     plt.savefig(os.path.join(chart_dir, 'reviews_activity.png'), dpi=150, bbox_inches='tight')
     plt.close()
+
+# -------------------------
+# Compare with another user
+# -------------------------
+@app.route("/compare/<username>")
+def compare_users(username):
+    if "user_id" not in session:
+        flash("Please log in to compare.", "error")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Current logged-in user
+    cursor.execute("""
+        SELECT user_id, username, first_name, last_name, profile_image_url
+        FROM users WHERE user_id = %s
+    """, (session["user_id"],))
+    me = cursor.fetchone()
+
+    # The other user
+    cursor.execute("""
+        SELECT user_id, username, first_name, last_name, profile_image_url
+        FROM users WHERE username = %s
+    """, (username,))
+    other = cursor.fetchone()
+
+    if not other or other["user_id"] == me["user_id"]:
+        flash("Invalid user to compare.", "error")
+        conn.close()
+        return redirect(url_for("home"))
+
+    def get_user_data(uid):
+        # All book_ids on any shelf
+        cursor.execute("""
+            SELECT DISTINCT b.book_id
+            FROM user_shelf_books usb
+            JOIN shelves s ON usb.shelf_id = s.shelf_id
+            JOIN books b ON usb.book_id = b.book_id
+            WHERE s.user_id = %s
+        """, (uid,))
+        all_books = {r["book_id"] for r in cursor.fetchall()}
+
+        # Books per shelf name
+        cursor.execute("""
+            SELECT s.name AS shelf_name, b.book_id
+            FROM user_shelf_books usb
+            JOIN shelves s ON usb.shelf_id = s.shelf_id
+            JOIN books b ON usb.book_id = b.book_id
+            WHERE s.user_id = %s
+        """, (uid,))
+        shelf_books = {}
+        for row in cursor.fetchall():
+            shelf_books.setdefault(row["shelf_name"], set()).add(row["book_id"])
+
+        # Ratings
+        cursor.execute("""
+            SELECT book_id, ratings FROM reviews WHERE user_id = %s AND ratings IS NOT NULL
+        """, (uid,))
+        ratings = {r["book_id"]: r["ratings"] for r in cursor.fetchall()}
+
+        # Avg rating
+        avg = round(sum(ratings.values()) / len(ratings), 1) if ratings else 0
+
+        # Favourite genres (top 3)
+        cursor.execute("""
+            SELECT g.genre_name, COUNT(*) AS cnt
+            FROM user_genres ug
+            JOIN genres g ON ug.genre_id = g.genre_id
+            WHERE ug.user_id = %s
+            GROUP BY g.genre_id ORDER BY cnt DESC LIMIT 3
+        """, (uid,))
+        fav_genres = [r["genre_name"] for r in cursor.fetchall()]
+
+        return {
+            "all_books": all_books,
+            "shelf_books": shelf_books,
+            "ratings": ratings,
+            "avg_rating": avg,
+            "total_books": len(all_books),
+            "total_rated": len(ratings),
+            "fav_genres": fav_genres,
+        }
+
+    me_data = get_user_data(me["user_id"])
+    other_data = get_user_data(other["user_id"])
+
+    # Books both have read (in "Read" shelf)
+    me_read = me_data["shelf_books"].get("Read", set())
+    other_read = other_data["shelf_books"].get("Read", set())
+    both_read_ids = me_read & other_read
+
+    # Books both want to read
+    me_wtr = me_data["shelf_books"].get("Want To Read", set())
+    other_wtr = other_data["shelf_books"].get("Want To Read", set())
+    both_wtr_ids = me_wtr & other_wtr
+
+    # Books only I have read
+    only_me_ids = me_read - other_read
+    # Books only they have read
+    only_other_ids = other_read - me_read
+
+    def fetch_books_by_ids(ids, limit=6):
+        if not ids:
+            return []
+        placeholders = ','.join(['%s'] * len(ids))
+        cursor.execute(f"""
+            SELECT b.book_id, b.title, b.cover_image_url, a.name AS author
+            FROM books b LEFT JOIN authors a ON b.author_id = a.author_id
+            WHERE b.book_id IN ({placeholders}) LIMIT {limit}
+        """, list(ids))
+        return cursor.fetchall()
+
+    both_read = fetch_books_by_ids(both_read_ids)
+    both_wtr  = fetch_books_by_ids(both_wtr_ids)
+    only_me   = fetch_books_by_ids(only_me_ids)
+    only_other = fetch_books_by_ids(only_other_ids)
+
+    # Books both rated — compute rating difference
+    common_rated_ids = set(me_data["ratings"]) & set(other_data["ratings"])
+    agreed, disagreed = [], []
+    for bid in common_rated_ids:
+        diff = abs(me_data["ratings"][bid] - other_data["ratings"][bid])
+        if diff <= 1:
+            agreed.append(bid)
+        else:
+            disagreed.append(bid)
+
+    agreed_books    = fetch_books_by_ids(set(agreed))
+    disagreed_books = fetch_books_by_ids(set(disagreed))
+
+    # Taste match % — based on shared read books + similar ratings
+    shared = len(both_read_ids)
+    total  = len(me_read | other_read) or 1
+    base   = (shared / total) * 100
+
+    rating_bonus = 0
+    if common_rated_ids:
+        avg_diff = sum(
+            abs(me_data["ratings"][b] - other_data["ratings"][b])
+            for b in common_rated_ids
+        ) / len(common_rated_ids)
+        rating_bonus = max(0, (2 - avg_diff) / 2 * 20)
+
+    taste_match = min(100, round(base * 0.8 + rating_bonus))
+
+    cursor.close()
+    conn.close()
+
+    return render_template("compare.html",
+        me=me, other=other,
+        me_data=me_data, other_data=other_data,
+        both_read=both_read, both_wtr=both_wtr,
+        only_me=only_me, only_other=only_other,
+        agreed_books=agreed_books, disagreed_books=disagreed_books,
+        taste_match=taste_match,
+        shared_count=len(both_read_ids),
+        common_rated=len(common_rated_ids),
+    )
 # -------------------------
 # Run app
 # -------------------------
