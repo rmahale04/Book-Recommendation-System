@@ -64,8 +64,13 @@
       </div>
 
       {% if session.get('user_id') == user.user_id %}
-        <button class="edit-btn" onclick="openSettings()">Settings</button>
-      {% endif %}
+  <button class="edit-btn" onclick="openSettings()">Settings</button>
+{% elif session.get('user_id') %}
+  <a href="{{ url_for('compare_users', username=user.username) }}"
+     class="edit-btn" style="text-decoration:none;">
+    📊 Compare Books
+  </a>
+{% endif %}
     </div>
 
     <div class="tabs">
