@@ -24,13 +24,13 @@ DROP TABLE IF EXISTS `author_requests`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `author_requests` (
   `request_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `gender` enum('Male','Female','Others') COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `biography` text COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` enum('Male','Female','Others') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `biography` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `date_of_birth` date NOT NULL,
-  `status` enum('pending','approved','rejected') COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `status` enum('pending','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
   `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reviewed_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`request_id`)
@@ -56,16 +56,16 @@ DROP TABLE IF EXISTS `authors`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `authors` (
   `author_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `gender` enum('Male','Female','Other') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `biography` text COLLATE utf8mb4_general_ci,
-  `email` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` enum('Male','Female','Other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `biography` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `date_of_birth` date NOT NULL,
   `date_of_death` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `profile_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `website` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `profile_image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `website` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`author_id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -117,16 +117,16 @@ DROP TABLE IF EXISTS `books`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `books` (
   `book_id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `author_id` int DEFAULT NULL,
   `series_id` int DEFAULT NULL,
   `published_year` int DEFAULT NULL,
-  `language` enum('English','Hindi','Gujarati','Marathi') COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
-  `cover_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `isbn` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `language` enum('English','Hindi','Gujarati','Marathi') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `cover_image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `isbn` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `page_count` int DEFAULT NULL,
-  `buy_link` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `buy_link` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`book_id`),
   KEY `author_id` (`author_id`),
   KEY `series_id` (`series_id`),
@@ -186,7 +186,7 @@ CREATE TABLE `friend_requests` (
   `request_id` int NOT NULL AUTO_INCREMENT,
   `requester_id` int NOT NULL,
   `requestee_id` int NOT NULL,
-  `status` enum('pending','accepted','rejected') COLLATE utf8mb4_general_ci DEFAULT 'pending',
+  `status` enum('pending','accepted','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
   `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `responded_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`request_id`),
@@ -217,7 +217,7 @@ DROP TABLE IF EXISTS `genres`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `genres` (
   `genre_id` int NOT NULL AUTO_INCREMENT,
-  `genre_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `genre_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`genre_id`),
   UNIQUE KEY `genre_name` (`genre_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -245,7 +245,7 @@ CREATE TABLE `reviews` (
   `user_id` int DEFAULT NULL,
   `book_id` int DEFAULT NULL,
   `ratings` int NOT NULL,
-  `review_text` text COLLATE utf8mb4_general_ci,
+  `review_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `review_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`review_id`),
   UNIQUE KEY `unique_user_book` (`user_id`,`book_id`),
@@ -276,8 +276,8 @@ DROP TABLE IF EXISTS `series`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `series` (
   `series_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`series_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -302,7 +302,7 @@ DROP TABLE IF EXISTS `shelves`;
 CREATE TABLE `shelves` (
   `shelf_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
-  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `is_default` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`shelf_id`),
@@ -336,7 +336,7 @@ CREATE TABLE `user_book_views` (
   PRIMARY KEY (`view_id`),
   KEY `fk_views_user` (`user_id`),
   CONSTRAINT `fk_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -345,7 +345,7 @@ CREATE TABLE `user_book_views` (
 
 LOCK TABLES `user_book_views` WRITE;
 /*!40000 ALTER TABLE `user_book_views` DISABLE KEYS */;
-INSERT INTO `user_book_views` VALUES (1,1,90,'2025-12-25 06:51:48'),(2,1,24,'2025-12-25 07:00:23'),(3,1,24,'2025-12-25 07:00:38'),(4,15,25,'2025-12-25 07:09:12'),(5,15,90,'2025-12-25 07:09:54'),(6,15,90,'2025-12-25 07:10:19'),(7,15,90,'2025-12-25 07:10:34'),(8,15,25,'2025-12-25 07:11:04'),(9,15,25,'2025-12-25 07:11:17'),(10,15,25,'2025-12-25 07:48:16'),(11,15,25,'2025-12-25 07:48:25'),(12,15,25,'2025-12-25 16:18:21'),(13,15,25,'2025-12-25 16:18:31'),(14,15,25,'2025-12-25 16:20:52'),(15,15,25,'2025-12-25 16:23:06'),(16,15,100,'2025-12-25 16:24:05'),(17,15,39,'2025-12-25 16:24:25'),(18,15,56,'2025-12-25 16:24:42'),(19,17,24,'2025-12-25 16:31:12'),(20,17,24,'2025-12-25 16:35:33'),(21,17,91,'2025-12-25 16:37:14'),(22,17,91,'2025-12-25 16:37:26'),(23,18,53,'2025-12-25 16:40:56'),(24,17,24,'2025-12-25 16:42:30'),(25,17,24,'2025-12-25 16:43:01'),(26,17,91,'2025-12-25 16:43:11'),(27,17,91,'2025-12-25 16:43:18'),(28,17,89,'2025-12-25 16:43:31'),(29,17,89,'2025-12-25 16:43:36'),(30,17,50,'2025-12-26 08:12:25'),(31,19,43,'2025-12-27 12:43:37'),(32,19,26,'2025-12-29 12:45:33'),(33,19,26,'2025-12-29 12:45:41'),(34,18,24,'2025-12-29 12:47:04'),(35,18,24,'2025-12-29 12:47:11'),(36,20,100,'2025-12-29 12:50:00'),(37,20,100,'2025-12-29 12:50:06'),(38,18,88,'2026-01-09 17:24:34'),(39,18,88,'2026-01-09 17:24:56'),(40,18,88,'2026-01-09 17:25:27'),(41,18,88,'2026-01-09 17:25:52'),(42,17,88,'2026-02-17 04:50:41'),(43,17,53,'2026-02-27 16:33:09'),(44,17,53,'2026-02-27 16:33:50'),(45,17,88,'2026-02-28 04:52:35'),(46,17,88,'2026-02-28 04:55:32'),(47,17,88,'2026-02-28 04:56:58'),(48,17,88,'2026-02-28 04:57:19'),(49,17,88,'2026-02-28 04:58:24'),(50,17,88,'2026-02-28 04:58:29'),(51,17,88,'2026-02-28 04:58:32'),(52,17,88,'2026-02-28 05:01:01'),(53,17,88,'2026-02-28 05:02:35'),(54,17,88,'2026-02-28 05:02:37'),(55,17,88,'2026-02-28 05:03:07'),(56,17,88,'2026-02-28 05:03:41'),(57,17,88,'2026-02-28 05:03:57'),(58,17,88,'2026-02-28 05:05:55'),(59,17,88,'2026-02-28 05:08:15'),(60,17,64,'2026-02-28 05:08:41'),(61,17,26,'2026-02-28 05:09:06'),(62,17,72,'2026-02-28 08:42:02'),(63,17,43,'2026-02-28 08:42:58'),(64,21,22,'2026-02-28 15:24:25'),(65,21,101,'2026-02-28 15:25:17'),(66,21,101,'2026-02-28 15:25:39'),(67,21,101,'2026-02-28 15:26:22'),(68,21,101,'2026-02-28 15:26:30'),(69,23,81,'2026-03-17 16:17:19'),(70,23,101,'2026-03-17 16:19:58'),(71,17,100,'2026-03-17 16:21:57'),(72,18,50,'2026-03-19 06:19:43'),(73,18,100,'2026-03-19 06:20:04'),(74,18,26,'2026-03-19 06:20:12'),(75,18,88,'2026-03-19 06:20:51');
+INSERT INTO `user_book_views` VALUES (1,1,90,'2025-12-25 06:51:48'),(2,1,24,'2025-12-25 07:00:23'),(3,1,24,'2025-12-25 07:00:38'),(4,15,25,'2025-12-25 07:09:12'),(5,15,90,'2025-12-25 07:09:54'),(6,15,90,'2025-12-25 07:10:19'),(7,15,90,'2025-12-25 07:10:34'),(8,15,25,'2025-12-25 07:11:04'),(9,15,25,'2025-12-25 07:11:17'),(10,15,25,'2025-12-25 07:48:16'),(11,15,25,'2025-12-25 07:48:25'),(12,15,25,'2025-12-25 16:18:21'),(13,15,25,'2025-12-25 16:18:31'),(14,15,25,'2025-12-25 16:20:52'),(15,15,25,'2025-12-25 16:23:06'),(16,15,100,'2025-12-25 16:24:05'),(17,15,39,'2025-12-25 16:24:25'),(18,15,56,'2025-12-25 16:24:42'),(19,17,24,'2025-12-25 16:31:12'),(20,17,24,'2025-12-25 16:35:33'),(21,17,91,'2025-12-25 16:37:14'),(22,17,91,'2025-12-25 16:37:26'),(23,18,53,'2025-12-25 16:40:56'),(24,17,24,'2025-12-25 16:42:30'),(25,17,24,'2025-12-25 16:43:01'),(26,17,91,'2025-12-25 16:43:11'),(27,17,91,'2025-12-25 16:43:18'),(28,17,89,'2025-12-25 16:43:31'),(29,17,89,'2025-12-25 16:43:36'),(30,17,50,'2025-12-26 08:12:25'),(31,19,43,'2025-12-27 12:43:37'),(32,19,26,'2025-12-29 12:45:33'),(33,19,26,'2025-12-29 12:45:41'),(34,18,24,'2025-12-29 12:47:04'),(35,18,24,'2025-12-29 12:47:11'),(36,20,100,'2025-12-29 12:50:00'),(37,20,100,'2025-12-29 12:50:06'),(38,18,88,'2026-01-09 17:24:34'),(39,18,88,'2026-01-09 17:24:56'),(40,18,88,'2026-01-09 17:25:27'),(41,18,88,'2026-01-09 17:25:52'),(42,17,88,'2026-02-17 04:50:41'),(43,17,53,'2026-02-27 16:33:09'),(44,17,53,'2026-02-27 16:33:50'),(45,17,88,'2026-02-28 04:52:35'),(46,17,88,'2026-02-28 04:55:32'),(47,17,88,'2026-02-28 04:56:58'),(48,17,88,'2026-02-28 04:57:19'),(49,17,88,'2026-02-28 04:58:24'),(50,17,88,'2026-02-28 04:58:29'),(51,17,88,'2026-02-28 04:58:32'),(52,17,88,'2026-02-28 05:01:01'),(53,17,88,'2026-02-28 05:02:35'),(54,17,88,'2026-02-28 05:02:37'),(55,17,88,'2026-02-28 05:03:07'),(56,17,88,'2026-02-28 05:03:41'),(57,17,88,'2026-02-28 05:03:57'),(58,17,88,'2026-02-28 05:05:55'),(59,17,88,'2026-02-28 05:08:15'),(60,17,64,'2026-02-28 05:08:41'),(61,17,26,'2026-02-28 05:09:06'),(62,17,72,'2026-02-28 08:42:02'),(63,17,43,'2026-02-28 08:42:58'),(64,21,22,'2026-02-28 15:24:25'),(65,21,101,'2026-02-28 15:25:17'),(66,21,101,'2026-02-28 15:25:39'),(67,21,101,'2026-02-28 15:26:22'),(68,21,101,'2026-02-28 15:26:30'),(69,23,81,'2026-03-17 16:17:19'),(70,23,101,'2026-03-17 16:19:58'),(71,17,100,'2026-03-17 16:21:57'),(72,18,50,'2026-03-19 06:19:43'),(73,18,100,'2026-03-19 06:20:04'),(74,18,26,'2026-03-19 06:20:12'),(75,18,88,'2026-03-19 06:20:51'),(76,21,24,'2026-03-26 12:57:30'),(77,21,24,'2026-03-26 12:57:43'),(78,21,91,'2026-03-26 12:58:44'),(79,21,91,'2026-03-26 12:58:51'),(80,18,91,'2026-03-26 12:59:45'),(81,18,60,'2026-03-26 13:00:44'),(82,18,60,'2026-03-26 13:00:51'),(83,18,91,'2026-03-26 13:01:06'),(84,18,91,'2026-03-26 13:01:14');
 /*!40000 ALTER TABLE `user_book_views` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -388,12 +388,12 @@ DROP TABLE IF EXISTS `user_search_history`;
 CREATE TABLE `user_search_history` (
   `history_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
-  `search_query` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `search_query` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `search_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`history_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `user_search_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -402,7 +402,7 @@ CREATE TABLE `user_search_history` (
 
 LOCK TABLES `user_search_history` WRITE;
 /*!40000 ALTER TABLE `user_search_history` DISABLE KEYS */;
-INSERT INTO `user_search_history` VALUES (1,9,'Atomic Habits','2025-11-24 07:36:13'),(2,9,'Ana','2025-11-24 07:36:24'),(3,9,'Alex Volkov','2025-11-24 07:36:36'),(4,4,'Chetan Bhagat','2025-11-24 08:51:06'),(5,4,'Chetan Bhagat','2025-11-24 08:52:02'),(6,5,'Chetan Bhagat','2025-11-24 08:53:40'),(7,2,'Chetan Bhagat','2025-11-24 08:54:59'),(8,2,'fiction','2025-11-24 08:55:19'),(9,2,'Chetan Bhagat','2025-11-24 08:55:31'),(10,2,'fantasy','2025-11-24 09:02:07'),(11,2,'horro','2025-11-24 09:03:08'),(12,2,'thriller','2025-11-24 09:03:23'),(13,6,'harry porter','2025-11-24 10:20:35'),(14,6,'harry potter','2025-11-24 10:20:42'),(15,12,'history','2025-11-24 10:28:00'),(16,12,'gandhi','2025-11-24 10:28:14'),(17,3,'indian','2025-11-24 18:05:37'),(18,3,'states','2025-11-24 18:20:37'),(19,3,'twisted love','2025-11-24 18:31:41'),(20,3,'horror','2025-11-24 18:31:52'),(21,3,'twisted love','2025-11-25 02:14:33'),(22,2,'twisted','2025-11-25 03:07:49'),(23,2,'twisted','2025-11-25 03:11:37'),(24,2,'twisted','2025-11-25 03:15:54'),(25,2,'twisted','2025-11-25 03:28:26'),(26,2,'colleen hoover','2025-11-25 03:28:33'),(27,2,'colleen hoover','2025-11-25 03:39:27'),(28,2,'history','2025-11-25 06:52:30'),(29,13,'twisted lies','2025-11-25 09:49:08'),(30,3,'states','2025-12-23 18:04:26'),(31,3,'2 states','2025-12-23 18:04:47'),(32,3,'states','2025-12-23 18:05:04'),(33,3,'sttes','2025-12-23 18:05:16'),(34,3,'leson','2025-12-23 18:05:45'),(35,3,'lesson','2025-12-23 18:05:50'),(36,3,'leson','2025-12-23 18:05:57'),(37,3,'stats','2025-12-23 18:10:37'),(38,3,'states','2025-12-23 18:10:45'),(39,3,'lesson','2025-12-23 18:10:49'),(40,3,'2 states','2025-12-23 18:10:57'),(41,3,'twisted love','2025-12-23 18:11:07'),(42,3,'hate','2025-12-23 18:11:14'),(43,3,'twisted hate','2025-12-23 18:11:23'),(44,3,'twisted love','2025-12-23 18:11:32'),(45,3,'twisted lie','2025-12-23 18:11:36'),(46,3,'love','2025-12-23 18:13:27'),(47,3,'luv','2025-12-23 18:13:33'),(48,3,'luve','2025-12-23 18:13:37'),(49,3,'hate','2025-12-23 18:13:44'),(50,3,'hat','2025-12-23 18:13:47'),(51,3,'hte','2025-12-23 18:13:56'),(52,3,'leson','2025-12-23 18:14:01'),(53,3,'george martin','2025-12-24 21:18:39'),(54,3,'george','2025-12-24 21:18:42'),(55,3,'sarah maas','2025-12-24 21:24:06'),(56,3,'sarah','2025-12-24 21:24:09'),(57,3,'brandon','2025-12-24 21:24:20'),(58,3,'ravinder','2025-12-24 21:24:33'),(59,3,'john green','2025-12-24 21:24:43'),(60,3,'veronica roth','2025-12-24 21:24:52'),(61,3,'paulo','2025-12-24 21:25:01'),(62,3,'khaled','2025-12-24 21:25:08'),(63,3,'murakami','2025-12-24 21:25:14'),(64,3,'ruskin','2025-12-24 21:25:22'),(65,3,'chetan','2025-12-24 21:25:28'),(66,3,'rick','2025-12-24 21:25:35'),(67,3,'taylor','2025-12-24 21:25:42'),(68,3,'jojo','2025-12-24 21:25:49'),(69,3,'elif','2025-12-24 21:25:54'),(70,3,'agatha','2025-12-24 21:26:01'),(71,3,'arthur','2025-12-24 21:26:08'),(72,3,'orwell','2025-12-24 21:26:14'),(73,3,'harper lee','2025-12-24 21:26:21'),(74,3,'F. Scott Fitzgerald','2025-12-24 21:26:31'),(75,3,'sudha','2025-12-24 21:26:37'),(76,3,'abdul kalam','2025-12-24 21:26:46'),(77,3,'arundhati','2025-12-24 21:26:53'),(78,3,'frank','2025-12-24 21:26:59'),(79,3,'gillian','2025-12-24 21:27:05'),(80,3,'alex','2025-12-24 21:27:11'),(81,3,'fyodar','2025-12-24 21:27:29'),(82,3,'Fyodor Dostoevsky','2025-12-24 21:27:39'),(83,3,'gabriel','2025-12-24 21:27:49'),(84,3,'abhinav','2025-12-24 21:27:57'),(85,3,'abhinav','2025-12-24 21:31:56'),(86,3,'playig it my way','2025-12-24 21:32:56'),(87,3,'playing it my way','2025-12-24 21:33:01'),(88,3,'abhinav','2025-12-24 21:34:28'),(89,3,'self help','2025-12-24 21:52:55'),(90,3,'self','2025-12-24 21:52:58'),(91,3,'help','2025-12-24 21:53:04'),(92,3,'the silent patient','2025-12-24 22:09:13'),(93,3,'gillian','2025-12-24 22:09:24'),(94,3,'shining','2025-12-24 22:09:34'),(95,3,'the call','2025-12-24 22:09:40'),(96,3,'the shining','2025-12-24 22:09:52'),(97,3,'jane','2025-12-24 22:26:40'),(98,3,'Thinking, Fast and Slow','2025-12-24 22:34:29'),(99,3,'How to Win Friends and Influence People','2025-12-24 22:51:01'),(100,3,'Atomic Habits','2025-12-24 22:51:35'),(101,1,'love','2025-12-25 06:54:20'),(102,15,'ana huang','2025-12-25 07:09:34'),(103,15,'twisted','2025-12-25 07:09:49'),(104,15,'romance','2025-12-25 07:10:58'),(105,15,'train','2025-12-25 16:24:34'),(106,17,'twisted','2025-12-25 16:30:58'),(107,17,'twisted lies','2025-12-25 16:35:54'),(108,17,'lm Self Help','2026-02-27 16:32:41');
+INSERT INTO `user_search_history` VALUES (1,9,'Atomic Habits','2025-11-24 07:36:13'),(2,9,'Ana','2025-11-24 07:36:24'),(3,9,'Alex Volkov','2025-11-24 07:36:36'),(4,4,'Chetan Bhagat','2025-11-24 08:51:06'),(5,4,'Chetan Bhagat','2025-11-24 08:52:02'),(6,5,'Chetan Bhagat','2025-11-24 08:53:40'),(7,2,'Chetan Bhagat','2025-11-24 08:54:59'),(8,2,'fiction','2025-11-24 08:55:19'),(9,2,'Chetan Bhagat','2025-11-24 08:55:31'),(10,2,'fantasy','2025-11-24 09:02:07'),(11,2,'horro','2025-11-24 09:03:08'),(12,2,'thriller','2025-11-24 09:03:23'),(13,6,'harry porter','2025-11-24 10:20:35'),(14,6,'harry potter','2025-11-24 10:20:42'),(15,12,'history','2025-11-24 10:28:00'),(16,12,'gandhi','2025-11-24 10:28:14'),(17,3,'indian','2025-11-24 18:05:37'),(18,3,'states','2025-11-24 18:20:37'),(19,3,'twisted love','2025-11-24 18:31:41'),(20,3,'horror','2025-11-24 18:31:52'),(21,3,'twisted love','2025-11-25 02:14:33'),(22,2,'twisted','2025-11-25 03:07:49'),(23,2,'twisted','2025-11-25 03:11:37'),(24,2,'twisted','2025-11-25 03:15:54'),(25,2,'twisted','2025-11-25 03:28:26'),(26,2,'colleen hoover','2025-11-25 03:28:33'),(27,2,'colleen hoover','2025-11-25 03:39:27'),(28,2,'history','2025-11-25 06:52:30'),(29,13,'twisted lies','2025-11-25 09:49:08'),(30,3,'states','2025-12-23 18:04:26'),(31,3,'2 states','2025-12-23 18:04:47'),(32,3,'states','2025-12-23 18:05:04'),(33,3,'sttes','2025-12-23 18:05:16'),(34,3,'leson','2025-12-23 18:05:45'),(35,3,'lesson','2025-12-23 18:05:50'),(36,3,'leson','2025-12-23 18:05:57'),(37,3,'stats','2025-12-23 18:10:37'),(38,3,'states','2025-12-23 18:10:45'),(39,3,'lesson','2025-12-23 18:10:49'),(40,3,'2 states','2025-12-23 18:10:57'),(41,3,'twisted love','2025-12-23 18:11:07'),(42,3,'hate','2025-12-23 18:11:14'),(43,3,'twisted hate','2025-12-23 18:11:23'),(44,3,'twisted love','2025-12-23 18:11:32'),(45,3,'twisted lie','2025-12-23 18:11:36'),(46,3,'love','2025-12-23 18:13:27'),(47,3,'luv','2025-12-23 18:13:33'),(48,3,'luve','2025-12-23 18:13:37'),(49,3,'hate','2025-12-23 18:13:44'),(50,3,'hat','2025-12-23 18:13:47'),(51,3,'hte','2025-12-23 18:13:56'),(52,3,'leson','2025-12-23 18:14:01'),(53,3,'george martin','2025-12-24 21:18:39'),(54,3,'george','2025-12-24 21:18:42'),(55,3,'sarah maas','2025-12-24 21:24:06'),(56,3,'sarah','2025-12-24 21:24:09'),(57,3,'brandon','2025-12-24 21:24:20'),(58,3,'ravinder','2025-12-24 21:24:33'),(59,3,'john green','2025-12-24 21:24:43'),(60,3,'veronica roth','2025-12-24 21:24:52'),(61,3,'paulo','2025-12-24 21:25:01'),(62,3,'khaled','2025-12-24 21:25:08'),(63,3,'murakami','2025-12-24 21:25:14'),(64,3,'ruskin','2025-12-24 21:25:22'),(65,3,'chetan','2025-12-24 21:25:28'),(66,3,'rick','2025-12-24 21:25:35'),(67,3,'taylor','2025-12-24 21:25:42'),(68,3,'jojo','2025-12-24 21:25:49'),(69,3,'elif','2025-12-24 21:25:54'),(70,3,'agatha','2025-12-24 21:26:01'),(71,3,'arthur','2025-12-24 21:26:08'),(72,3,'orwell','2025-12-24 21:26:14'),(73,3,'harper lee','2025-12-24 21:26:21'),(74,3,'F. Scott Fitzgerald','2025-12-24 21:26:31'),(75,3,'sudha','2025-12-24 21:26:37'),(76,3,'abdul kalam','2025-12-24 21:26:46'),(77,3,'arundhati','2025-12-24 21:26:53'),(78,3,'frank','2025-12-24 21:26:59'),(79,3,'gillian','2025-12-24 21:27:05'),(80,3,'alex','2025-12-24 21:27:11'),(81,3,'fyodar','2025-12-24 21:27:29'),(82,3,'Fyodor Dostoevsky','2025-12-24 21:27:39'),(83,3,'gabriel','2025-12-24 21:27:49'),(84,3,'abhinav','2025-12-24 21:27:57'),(85,3,'abhinav','2025-12-24 21:31:56'),(86,3,'playig it my way','2025-12-24 21:32:56'),(87,3,'playing it my way','2025-12-24 21:33:01'),(88,3,'abhinav','2025-12-24 21:34:28'),(89,3,'self help','2025-12-24 21:52:55'),(90,3,'self','2025-12-24 21:52:58'),(91,3,'help','2025-12-24 21:53:04'),(92,3,'the silent patient','2025-12-24 22:09:13'),(93,3,'gillian','2025-12-24 22:09:24'),(94,3,'shining','2025-12-24 22:09:34'),(95,3,'the call','2025-12-24 22:09:40'),(96,3,'the shining','2025-12-24 22:09:52'),(97,3,'jane','2025-12-24 22:26:40'),(98,3,'Thinking, Fast and Slow','2025-12-24 22:34:29'),(99,3,'How to Win Friends and Influence People','2025-12-24 22:51:01'),(100,3,'Atomic Habits','2025-12-24 22:51:35'),(101,1,'love','2025-12-25 06:54:20'),(102,15,'ana huang','2025-12-25 07:09:34'),(103,15,'twisted','2025-12-25 07:09:49'),(104,15,'romance','2025-12-25 07:10:58'),(105,15,'train','2025-12-25 16:24:34'),(106,17,'twisted','2025-12-25 16:30:58'),(107,17,'twisted lies','2025-12-25 16:35:54'),(108,17,'lm Self Help','2026-02-27 16:32:41'),(158,21,'twisted','2026-03-26 12:57:17'),(159,18,'twisted lies','2026-03-26 13:01:03');
 /*!40000 ALTER TABLE `user_search_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -430,7 +430,7 @@ CREATE TABLE `user_shelf_books` (
 
 LOCK TABLES `user_shelf_books` WRITE;
 /*!40000 ALTER TABLE `user_shelf_books` DISABLE KEYS */;
-INSERT INTO `user_shelf_books` VALUES (2,24,'2025-12-25 07:00:38'),(4,4,'2025-11-25 06:54:22'),(5,5,'2025-11-25 06:52:55'),(5,26,'2025-11-25 06:53:56'),(5,53,'2025-11-25 09:42:05'),(6,19,'2025-11-25 06:54:08'),(8,10,'2025-11-24 18:20:22'),(8,25,'2025-11-25 00:47:12'),(8,53,'2025-11-24 18:20:46'),(12,15,'2025-11-25 07:02:03'),(15,35,'2025-11-24 11:26:11'),(26,82,'2025-11-25 07:16:55'),(28,89,'2025-11-25 07:27:05'),(29,90,'2025-11-25 07:24:55'),(29,91,'2025-11-25 07:26:05'),(30,24,'2025-11-25 07:27:14'),(34,58,'2025-11-24 10:22:55'),(38,24,'2025-11-25 02:15:42'),(42,90,'2025-12-25 07:10:33'),(43,25,'2025-12-25 07:48:25'),(44,89,'2025-12-25 16:43:36'),(45,24,'2025-12-25 16:43:00'),(45,91,'2025-12-25 16:43:18'),(48,24,'2025-12-29 12:47:11'),(51,26,'2025-12-29 12:45:41'),(53,100,'2025-12-29 12:50:06'),(56,88,'2026-01-09 17:25:27'),(58,101,'2026-02-28 15:26:30');
+INSERT INTO `user_shelf_books` VALUES (2,24,'2025-12-25 07:00:38'),(4,4,'2025-11-25 06:54:22'),(5,5,'2025-11-25 06:52:55'),(5,26,'2025-11-25 06:53:56'),(5,53,'2025-11-25 09:42:05'),(6,19,'2025-11-25 06:54:08'),(8,10,'2025-11-24 18:20:22'),(8,25,'2025-11-25 00:47:12'),(8,53,'2025-11-24 18:20:46'),(12,15,'2025-11-25 07:02:03'),(15,35,'2025-11-24 11:26:11'),(26,82,'2025-11-25 07:16:55'),(28,89,'2025-11-25 07:27:05'),(29,90,'2025-11-25 07:24:55'),(29,91,'2025-11-25 07:26:05'),(30,24,'2025-11-25 07:27:14'),(34,58,'2025-11-24 10:22:55'),(38,24,'2025-11-25 02:15:42'),(42,90,'2025-12-25 07:10:33'),(43,25,'2025-12-25 07:48:25'),(44,89,'2025-12-25 16:43:36'),(45,24,'2025-12-25 16:43:00'),(45,91,'2025-12-25 16:43:18'),(48,24,'2025-12-29 12:47:11'),(48,60,'2026-03-26 13:00:51'),(49,91,'2026-03-26 13:01:14'),(51,26,'2025-12-29 12:45:41'),(53,100,'2025-12-29 12:50:06'),(56,88,'2026-01-09 17:25:27'),(58,24,'2026-03-26 12:57:43'),(58,101,'2026-02-28 15:26:30'),(59,91,'2026-03-26 12:58:51');
 /*!40000 ALTER TABLE `user_shelf_books` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -443,19 +443,19 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `first_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `last_name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `join_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `bio` text COLLATE utf8mb4_general_ci,
-  `about_me` text COLLATE utf8mb4_general_ci,
-  `gender` enum('Male','Female','Other') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bio` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `about_me` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `gender` enum('Male','Female','Other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
-  `profession` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `profile_image_url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `role` enum('Admin','Reader') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Reader',
+  `profession` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `profile_image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `role` enum('Admin','Reader') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Reader',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
@@ -481,4 +481,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-25 21:23:50
+-- Dump completed on 2026-03-26 18:38:08
