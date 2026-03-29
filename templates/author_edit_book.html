@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Book – {{ book.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --author-primary: #667eea;
+            --author-secondary: #764ba2;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            margin: 0; padding: 0;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--author-primary), var(--author-secondary));
+            color: white;
+            padding: 25px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-header .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-header h1 { margin: 0; font-size: 26px; }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-outline { background: transparent; color: white; border: 2px solid white; }
+        .btn-outline:hover { background: rgba(255,255,255,0.15); }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 22px; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #444;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="number"], input[type="url"],
+        select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--author-primary);
+            outline: none;
+        }
+        textarea { resize: vertical; min-height: 130px; }
+        .error { color: #c62828; font-size: 13px; margin-top: 5px; }
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .genre-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f5f5f5;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .genre-item input[type="checkbox"] { margin: 0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--author-primary), var(--author-secondary));
+            color: white;
+            padding: 12px 30px;
+            font-size: 15px;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+            padding: 12px 25px;
+            font-size: 15px;
+        }
+        .form-actions { display: flex; gap: 12px; margin-top: 10px; }
+        .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-danger { background: #fdecea; color: #c62828; border: 1px solid #f5c6cb; }
+        .char-count { font-size: 12px; color: #999; text-align: right; margin-top: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <div class="container">
+            <h1>✏️ Edit Book</h1>
+            <a href="{{ url_for('author_dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if errors.database %}
+            <div class="alert alert-danger">{{ errors.database }}</div>
+        {% endif %}
+
+        <div class="card">
+            <form method="POST" action="{{ url_for('author_edit_book', book_id=book.book_id) }}">
+
+                <div class="form-group">
+                    <label for="title">Book Title *</label>
+                    <input type="text" id="title" name="title"
+                           value="{{ request.form.title if request.method == 'POST' else book.title }}"
+                           placeholder="Enter book title" maxlength="255">
+                    {% if errors.title %}<div class="error">{{ errors.title }}</div>{% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="published_year">Published Year *</label>
+                        <input type="number" id="published_year" name="published_year"
+                               value="{{ request.form.published_year if request.method == 'POST' else book.published_year }}"
+                               min="1000" max="2030" placeholder="e.g. 2023">
+                        {% if errors.published_year %}<div class="error">{{ errors.published_year }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="language">Language *</label>
+                        <select id="language" name="language">
+                            <option value="">-- Select Language --</option>
+                            {% for lang in ["English", "Hindi", "Gujarati", "Marathi"] %}
+                            <option value="{{ lang }}"
+                                {% if (request.method == 'POST' and request.form.language == lang) or
+                                      (request.method == 'GET' and book.language == lang) %}selected{% endif %}>
+                                {{ lang }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if errors.language %}<div class="error">{{ errors.language }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="isbn">ISBN</label>
+                        <input type="text" id="isbn" name="isbn"
+                               value="{{ request.form.isbn if request.method == 'POST' else (book.isbn or '') }}"
+                               placeholder="e.g. 978-3-16-148410-0">
+                    </div>
+                    <div class="form-group">
+                        <label for="series_id">Series (optional)</label>
+                        <select id="series_id" name="series_id">
+                            <option value="">-- No Series --</option>
+                            {% for s in all_series %}
+                            <option value="{{ s.series_id }}"
+                                {% if (request.method == 'POST' and request.form.series_id == s.series_id|string) or
+                                      (request.method == 'GET' and book.series_id == s.series_id) %}selected{% endif %}>
+                                {{ s.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cover_image_url">Cover Image URL</label>
+                    <input type="url" id="cover_image_url" name="cover_image_url"
+                           value="{{ request.form.cover_image_url if request.method == 'POST' else (book.cover_image_url or '') }}"
+                           placeholder="https://example.com/cover.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description * <span style="font-weight:normal;color:#999;">(50–2000 chars)</span></label>
+                    <textarea id="description" name="description" maxlength="2000"
+                              oninput="document.getElementById('desc-count').textContent = this.value.length">{{ request.form.description if request.method == 'POST' else book.description }}</textarea>
+                    <div class="char-count"><span id="desc-count">{{ (book.description or '')|length }}</span>/2000</div>
+                    {% if errors.description %}<div class="error">{{ errors.description }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Genres * <span style="font-weight:normal;color:#999;">(select at least one)</span></label>
+                    <div class="genre-grid">
+                        {% for genre in genres %}
+                        <label class="genre-item">
+                            <input type="checkbox" name="genres" value="{{ genre.genre_id }}"
+                                {% if genre.genre_id in selected_genre_ids %}checked{% endif %}>
+                            {{ genre.genre_name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if errors.genres %}<div class="error">{{ errors.genres }}</div>{% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <a href="{{ url_for('author_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</body>
+</html>
