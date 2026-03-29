@@ -335,6 +335,46 @@
             border: 1px solid #f5c6cb;
         }
 
+        .book-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn-action:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .btn-view {
+            background: #e3f0ff;
+            color: #1a73e8;
+        }
+
+        .btn-edit {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .btn-delete {
+            background: #fdecea;
+            color: #c62828;
+        }
+
         @media (max-width: 968px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -424,7 +464,7 @@
                         <div class="books-grid">
                             {% for book in books %}
                             <div class="book-item">
-                                <a href="{{ url_for('book_details', book_id=book.book_id) }}">
+                                <a href="{{ url_for('author_view_book', book_id=book.book_id) }}">
                                     <img src="{{ book.cover_image_url or 'https://via.placeholder.com/150x220?text=No+Cover' }}" 
                                          alt="{{ book.title }}" 
                                          class="book-cover">
@@ -433,6 +473,17 @@
                                 <div class="book-stats">
                                     ⭐ {{ "%.1f"|format(book.avg_rating) }} 
                                     ({{ book.review_count }} reviews)
+                                </div>
+                                <div class="book-actions">
+                                    <a href="{{ url_for('author_view_book', book_id=book.book_id) }}" 
+                                       class="btn-action btn-view">👁 View</a>
+                                    <a href="{{ url_for('author_edit_book', book_id=book.book_id) }}"
+                                       class="btn-action btn-edit">✏️ Edit</a>
+                                    <form action="{{ url_for('author_delete_book', book_id=book.book_id) }}" 
+                                          method="POST" style="display:inline;"
+                                          onsubmit="return confirm('Delete \'{{ book.title }}\'? This cannot be undone.');">
+                                        <button type="submit" class="btn-action btn-delete">🗑 Delete</button>
+                                    </form>
                                 </div>
                             </div>
                             {% endfor %}
