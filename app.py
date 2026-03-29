@@ -3394,6 +3394,213 @@ def add_book():
 
 
 # -------------------------
+# Author: Edit Book
+# -------------------------
+@app.route("/author/books/edit/<int:book_id>", methods=["GET", "POST"])
+def author_edit_book(book_id):
+    """Allow authors to edit their own books with validation"""
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author.", "error")
+        return redirect(url_for("author_login"))
+
+    author_id = session["author_id"]
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # 1. Fetch the book and verify ownership
+    cursor.execute("SELECT * FROM books WHERE book_id = %s AND author_id = %s", (book_id, author_id))
+    book = cursor.fetchone()
+
+    if not book:
+        flash("Book not found or access denied.", "error")
+        conn.close()
+        return redirect(url_for("author_dashboard"))
+
+    errors = {}
+
+    if request.method == "POST":
+        # 2. Collect Data
+        title = request.form.get("title", "").strip()
+        pub_year = request.form.get("published_year", "").strip()
+        language = request.form.get("language", "").strip()
+        description = request.form.get("description", "").strip()
+        isbn = request.form.get("isbn", "").strip()
+        series_id = request.form.get("series_id") or None
+        cover_url = request.form.get("cover_image_url", "").strip()
+        selected_genres = request.form.getlist("genres")
+
+        # 3. Simple Validation
+        if not title: errors["title"] = "Title is required."
+        if not pub_year: errors["published_year"] = "Year is required."
+        if not language: errors["language"] = "Language is required."
+        if len(description) < 50: errors["description"] = "Description must be at least 50 characters."
+        if not selected_genres: errors["genres"] = "Select at least one genre."
+
+        if not errors:
+            try:
+                # 4. Update Book Info
+                cursor.execute("""
+                    UPDATE books 
+                    SET title=%s, published_year=%s, language=%s, description=%s, 
+                        isbn=%s, series_id=%s, cover_image_url=%s
+                    WHERE book_id=%s AND author_id=%s
+                """, (title, pub_year, language, description, isbn, series_id, cover_url, book_id, author_id))
+
+                # 5. Update Genres (Delete then Insert)
+                cursor.execute("DELETE FROM book_genres WHERE book_id = %s", (book_id,))
+                for gid in selected_genres:
+                    cursor.execute("INSERT INTO book_genres (book_id, genre_id) VALUES (%s, %s)", (book_id, gid))
+
+                conn.commit()
+                flash("Book updated successfully!", "success")
+                return redirect(url_for("author_dashboard"))
+            except Exception as e:
+                conn.rollback()
+                errors["database"] = f"Database error: {str(e)}"
+
+    # 6. Data for the form (GET or failed POST)
+    cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT series_id, name FROM series ORDER BY name")
+    all_series = cursor.fetchall()
+
+    # Get currently checked genres for this book
+    cursor.execute("SELECT genre_id FROM book_genres WHERE book_id = %s", (book_id,))
+    selected_genre_ids = [row["genre_id"] for row in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+
+    return render_template("author_edit_book.html", 
+                           book=book, 
+                           genres=genres, 
+                           all_series=all_series, 
+                           selected_genre_ids=selected_genre_ids,
+                           errors=errors)
+
+# -------------------------
+# Author: Delete Book
+# -------------------------
+@app.route("/author/books/delete/<int:book_id>", methods=["POST"])
+def author_delete_book(book_id):
+    """Allow authors to delete their own books"""
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author to delete books.", "error")
+        return redirect(url_for("author_login"))
+
+    author_id = session["author_id"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Verify ownership
+    cursor.execute(
+        "SELECT title FROM books WHERE book_id=%s AND author_id=%s",
+        (book_id, author_id)
+    )
+    book = cursor.fetchone()
+
+    if not book:
+        flash("Book not found or you don't have permission to delete it.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("author_dashboard"))
+
+    try:
+        # Delete child records first to avoid FK constraint errors
+        cursor.execute("DELETE FROM book_genres WHERE book_id=%s", (book_id,))
+        cursor.execute("DELETE FROM reviews WHERE book_id=%s", (book_id,))
+        cursor.execute("DELETE FROM user_shelf_books WHERE book_id=%s", (book_id,))
+        cursor.execute("DELETE FROM user_book_views WHERE book_id=%s", (book_id,))
+        cursor.execute("DELETE FROM books WHERE book_id=%s AND author_id=%s", (book_id, author_id))
+
+        conn.commit()
+        flash(f"Book '{book['title']}' has been deleted successfully.", "success")
+
+    except Exception as e:
+        conn.rollback()
+        flash(f"Error deleting book: {str(e)}", "error")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("author_dashboard"))
+
+
+# -------------------------
+# Author: View Book Detail
+# -------------------------
+@app.route("/author/books/view/<int:book_id>")
+def author_view_book(book_id):
+    """Allow authors to view full details of their own book"""
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author to view book details.", "error")
+        return redirect(url_for("author_login"))
+
+    author_id = session["author_id"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch book and verify ownership
+    cursor.execute("""
+        SELECT
+            b.book_id, b.title, b.published_year, b.language, b.isbn,
+            b.description, b.cover_image_url,
+            s.name AS series_name,
+            GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres,
+            COALESCE(ROUND(AVG(r.ratings), 1), 0) AS avg_rating,
+            COUNT(DISTINCT r.review_id) AS review_count,
+            COUNT(DISTINCT usb.shelf_id) AS shelf_count
+        FROM books b
+        LEFT JOIN series s ON b.series_id = s.series_id
+        LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+        LEFT JOIN genres g ON bg.genre_id = g.genre_id
+        LEFT JOIN reviews r ON b.book_id = r.book_id
+        LEFT JOIN user_shelf_books usb ON b.book_id = usb.book_id
+        WHERE b.book_id = %s AND b.author_id = %s
+        GROUP BY b.book_id
+    """, (book_id, author_id))
+    book = cursor.fetchone()
+
+    if not book:
+        flash("Book not found or you don't have permission to view it.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("author_dashboard"))
+
+    # Fetch all reviews for this book
+    cursor.execute("""
+        SELECT r.ratings, r.review_text, r.review_date, u.username
+        FROM reviews r
+        JOIN users u ON r.user_id = u.user_id
+        WHERE r.book_id = %s
+        ORDER BY r.review_date DESC
+    """, (book_id,))
+    reviews = cursor.fetchall()
+
+    # Rating breakdown (1–5 stars)
+    cursor.execute("""
+        SELECT ratings, COUNT(*) AS cnt
+        FROM reviews
+        WHERE book_id = %s AND ratings IS NOT NULL
+        GROUP BY ratings
+        ORDER BY ratings DESC
+    """, (book_id,))
+    rating_breakdown = {row["ratings"]: row["cnt"] for row in cursor.fetchall()}
+
+    cursor.close()
+    conn.close()
+
+    return render_template("author_view_book.html",
+                           book=book,
+                           reviews=reviews,
+                           rating_breakdown=rating_breakdown)
+
+
+# -------------------------
 # Admin Analytics
 # -------------------------
 
