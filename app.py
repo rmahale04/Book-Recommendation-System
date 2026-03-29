@@ -3757,19 +3757,24 @@ def compare_users(username):
     disagreed_books = fetch_books_by_ids(set(disagreed))
 
     # Taste match % — based on shared read books + similar ratings
+    # Step 1 — Books score (out of 70)
     shared = len(both_read_ids)
     total  = len(me_read | other_read) or 1
-    base   = (shared / total) * 100
+    books_score = (shared / total) * 70
 
-    rating_bonus = 0
+    # Step 2 — Ratings score (out of 30)
+    rating_score = 0
     if common_rated_ids:
         avg_diff = sum(
             abs(me_data["ratings"][b] - other_data["ratings"][b])
             for b in common_rated_ids
         ) / len(common_rated_ids)
-        rating_bonus = max(0, (2 - avg_diff) / 2 * 20)
+        # avg_diff is between 0 and 4 (since ratings are 1-5)
+        # 0 diff = 30 points, 4 diff = 0 points
+        rating_score = max(0, (1 - avg_diff / 4)) * 30
 
-    taste_match = min(100, round(base * 0.8 + rating_bonus))
+    # Step 3 — Add both
+    taste_match = min(100, round(books_score + rating_score))
 
     cursor.close()
     conn.close()
