@@ -16,6 +16,8 @@ import base64
 from datetime import datetime, timedelta
 import os
 from difflib import SequenceMatcher
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 app = Flask(__name__)
@@ -2098,6 +2100,78 @@ def logout():
 # -------------------------
 # Recommendations
 # -------------------------
+
+def get_collaborative_recommendations(user_id, cursor):
+    
+    # Step 1: Get all shelf data from ALL users
+    cursor.execute("""
+        SELECT s.user_id, usb.book_id
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+    """)
+    data = cursor.fetchall()
+
+    if not data:
+        return []
+
+    # Step 2: Build the user-book matrix
+    # Rows = users, Columns = books, Value = 1 or 0
+    df = pd.DataFrame(data)
+    df['value'] = 1
+    matrix = df.pivot_table(index='user_id',
+                            columns='book_id',
+                            values='value',
+                            fill_value=0)
+
+    # Step 3: If current user has no shelf data, return empty
+    if user_id not in matrix.index:
+        return []
+
+    # Step 4: Calculate cosine similarity between ALL users
+    similarity_matrix = cosine_similarity(matrix)
+
+    # Step 5: Find current user's row index in matrix
+    user_index = matrix.index.get_loc(user_id)
+
+    # Step 6: Get similarity scores for current user vs everyone
+    user_similarities = list(enumerate(similarity_matrix[user_index]))
+
+    # Step 7: Sort by similarity, skip index 0 (that's the user themselves)
+    user_similarities = sorted(user_similarities, key=lambda x: x[1], reverse=True)
+    user_similarities = [(i, score) for i, score in user_similarities
+                         if matrix.index[i] != user_id]
+
+    # Step 8: Take top 5 most similar users
+    top_similar_users = user_similarities[:5]
+
+    # Step 9: Books current user already has
+    user_books = set(matrix.columns[matrix.loc[user_id] == 1].tolist())
+
+    # Step 10: Collect books from similar users that current user hasn't read
+    recommended_book_ids = set()
+    for idx, score in top_similar_users:
+        if score == 0:
+            continue  # skip users with zero similarity
+        sim_user_id = matrix.index[idx]
+        sim_user_books = set(matrix.columns[matrix.loc[sim_user_id] == 1].tolist())
+        new_books = sim_user_books - user_books  # books they have, you don't
+        recommended_book_ids.update(new_books)
+
+    if not recommended_book_ids:
+        return []
+
+    # Step 11: Fetch full book details from DB
+    placeholders = ",".join(["%s"] * len(recommended_book_ids))
+    cursor.execute(f"""
+        SELECT b.book_id, b.title, a.name AS author, b.cover_image_url
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        WHERE b.book_id IN ({placeholders})
+        LIMIT 10
+    """, tuple(recommended_book_ids))
+
+    return cursor.fetchall()
+
 @app.route("/recommendations")
 def recommendations():
     if "user_id" not in session:
@@ -2244,7 +2318,9 @@ def recommendations():
         LIMIT 10
     """, (session["user_id"], session["user_id"]))
     author_books = cursor.fetchall()
-
+    
+    # --- 6 similar users ---
+    collab_books = get_collaborative_recommendations(session["user_id"], cursor)
     cursor.close()
     conn.close()
 
@@ -2255,6 +2331,7 @@ def recommendations():
         continue_books=continue_books,
         friends_books=friends_books,
         author_books = author_books,
+        collab_books = collab_books,
         active_page="recommendations"
     )
 
