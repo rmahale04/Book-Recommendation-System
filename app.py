@@ -1242,18 +1242,27 @@ def book_details(book_id):
 
     book["cover_image_url"] = (book["cover_image_url"] or "").strip() or None
 
-
-    # --- Series books (if this book belongs to a series) ---
+    # --- Series books (only if book belongs to a real series, not the 'Standalone' catch-all) ---
     series_books = []
-    if book.get("series"):
+    # Fetch the series_id and check it's not the 'Standalone' series (name = 'Standalone')
+    cursor.execute("""
+        SELECT b.series_id, s.name AS series_name
+        FROM books b
+        LEFT JOIN series s ON b.series_id = s.series_id
+        WHERE b.book_id = %s
+    """, (book_id,))
+    series_info = cursor.fetchone()
+    book_series_id = series_info["series_id"] if series_info else None
+    series_name = series_info["series_name"] if series_info else None
+
+    if book_series_id and series_name and series_name.lower() != "standalone":
         cursor.execute("""
             SELECT b.book_id, b.title, b.cover_image_url, b.published_year,
                    b.series_order
             FROM books b
-            LEFT JOIN series s ON b.series_id = s.series_id
-            WHERE s.name = %s
+            WHERE b.series_id = %s
             ORDER BY b.series_order ASC, b.published_year ASC
-        """, (book["series"],))
+        """, (book_series_id,))
         series_books = cursor.fetchall()
 
     cursor.close()
