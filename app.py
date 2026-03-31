@@ -1242,6 +1242,20 @@ def book_details(book_id):
 
     book["cover_image_url"] = (book["cover_image_url"] or "").strip() or None
 
+
+    # --- Series books (if this book belongs to a series) ---
+    series_books = []
+    if book.get("series"):
+        cursor.execute("""
+            SELECT b.book_id, b.title, b.cover_image_url, b.published_year,
+                   b.series_order
+            FROM books b
+            LEFT JOIN series s ON b.series_id = s.series_id
+            WHERE s.name = %s
+            ORDER BY b.series_order ASC, b.published_year ASC
+        """, (book["series"],))
+        series_books = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -1252,7 +1266,8 @@ def book_details(book_id):
         avg_rating=avg_rating,
         total_reviews=total_reviews,
         reviews=reviews,
-        user_review=user_review
+        user_review=user_review,
+        series_books=series_books
     )
 
 
