@@ -493,31 +493,96 @@
                     </div>
 
                     <div class="add-to-library">
-                        <button onclick="toggleShelfMenu()" class="add-btn">+ Add to Library</button>
+                        <!-- <button onclick="toggleShelfMenu()" class="add-btn" id="library-btn">
+                            + Add to Library
+                        </button> -->
+
+                        <button onclick="toggleShelfMenu()" class="add-btn" id="library-btn">
+                            {% if current_shelf %}
+                                ✔ {{ current_shelf }}
+                            {% else %}
+                                + Add to Library
+                            {% endif %}
+                        </button>
 
                         <div id="shelf-menu" class="shelf-menu">
-                            <form action="{{ url_for('add_to_shelf', book_id=book.book_id) }}" method="POST">
 
-                                <label>Select Shelf:</label>
-                                <select name="shelf_id" class="shelf-select">
-                                    {% for shelf in shelves %}
-                                    <option value="{{ shelf.shelf_id }}">{{ shelf.name }}</option>
-                                    {% endfor %}
-                                </select>
+                            <label>Select Shelf:</label>
+                            <select id="shelf-select" class="shelf-select">
+                                {% for shelf in shelves %}
+                                <option value="{{ shelf.shelf_id }}">{{ shelf.name }}</option>
+                                {% endfor %}
+                            </select>
 
-                                <div class="divider"></div>
+                            <div class="divider"></div>
 
-                                <label>Create New Shelf:</label>
-                                <input type="text" name="new_shelf_name" placeholder="New shelf name..." class="shelf-input">
+                            <label>Create New Shelf:</label>
+                            <input type="text" id="new-shelf" placeholder="New shelf name..." class="shelf-input">
 
-                                <button type="submit" class="add-confirm-btn">Add</button>
-                            </form>
+                            <button onclick="addToShelf({{ book.book_id }})" class="add-confirm-btn">
+                                Add
+                            </button>
                         </div>
                     </div>
+
                     <script>
                     function toggleShelfMenu() {
                         const menu = document.getElementById("shelf-menu");
                         menu.style.display = (menu.style.display === "block") ? "none" : "block";
+                    }
+
+                    // 🔥 MAIN FUNCTION (AJAX)
+                    function addToShelf(bookId) {
+                        const shelfId = document.getElementById("shelf-select").value;
+                        const newShelf = document.getElementById("new-shelf").value;
+
+                        fetch(`/add_to_shelf/${bookId}`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `shelf_id=${shelfId}&new_shelf_name=${newShelf}`
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === "success") {
+
+                                showToast("Added to shelf successfully!");
+
+                                // update button text
+                                const selectedText = document.querySelector("#shelf-select option:checked").text;
+                                document.getElementById("library-btn").innerText = "✔ " + selectedText;
+
+                                // close menu
+                                document.getElementById("shelf-menu").style.display = "none";
+
+                                // clear input
+                                document.getElementById("new-shelf").value = "";
+                            }
+                        })
+                        .catch(err => console.error(err));
+                    }
+
+                    // 🔥 NICE TOAST MESSAGE
+                    function showToast(message) {
+                        const toast = document.createElement("div");
+                        toast.innerText = message;
+
+                        toast.style.position = "fixed";
+                        toast.style.top = "20px";
+                        toast.style.right = "20px";
+                        toast.style.background = "#7c3aed";
+                        toast.style.color = "white";
+                        toast.style.padding = "12px 20px";
+                        toast.style.borderRadius = "10px";
+                        toast.style.boxShadow = "0 5px 15px rgba(0,0,0,0.2)";
+                        toast.style.zIndex = "9999";
+
+                        document.body.appendChild(toast);
+
+                        setTimeout(() => {
+                            toast.remove();
+                        }, 2000);
                     }
                     </script>
 
