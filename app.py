@@ -28,22 +28,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-# db_config = {
-#     "host": "localhost",
-#     "port": 3306,
-#     "user": "root",
-#     "password": "Netra@432",
-#     "database": "books_db1"
-# }
-
-# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
+    "password": "Netra@432",
     "database": "books_db1"
 }
+
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db1"
+# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -1265,8 +1265,46 @@ def book_details(book_id):
         """, (book_series_id,))
         series_books = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+    
+
+    # --- Similar Books (based on genre) ---
+    book_year = book.get("publication_year")
+
+    similar_books = []
+
+    if book_year:
+        cursor.execute("""
+            SELECT DISTINCT 
+                b.book_id,
+                b.title,
+                a.name AS author,
+                b.cover_image_url
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+            WHERE bg.genre_id IN (
+                SELECT bg2.genre_id
+                FROM book_genres bg2
+                WHERE bg2.book_id = %s
+            )
+            AND b.book_id != %s
+            AND b.publication_year BETWEEN %s AND %s
+            LIMIT 
+        """, (book_id, book_id, book_year - 5, book_year + 5))
+
+        similar_books = cursor.fetchall()
+
+    if not similar_books:
+        cursor.execute("""
+            SELECT b.book_id, b.title, a.name AS author, b.cover_image_url
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            WHERE b.author_id = %s
+            AND b.book_id != %s
+            LIMIT 4
+        """, (book["author_id"], book_id))
+
+        similar_books = cursor.fetchall()
 
     return render_template(
         "book_details.html",
@@ -1276,7 +1314,8 @@ def book_details(book_id):
         total_reviews=total_reviews,
         reviews=reviews,
         user_review=user_review,
-        series_books=series_books
+        series_books=series_books,
+        similar_books = similar_books
     )
 
 
@@ -2380,6 +2419,27 @@ def recommendations():
     
     # --- 6 similar users ---
     collab_books = get_collaborative_recommendations(session["user_id"], cursor)
+
+    # --- 7 Top Rated Books ---
+    cursor.execute("""
+        SELECT 
+            b.book_id,
+            b.title,
+            a.name AS author,
+            b.cover_image_url,
+            ROUND(AVG(r.ratings), 1) AS avg_rating,
+            COUNT(r.review_id) AS review_count
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        JOIN reviews r ON b.book_id = r.book_id
+        WHERE r.ratings IS NOT NULL
+        GROUP BY b.book_id, b.title, a.name, b.cover_image_url
+        HAVING review_count >= 3
+        ORDER BY avg_rating DESC, review_count DESC
+        LIMIT 15
+    """)
+    top_rated_books = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -2389,8 +2449,9 @@ def recommendations():
         genre_books=genre_books,
         continue_books=continue_books,
         friends_books=friends_books,
-        author_books = author_books,
-        collab_books = collab_books,
+        author_books=author_books,
+        collab_books=collab_books,
+        top_rated_books=top_rated_books,
         active_page="recommendations"
     )
 
