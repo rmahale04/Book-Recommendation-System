@@ -2,7 +2,7 @@
 # MERGED & CLEANED version created for the user.
 # Original uploaded file path (for reference): /mnt/data/app.py
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,22 +28,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-db_config = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "Netra@432",
-    "database": "books_db1"
-}
-
-# ruchita
 # db_config = {
 #     "host": "localhost",
-#     "port": 3307,
+#     "port": 3306,
 #     "user": "root",
-#     "password": "",
-#     "database": "books_db"
+#     "password": "Netra@432",
+#     "database": "books_db1"
 # }
+
+# ruchita
+db_config = {
+    "host": "localhost",
+    "port": 3307,
+    "user": "root",
+    "password": "",
+    "database": "books_db1"
+}
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -1348,16 +1348,51 @@ def add_to_shelf(book_id):
         shelf_id = cursor.lastrowid
 
     # Insert book into shelf
+    # cursor.execute("""
+    #     INSERT IGNORE INTO user_shelf_books (shelf_id, book_id)
+    #     VALUES (%s, %s)
+    # """, (shelf_id, book_id))
+    # 🔥 Step 1: Get selected shelf name
     cursor.execute("""
-        INSERT IGNORE INTO user_shelf_books (shelf_id, book_id)
+        SELECT name FROM shelves WHERE shelf_id = %s
+    """, (shelf_id,))
+    selected_shelf = cursor.fetchone()
+
+    default_shelves = ["Currently Reading", "Read", "Want To Read"]
+
+    # 🔥 Step 2: If it's a default shelf → remove from all default shelves
+    if selected_shelf and selected_shelf["name"] in default_shelves:
+        cursor.execute("""
+            SELECT shelf_id FROM shelves
+            WHERE user_id = %s AND name IN (%s, %s, %s)
+        """, (session["user_id"], *default_shelves))
+    
+        default_ids = [row["shelf_id"] for row in cursor.fetchall()]
+
+        if default_ids:
+            format_strings = ','.join(['%s'] * len(default_ids))
+            cursor.execute(f"""
+                DELETE FROM user_shelf_books
+                WHERE shelf_id IN ({format_strings}) AND book_id = %s
+            """, (*default_ids, book_id))
+
+    # 🔥 Step 3: Insert into selected shelf
+    cursor.execute("""
+        INSERT INTO user_shelf_books (shelf_id, book_id)
         VALUES (%s, %s)
     """, (shelf_id, book_id))
+
     conn.commit()
 
     cursor.close()
     conn.close()
-    flash("Book added to your shelf!")
-    return redirect(url_for("book_details", book_id=book_id))
+    # flash("Book added to your shelf!")
+    # return redirect(url_for("book_details", book_id=book_id))
+    return jsonify({
+        "status": "success",
+        "message": "Shelf updated",
+        "shelf_id": shelf_id
+    })
 
 # -------------------------
 # Followers / Following management
