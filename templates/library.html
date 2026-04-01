@@ -416,10 +416,15 @@
                 <div class="shelf-header">
                     <div class="shelf-info">
                         <h2 class="shelf-name">
-                            {% if shelf.name == 'Currently Reading' %}📖
-                            {% elif shelf.name == 'Read' %}✅
-                            {% elif shelf.name == 'Want To Read' %}🔖
-                            {% else %}📂{% endif %}
+                            {% if shelf.name == 'Currently Reading' %}
+                                📖
+                            {% elif shelf.name == 'Read' %}
+                                ✅
+                            {% elif shelf.name == 'Want To Read' %}
+                                🔖
+                            {% else %}
+                                📂
+                            {% endif %}
                             {{ shelf.name }}
                         </h2>
                         <span class="shelf-count">{{ shelf.books|length }} book{% if shelf.books|length != 1 %}s{% endif %}</span>
@@ -445,7 +450,8 @@
                         
                         <div class="book-info">
                             <h3 class="book-title">
-                                <a href="{{ url_for('book_detail', book_id=book.book_id) }}">
+                                <!-- <a href="{{ url_for('book_detail', book_id=book.book_id) }}"> -->
+                                <a href="{{ url_for('book_details', book_id=book.book_id) }}">
                                     {{ book.title }}
                                 </a>
                             </h3>
@@ -453,6 +459,10 @@
                             {% if book.author_name %}
                             <p class="book-author">by {{ book.author_name }}</p>
                             {% endif %}
+
+                            <p style="font-size:0.8rem; color:#8b5cf6; font-weight:600;">
+                                📂 {{ shelf.name }}
+                            </p>
                             
                             <div class="book-meta">
                                 {% if book.added_date %}
