@@ -2,7 +2,7 @@
 # MERGED & CLEANED version created for the user.
 # Original uploaded file path (for reference): /mnt/data/app.py
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 import mysql.connector
 from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -18,7 +18,11 @@ import os
 from difflib import SequenceMatcher
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import HRFlowable
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -28,22 +32,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-db_config = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "Netra@432",
-    "database": "books_db1"
-}
-
-# ruchita
 # db_config = {
 #     "host": "localhost",
-#     "port": 3307,
+#     "port": 3306,
 #     "user": "root",
-#     "password": "",
+#     "password": "Netra@432",
 #     "database": "books_db1"
 # }
+
+# ruchita
+db_config = {
+    "host": "localhost",
+    "port": 3307,
+    "user": "root",
+    "password": "",
+    "database": "books_db1"
+}
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -3834,11 +3838,118 @@ def admin_analytics():
                          time_range=time_range,
                          timestamp=int(datetime.now().timestamp()))
 
+def divider():
+    return HRFlowable(width="100%", thickness=1, spaceBefore=10, spaceAfter=10)
+
+def add_footer(canvas, doc):
+    canvas.saveState()
+
+    # Footer text (left)
+    canvas.setFont('Helvetica', 9)
+    canvas.drawString(inch, 0.5 * inch, "ReadNext Analytics Report - Confidential")
+
+    # Page number (right)
+    page_num = f"Page {doc.page}"
+    canvas.drawRightString(7.5 * inch, 0.5 * inch, page_num)
+
+    canvas.restoreState()
+
+@app.route("/admin/export_analytics")
+def export_analytics_pdf():
+    if session.get("role", "").lower() != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    time_range = request.args.get('time_range', 'month')
+
+    # PDF file path
+    pdf_path = os.path.join("static", "analytics_report.pdf")
+
+    doc = SimpleDocTemplate(pdf_path, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # logo
+    logo_path = os.path.join("static", "images", "logo3.png")
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=1.2 * inch, height=1.2 * inch)
+        logo.hAlign = 'CENTER'
+        elements.append(logo)
+        elements.append(Spacer(1, 10))
+
+    # Title (big)
+    elements.append(Paragraph("<b>ReadNext</b>", styles['Title']))
+    elements.append(Spacer(1, 5))
+
+    # Subtitle
+    elements.append(Paragraph("Analytics Report", styles['Heading2']))
+    elements.append(Spacer(1, 10))    
+
+    # date
+    current_date = datetime.now().strftime("%B %d, %Y")
+    elements.append(Paragraph(f"{current_date}", styles['Normal']))
+
+    elements.append(Spacer(1, 20))
+    elements.append(divider())
+
+    elements.append(Paragraph(
+        "This report provides an overview of system analytics including user activity, " 
+        "book distribution, and engagement trends.",
+        styles['Normal']
+    ))
+
+    elements.append(Spacer(1, 20))
+    elements.append(divider())
+
+    elements.append(Paragraph("<b>Analytics Overview</b>", styles['Heading2']))
+    elements.append(Spacer(1, 10))
+
+    # add charts
+    chart_folder = os.path.join("static", "charts")
+
+    chart_files = [
+        "genre_distribution.png",
+        "language_distribution.png",
+        "user_growth.png",
+        "reviews_activity.png",
+        "gender_distribution.png",
+        "gender_distribution_author.png"
+    ]
+
+    chart_titles = {
+        "genre_distribution.png": "Books Distribution by Genre",
+        "language_distribution.png": "Books by Language",
+        "user_growth.png": "User Growth Over Time",
+        "reviews_activity.png": "Monthly Reviews Activity",
+        "gender_distribution.png": "User Gender Distribution",
+        "gender_distribution_author.png": "Author Gender Distribution"
+    }
+
+    for chart in chart_files:
+        chart_path = os.path.join(chart_folder, chart)
+
+        if os.path.exists(chart_path):
+            title = chart_titles.get(chart, chart)
+
+            elements.append(Paragraph(f"<b>{title}</b>", styles['Heading2']))
+            elements.append(Spacer(1, 10))
+
+            # elements.append(divider())
+
+            img = Image(chart_path, width=5.5 * inch, height=3.5 * inch)
+            elements.append(img)
+
+            elements.append(Spacer(1, 25))
+
+    # make pdf
+    doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
+
+    return send_file(pdf_path, as_attachment=True)
 
 def generate_charts(cursor, time_range):
     """Generate all matplotlib charts and save them"""
     
-    # Create charts directory if it doesn't exist
+    # creating charts directory if it doesn't exist
     chart_dir = os.path.join('static', 'charts')
     os.makedirs(chart_dir, exist_ok=True)
     
