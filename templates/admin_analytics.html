@@ -228,7 +228,16 @@
     <div class="header">
         <div class="container">
             <h1>📊 Analytics Dashboard</h1>
-            <a href="{{ url_for('admin_dashboard') }}" class="back-btn">← Back to Admin</a>
+            <!-- <a href="{{ url_for('admin_dashboard') }}" class="back-btn">← Back to Admin</a> -->
+             <div style="display: flex; gap: 10px;">
+                <a href="{{ url_for('admin_dashboard') }}" class="back-btn">← Back to Admin</a>
+
+                <a href="{{ url_for('export_analytics_pdf', time_range=time_range) }}" 
+                class="back-btn" 
+                style="background: rgba(255,255,255,0.3);">
+                    ⬇ Export Analytics
+                </a>
+            </div>
         </div>
     </div>
 
