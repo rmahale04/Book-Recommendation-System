@@ -32,22 +32,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-# db_config = {
-#     "host": "localhost",
-#     "port": 3306,
-#     "user": "root",
-#     "password": "Netra@432",
-#     "database": "books_db1"
-# }
-
-# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
+    "password": "Netra@432",
     "database": "books_db1"
 }
+
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db1"
+# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -2801,7 +2801,7 @@ def profile_root():
 # -------------------------
 @app.route("/author_register", methods=["GET", "POST"])
 def author_register():
-    from datetime import date
+    from datetime import date,datetime
     
     form_data = {}
     errors = {}
@@ -2834,8 +2834,25 @@ def author_register():
         elif len(form_data["biography"]) > 2000:
             errors["biography"] = "Biography must not exceed 2000 characters."
         
-        if not form_data["date_of_birth"]:
-            errors["date_of_birth"] = "Date of birth is required."
+        
+        dob = form_data["date_of_birth"]
+
+        if dob:
+            try:
+                dob_date = datetime.strptime(dob, "%Y-%m-%d")
+                today = datetime.today()
+
+                age = today.year - dob_date.year - (
+                    (today.month, today.day) < (dob_date.month, dob_date.day)
+                )
+
+                if age < 18:
+                    errors["date_of_birth"] = "You must be at least 18 years old to register as an author."
+
+            except ValueError:
+                errors["date_of_birth"] = "Invalid date format."
+
+
         
         # Password validation
         password_error = validate_password(form_data["password"])
