@@ -613,66 +613,81 @@ def admin_add_genre():
     conn.close()
     return render_template("admin_add_genre.html")
 
-#edit Genre
+# edit genre
 @app.route("/admin/genres/edit/<int:genre_id>", methods=["GET", "POST"])
 def edit_genre(genre_id):
     if session.get("role", "").lower() != "admin":
-        flash("Access denied.", "danger")
-        return redirect(url_for("admin_dashboard"))
+        flash("Access denied.")
+        return redirect(url_for("home"))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch current genre
-    cursor.execute("SELECT * FROM genres WHERE genre_id = %s", (genre_id,))
-    genre = cursor.fetchone()
-
-    if not genre:
-        cursor.close()
-        conn.close()
-        flash("Genre not found.", "danger")
-        return redirect(url_for("admin_dashboard"))
-
     if request.method == "POST":
-        new_name = request.form["genre_name"].strip()
+        new_name = request.form.get("genre_name").strip()
 
-        # If name is unchanged → allow update
-        if new_name.lower() == genre["genre_name"].lower():
-            flash("No changes detected.", "info")
-            cursor.close()
-            conn.close()
+        try:
+            # 🔍 check if same name already exists
+            cursor.execute("SELECT * FROM genres WHERE genre_name=%s", (new_name,))
+            existing = cursor.fetchone()
+
+            if existing:
+                existing_id = existing["genre_id"]
+
+                # ⚠️ if same record, do nothing
+                if existing_id == genre_id:
+                    flash("No changes made.")
+                else:
+                    # 🔥 MERGE LOGIC
+
+                    # 1️⃣ move book_genres
+                    cursor.execute("""
+                        UPDATE book_genres 
+                        SET genre_id=%s 
+                        WHERE genre_id=%s
+                    """, (existing_id, genre_id))
+
+                    # 2️⃣ move user_genres
+                    cursor.execute("""
+                        UPDATE user_genres 
+                        SET genre_id=%s 
+                        WHERE genre_id=%s
+                    """, (existing_id, genre_id))
+
+                    # 3️⃣ delete old genre
+                    cursor.execute("DELETE FROM genres WHERE genre_id=%s", (genre_id,))
+
+                    conn.commit()
+                    flash("Genre merged successfully.")
+
+            else:
+                # ✅ normal update
+                cursor.execute("""
+                    UPDATE genres 
+                    SET genre_name=%s 
+                    WHERE genre_id=%s
+                """, (new_name, genre_id))
+
+                conn.commit()
+                flash("Genre updated successfully.")
+
             return redirect(url_for("admin_dashboard"))
 
-        # Check duplicate (exclude current genre)
-        cursor.execute("""
-            SELECT genre_id FROM genres
-            WHERE LOWER(genre_name) = LOWER(%s)
-            AND genre_id != %s
-        """, (new_name, genre_id))
+        except Exception as e:
+            conn.rollback()
+            print("ERROR:", e)
+            flash("Error updating genre.")
 
-        if cursor.fetchone():
-            flash("Genre already exists!", "warning")
-        else:
-            cursor.execute("""
-                UPDATE genres
-                SET genre_name = %s
-                WHERE genre_id = %s
-            """, (new_name, genre_id))
-            conn.commit()
-
-            cursor.close()
-            conn.close()
-
-            flash("Genre updated successfully!", "success")
-            return redirect(url_for("admin_dashboard"))
+    # GET request
+    cursor.execute("SELECT * FROM genres WHERE genre_id=%s", (genre_id,))
+    genre = cursor.fetchone()
 
     cursor.close()
     conn.close()
+
     return render_template("edit_genre.html", genre=genre)
 
-
-#delete genre
-
+# delete genre
 @app.route("/admin/genres/delete/<int:genre_id>", methods=["POST"])
 def delete_genre(genre_id):
     if session.get("role", "").lower() != "admin":
@@ -683,22 +698,38 @@ def delete_genre(genre_id):
     cursor = conn.cursor()
 
     try:
-        # delete from child table first (important)
-        cursor.execute("DELETE FROM book_genres WHERE genre_id = %s", (genre_id,))
-        cursor.execute("DELETE FROM genres WHERE genre_id = %s", (genre_id,))
+        # 1️⃣ Remove genre from book_genres
+        cursor.execute(
+            "DELETE FROM book_genres WHERE genre_id=%s",
+            (genre_id,)
+        )
+
+        # 2️⃣ Remove genre from user_genres (IMPORTANT)
+        cursor.execute(
+            "DELETE FROM user_genres WHERE genre_id=%s",
+            (genre_id,)
+        )
+
+        # 3️⃣ Delete genre
+        cursor.execute(
+            "DELETE FROM genres WHERE genre_id=%s",
+            (genre_id,)
+        )
 
         conn.commit()
         flash("Genre deleted successfully.")
 
     except Exception as e:
         conn.rollback()
-        flash("Cannot delete genre. It is linked with books.")
+        print("DELETE GENRE ERROR:", e)   # 🔥 for debugging
+        flash("Error deleting genre.")
 
     finally:
         cursor.close()
         conn.close()
 
     return redirect(url_for("admin_dashboard"))
+
 
 #admin add new series
 
@@ -3286,6 +3317,18 @@ def author_dashboard():
         WHERE b.author_id = %s
     """, (author_id,))
     total_readers = cursor.fetchone()['total']
+
+    # Get series that have at least one book by this author
+    cursor.execute("""
+        SELECT s.series_id, s.name, s.description,
+               COUNT(b.book_id) AS book_count
+        FROM series s
+        INNER JOIN books b ON b.series_id = s.series_id
+        WHERE b.author_id = %s
+        GROUP BY s.series_id
+        ORDER BY s.name
+    """, (author_id,))
+    author_series = cursor.fetchall()
     
     # Get recent reviews
     cursor.execute("""
@@ -3356,7 +3399,8 @@ def author_dashboard():
                          avg_rating=round(avg_rating, 2),
                          total_readers=total_readers,
                          recent_reviews=recent_reviews,
-                         recent_activity=recent_activity)
+                         recent_activity=recent_activity,
+                         author_series=author_series)
 
 
 # -------------------------
@@ -3439,7 +3483,8 @@ def add_book():
     # Fetch genres and series for the form
     cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
     genres = cursor.fetchall()
-    
+
+    # Only show series that belong to this author
     cursor.execute("SELECT series_id, name FROM series ORDER BY name")
     all_series = cursor.fetchall()
     
@@ -3535,6 +3580,66 @@ def add_book():
 
 
 # -------------------------
+# Author: Add Series
+# -------------------------
+@app.route("/author/series/add", methods=["GET", "POST"])
+def author_add_series():
+    """Allow authors to introduce a new book series"""
+    if "author_id" not in session or session.get("user_type") != "author":
+        flash("Please log in as an author to add a series.", "error")
+        return redirect(url_for("author_login"))
+
+    author_id = session["author_id"]
+    errors = {}
+    form_data = {}
+
+    if request.method == "POST":
+        form_data = {
+            "name": request.form.get("name", "").strip(),
+            "description": request.form.get("description", "").strip(),
+        }
+
+        if not form_data["name"] or len(form_data["name"]) < 2:
+            errors["name"] = "Series name must be at least 2 characters long."
+
+        if not form_data["description"] or len(form_data["description"]) < 20:
+            errors["description"] = "Description must be at least 20 characters long."
+        elif len(form_data["description"]) > 1000:
+            errors["description"] = "Description must not exceed 1000 characters."
+
+        if not errors:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            # Duplicate check
+            cursor.execute(
+                "SELECT series_id FROM series WHERE LOWER(name) = LOWER(%s)",
+                (form_data["name"],)
+            )
+            if cursor.fetchone():
+                errors["name"] = "A series with this name already exists."
+            else:
+                try:
+                    cursor.execute(
+                        "INSERT INTO series (name, description) VALUES (%s, %s)",
+                        (form_data["name"], form_data["description"])
+                    )
+                    conn.commit()
+                    flash(f"Series '{form_data['name']}' has been created successfully! You can now add books to it.", "success")
+                    cursor.close()
+                    conn.close()
+                    return redirect(url_for("author_dashboard"))
+                except Exception as e:
+                    conn.rollback()
+                    errors["database"] = f"Database error: {str(e)}"
+
+            cursor.close()
+            conn.close()
+
+    return render_template("author_add_series.html", form_data=form_data, errors=errors)
+
+
+# -------------------------
 # Author: Edit Book
 # -------------------------
 @app.route("/author/books/edit/<int:book_id>", methods=["GET", "POST"])
@@ -3603,6 +3708,7 @@ def author_edit_book(book_id):
     cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
     genres = cursor.fetchall()
 
+    # Only show series belonging to this author
     cursor.execute("SELECT series_id, name FROM series ORDER BY name")
     all_series = cursor.fetchall()
 
