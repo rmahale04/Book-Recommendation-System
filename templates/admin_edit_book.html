@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Book</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
+}
+
+/* CONTAINER */
+.container {
+    max-width: 950px;
+    margin: 50px auto;
+    background: #ffffff;
+    padding: 40px 50px;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* TITLE */
+h2 {
+    text-align: center;
+    color: #5f6ee6;
+    margin-bottom: 30px;
+}
+
+/* GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+/* LABEL */
+label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    color: #333;
+}
+
+/* INPUTS */
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    background: #fafafa;
+    transition: 0.3s;
+}
+
+textarea {
+    height: 120px;
+    resize: none;
+}
+
+/* FOCUS EFFECT */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #5f6ee6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(95,110,230,0.15);
+}
+
+/* GENRE SECTION */
+.genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* GENRE BOX */
+.genre-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* CHECKBOX */
+.genre-box input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #5f6ee6;
+}
+
+/* LABEL */
+.genre-box label {
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* HOVER */
+.genre-box:hover {
+    border-color: #5f6ee6;
+    background: rgba(95,110,230,0.08);
+}
+
+/* SELECTED STYLE */
+.genre-box input:checked + label {
+    color: #5f6ee6;
+    font-weight: 600;
+}
+
+.genre-box:has(input:checked) {
+    border-color: #5f6ee6;
+    background: rgba(95,110,230,0.15);
+    box-shadow: 0 4px 10px rgba(95,110,230,0.15);
+}
+
+/* BUTTON */
+
+button {
+    margin: 30px auto 0;   /* center horizontally */
+    display: block;        /* required for margin auto */
+    width: 250px;          /* fixed width for better look */
+    padding: 14px;
+    align-items: center;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Edit Book Information</h2>
+
+    <form method="POST">
+
+        <div class="form-grid">
+
+            <!-- Title -->
+            <div class="full">
+                <label>Book Title *</label>
+                <input type="text" name="title" value="{{ book.title }}" required>
+            </div>
+
+            <!-- Year -->
+            <div>
+                <label>Published Year</label>
+                <input type="number" name="published_year" value="{{ book.published_year }}">
+            </div>
+
+            <!-- Language -->
+            <div>
+                <label>Language *</label>
+                <select name="language">
+                <option value="English" {% if book.language=='English' %}selected{% endif %}>English</option>
+                <option value="Hindi" {% if book.language=='Hindi' %}selected{% endif %}>Hindi</option>
+                <option value="Gujarati" {% if book.language=='Gujarati' %}selected{% endif %}>Gujarati</option>
+                <option value="Marathi" {% if book.language=='Marathi' %}selected{% endif %}>Marathi</option>
+            </select>
+            </div>
+
+            <!-- Author -->
+            <div>
+                <label>Author</label>
+                <select name="author_id">
+                    {% for author in authors %}
+                        <option value="{{ author.author_id }}"
+                        {% if author.author_id == book.author_id %}selected{% endif %}>
+                        {{ author.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Series -->
+            <div>
+                <label>Series</label>
+                <select name="series_id">
+                    <option value="">None</option>
+                    {% for s in series %}
+                        <option value="{{ s.series_id }}"
+                        {% if s.series_id == book.series_id %}selected{% endif %}>
+                        {{ s.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="full">
+                <label>Description</label>
+                <textarea name="description">{{ book.description }}</textarea>
+            </div>
+
+            <!-- ISBN -->
+            <div>
+                <label>ISBN</label>
+                <input type="text" name="isbn" value="{{ book.isbn }}">
+            </div>
+
+            <!-- Cover -->
+            <div>
+                <label>Cover Image URL</label>
+                <input type="text" name="cover_image_url" value="{{ book.cover_image_url }}">
+            </div>
+
+            <!-- Genres -->
+           <div class="full">
+    <label>Genres *</label>
+
+    <div class="genre-grid">
+        {% for g in genres %}
+        <div class="genre-box">
+            <input type="checkbox"
+                   id="g{{ g.genre_id }}"
+                   name="genres"
+                   value="{{ g.genre_id }}"
+                   {% if g.genre_id|string in selected_genres %}checked{% endif %}>
+
+            <label for="g{{ g.genre_id }}">
+                {{ g.genre_name }}
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+        <button type="submit">Update Book</button>
+
+    </form>
+</div>
+
+</body>
+</html>
