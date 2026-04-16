@@ -541,6 +541,7 @@
     {% if collab_books %}
     <div class="recommendations-section">
         <h2 class="section-header">👥 Users Like You Also Read</h2>
+         
         <div class="scroll-wrapper">
             <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
             <div class="books-container" onscroll="updateArrows(this)">
@@ -552,6 +553,7 @@
                     </div>
                     <div class="book-title">{{ book.title }}</div>
                     <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                    <div class="book-rating-badge">🔥 Recommended</div>
                 </a>
                 {% endfor %}
             </div>
@@ -560,9 +562,9 @@
     </div>
     {% endif %}
 
-    {% if not search_books and not genre_books and not continue_book%}
+    {% if not search_books and not genre_books and not continue_books%}
             <div class="empty-state">
-                No recommendations yet. Start searching for books or select genres to get personalized suggestions!
+                No recommendations yet. Start exploring books to unlock smart suggestions!
             </div>
         {% endif %}
     </div>
