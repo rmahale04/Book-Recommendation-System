@@ -181,7 +181,9 @@
     </style>
 </head>
 <body>
+    
     <header class="header">
+        
         <div class="header-content">
             <div class="logo-container">
                 <a href="{{ url_for('home') }}">
@@ -189,12 +191,61 @@
                 </a>
             </div>
             
-            <form action="{{ url_for('view_books') }}" method="get" class="nav-search-form">
+            <!-- <form action="{{ url_for('view_books') }}" method="get" class="nav-search-form">
                 <input type="text" name="q" class="nav-search-input" 
                     placeholder="Search books..."
                     value="{{ search_query if search_query else '' }}">
-            </form>
-            
+                    
+            </form> -->
+            <form method="GET" action="{{ url_for('view_books') }}" 
+                    style="padding: 0 30px 10px; display: flex; align-items: center; gap: 10px;">
+
+                <!-- Search Box Wrapper -->
+                <div style="position: relative; width: 350px;">
+                    
+                    <input type="text" id="searchInput" name="q"
+                        placeholder="Search books, authors..."
+                        value="{{ request.args.get('q','') }}"
+                        style="
+                            width: 100%;
+                            padding: 10px 35px 10px 12px;
+                            border-radius: 20px;
+                            border: 1px solid #ccc;
+                            outline: none;
+                            font-size: 14px;
+                        ">
+
+                    <!-- 🎙️ Mic Inside Input -->
+                    <span onclick="startVoiceSearch()" 
+                        style="
+                            position: absolute;
+                            right: 10px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            cursor: pointer;
+                            font-size: 14px;
+                            color: #666;
+                        ">
+                        🎙️
+                    </span>
+
+                </div>
+
+                <!-- Search Button -->
+                <button type="submit"
+                        style="
+                            padding: 10px 16px;
+                            background: #667eea;
+                            color: white;
+                            border: none;
+                            border-radius: 20px;
+                            cursor: pointer;
+                        ">
+                    Search
+                </button>
+
+                </form>
+                            
             <nav class="nav-links">
                 <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home</a>
                 <a href="{{ url_for('view_books') }}" class="{% if active_page=='books' %}active{% endif %}">Books</a>
@@ -205,5 +256,36 @@
 
         </div>
     </header>
+    <script>
+function startVoiceSearch() {
+    // Check browser support
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Voice search not supported in your browser. Use Chrome.");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-IN";  // You can change to hi-IN, gu-IN
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onstart = function() {
+        console.log("Voice recognition started...");
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("searchInput").value = transcript;
+
+        // Auto submit form (optional)
+        document.forms[0].submit();
+    };
+
+    recognition.onerror = function(event) {
+        alert("Error occurred: " + event.error);
+    };
+}
+</script>
 </body>
 </html>
