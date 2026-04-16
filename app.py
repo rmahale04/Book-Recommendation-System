@@ -1,7 +1,3 @@
-# app.py
-# MERGED & CLEANED version created for the user.
-# Original uploaded file path (for reference): /mnt/data/app.py
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 import mysql.connector
 from mysql.connector import Error
@@ -23,6 +19,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import HRFlowable
+from collections import defaultdict
+import math
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -32,22 +30,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-db_config = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "Netra@432",
-    "database": "books_db1"
-}
-
-# ruchita
 # db_config = {
 #     "host": "localhost",
-#     "port": 3307,
+#     "port": 3306,
 #     "user": "root",
-#     "password": "",
+#     "password": "Netra@432",
 #     "database": "books_db1"
 # }
+
+# ruchita
+db_config = {
+    "host": "localhost",
+    "port": 3307,
+    "user": "root",
+    "password": "",
+    "database": "books_db1"
+}
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -354,29 +352,47 @@ def admin_add_book():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch authors for dropdown
+    # Fetch authors
     cursor.execute("SELECT author_id, name FROM authors")
     authors = cursor.fetchall()
 
-    # Fetch series for dropdown
+    # Fetch series
     cursor.execute("SELECT series_id, name FROM series ORDER BY name")
     series = cursor.fetchall()
 
+    # ✅ Fetch genres (NEW)
+    cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
+    genres = cursor.fetchall()
+
     if request.method == "POST":
-        title = request.form["title"].strip()
-        author_id = request.form["author_id"]
-        series_id = request.form["series_id"] or None
-        published_year = request.form["published_year"]
-        language = request.form["language"]
-        description = request.form["description"]
-        isbn = request.form["isbn"]
-        cover_image_url = request.form["cover_image_url"]
+        title = request.form.get("title", "").strip()
+        author_id = request.form.get("author_id")
+        series_id = request.form.get("series_id") or None
+        published_year = request.form.get("published_year")
+        language = request.form.get("language")
+        description = request.form.get("description")
+        isbn = request.form.get("isbn")
+        cover_image_url = request.form.get("cover_image_url")
+
+        # ✅ GET GENRES LIST
+        selected_genres = request.form.getlist("genres")
 
         try:
+            # ✅ FIXED INSERT QUERY
             cursor.execute("""
-                INSERT INTO books (title, author_id, series_id, published_year, language, description, isbn, cover_image_url)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO books 
+                (title, author_id, series_id, published_year, language, description, isbn, cover_image_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, (title, author_id, series_id, published_year, language, description, isbn, cover_image_url))
+
+            book_id = cursor.lastrowid
+
+            # ✅ INSERT INTO book_genres
+            for genre_id in selected_genres:
+                cursor.execute("""
+                    INSERT INTO book_genres (book_id, genre_id)
+                    VALUES (%s, %s)
+                """, (book_id, genre_id))
 
             conn.commit()
 
@@ -385,13 +401,17 @@ def admin_add_book():
 
         except Exception as e:
             conn.rollback()
-            flash("Error adding book.", "danger")
+            flash(f"Error: {str(e)}", "danger")
 
     cursor.close()
     conn.close()
 
-    return render_template("admin_add_book.html", authors=authors, series=series)
-
+    return render_template(
+        "admin_add_book.html",
+        authors=authors,
+        series=series,
+        genres=genres   # ✅ PASS GENRES
+    )
 
 #books edit   
 @app.route("/admin/books/edit/<int:book_id>", methods=["GET", "POST"])
@@ -403,28 +423,72 @@ def edit_book(book_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # ---------------- POST ----------------
     if request.method == "POST":
-        title = request.form["title"]
-        language = request.form["language"]
-        year = request.form["published_year"]
+        title = request.form.get("title")
+        language = request.form.get("language")
+        year = request.form.get("published_year")
+        author_id = request.form.get("author_id")
+        series_id = request.form.get("series_id") or None
+        description = request.form.get("description")
+        isbn = request.form.get("isbn")
+        cover = request.form.get("cover_image_url")
 
+        # ✅ UPDATE ALL FIELDS
         cursor.execute("""
             UPDATE books
-            SET title=%s, language=%s, published_year=%s
+            SET title=%s, language=%s, published_year=%s,
+                author_id=%s, series_id=%s,
+                description=%s, isbn=%s, cover_image_url=%s
             WHERE book_id=%s
-        """, (title, language, year, book_id))
+        """, (title, language, year, author_id, series_id,
+              description, isbn, cover, book_id))
+
+        # ✅ UPDATE GENRES
+        selected_genres = request.form.getlist("genres")
+
+        cursor.execute("DELETE FROM book_genres WHERE book_id=%s", (book_id,))
+
+        for genre_id in selected_genres:
+            cursor.execute("""
+                INSERT INTO book_genres (book_id, genre_id)
+                VALUES (%s, %s)
+            """, (book_id, genre_id))
 
         conn.commit()
+        cursor.close()
+        conn.close()
+
         flash("Book updated successfully.")
         return redirect(url_for("admin_dashboard"))
 
+    # ---------------- GET ----------------
     cursor.execute("SELECT * FROM books WHERE book_id=%s", (book_id,))
     book = cursor.fetchone()
+
+    cursor.execute("SELECT author_id, name FROM authors")
+    authors = cursor.fetchall()
+
+    cursor.execute("SELECT series_id, name FROM series")
+    series = cursor.fetchall()
+
+    cursor.execute("SELECT genre_id, genre_name FROM genres ORDER BY genre_name")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT genre_id FROM book_genres WHERE book_id=%s", (book_id,))
+    selected_genres = [str(row["genre_id"]) for row in cursor.fetchall()]
 
     cursor.close()
     conn.close()
 
-    return render_template("edit_book.html", book=book)
+    return render_template(
+        "admin_edit_book.html",
+        book=book,
+        authors=authors,
+        series=series,
+        genres=genres,
+        selected_genres=selected_genres
+    )
 
 #books delete
 @app.route("/admin/books/delete/<int:book_id>", methods=["POST"])
@@ -2234,74 +2298,163 @@ def logout():
 # Recommendations
 # -------------------------
 
-def get_collaborative_recommendations(user_id, cursor):
-    
-    # Step 1: Get all shelf data from ALL users
+# interaction score building
+def get_user_book_scores(cursor):
+    user_scores = defaultdict(lambda: defaultdict(float))
+
+    # 1. Ratings (strong signal)
+    cursor.execute("SELECT user_id, book_id, ratings, review_date FROM reviews")
+    # for user_id, book_id, rating, review_date in cursor.fetchall():
+    #     try:
+    #         rating = float(rating)
+    #     except:
+    #         rating = 0
+    for row in cursor.fetchall():
+        user_id = row["user_id"]
+        book_id = row["book_id"]
+        rating = row["ratings"]
+        review_date = row["review_date"]
+
+        recency = get_recency_weight(review_date)
+        user_scores[user_id][book_id] += rating * 2 * recency   # HIGH weight
+
+    # 2. Shelf (medium signal)
     cursor.execute("""
         SELECT s.user_id, usb.book_id
         FROM user_shelf_books usb
         JOIN shelves s ON usb.shelf_id = s.shelf_id
     """)
-    data = cursor.fetchall()
 
-    if not data:
-        return []
+    # for user_id, book_id in cursor.fetchall():
+    #     recency = 1
+    #     user_scores[user_id][book_id] += 3 * recency
+    for row in cursor.fetchall():
+        user_id = row["user_id"]
+        book_id = row["book_id"]
 
-    # Step 2: Build the user-book matrix
-    # Rows = users, Columns = books, Value = 1 or 0
-    df = pd.DataFrame(data)
-    df['value'] = 1
-    matrix = df.pivot_table(index='user_id',
-                            columns='book_id',
-                            values='value',
-                            fill_value=0)
+    # 3. Views (weak but useful)
+    cursor.execute("SELECT user_id, book_id, view_date FROM user_book_views")
+    # for user_id, book_id, view_date in cursor.fetchall():
+    #     recency = get_recency_weight(view_date)
+    #     user_scores[user_id][book_id] += 1 * recency
+    
+    for row in cursor.fetchall():
+        user_id = row["user_id"]
+        book_id = row["book_id"]
+        view_date = row["view_date"]
+    
+    return user_scores
 
-    # Step 3: If current user has no shelf data, return empty
-    if user_id not in matrix.index:
-        return []
+# time decay 
+def get_recency_weight(date):
+    if not date:
+        return 1
 
-    # Step 4: Calculate cosine similarity between ALL users
-    similarity_matrix = cosine_similarity(matrix)
+    if isinstance(date, str):
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        except:
+            return 1  # fallback safe
 
-    # Step 5: Find current user's row index in matrix
-    user_index = matrix.index.get_loc(user_id)
+    days = (datetime.now() - date).days
 
-    # Step 6: Get similarity scores for current user vs everyone
-    user_similarities = list(enumerate(similarity_matrix[user_index]))
+    if days < 7:
+        return 1.0
+    elif days < 30:
+        return 0.7
+    else:
+        return 0.4
+    
+# calculate cosine similarity
+def cosine_similarity(user1, user2):
+    common_books = set(user1.keys()) & set(user2.keys())
 
-    # Step 7: Sort by similarity, skip index 0 (that's the user themselves)
-    user_similarities = sorted(user_similarities, key=lambda x: x[1], reverse=True)
-    user_similarities = [(i, score) for i, score in user_similarities
-                         if matrix.index[i] != user_id]
+    if not common_books:
+        return 0
 
-    # Step 8: Take top 5 most similar users
-    top_similar_users = user_similarities[:5]
+    num = sum(user1[b] * user2[b] for b in common_books)
+    den1 = math.sqrt(sum(v**2 for v in user1.values()))
+    den2 = math.sqrt(sum(v**2 for v in user2.values()))
 
-    # Step 9: Books current user already has
-    user_books = set(matrix.columns[matrix.loc[user_id] == 1].tolist())
+    if den1 == 0 or den2 == 0:
+        return 0
 
-    # Step 10: Collect books from similar users that current user hasn't read
-    recommended_book_ids = set()
-    for idx, score in top_similar_users:
-        if score == 0:
-            continue  # skip users with zero similarity
-        sim_user_id = matrix.index[idx]
-        sim_user_books = set(matrix.columns[matrix.loc[sim_user_id] == 1].tolist())
-        new_books = sim_user_books - user_books  # books they have, you don't
-        recommended_book_ids.update(new_books)
+    return num / (den1 * den2)
 
-    if not recommended_book_ids:
-        return []
+# collaborative filtering
+def get_collaborative_recommendations(current_user_id, cursor, limit=15):
+    user_scores = get_user_book_scores(cursor)
 
-    # Step 11: Fetch full book details from DB
-    placeholders = ",".join(["%s"] * len(recommended_book_ids))
+    if current_user_id not in user_scores:
+        return []   # cold start handled later
+
+    current_user_data = user_scores[current_user_id]
+
+    similarities = []
+
+    for user_id, scores in user_scores.items():
+        if user_id == current_user_id:
+            continue
+
+        sim = cosine_similarity(current_user_data, scores)
+
+        # if sim > 0.05:   # 🔥 IMPORTANT FILTER
+        #     similarities.append((user_id, sim))
+        similarities.append((user_id, sim))
+
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    similarities = similarities[:10]
+
+    # 🔥 Rank books (NO SET anymore)
+    book_scores = defaultdict(float)
+
+    for user_id, sim in similarities[:10]:
+        for book_id, score in user_scores[user_id].items():
+            # if book_id not in current_user_data:
+            #     book_scores[book_id] += score * sim
+            if book_id in current_user_data:
+                book_scores[book_id] += score * sim * 0.3
+            else:
+                book_scores[book_id] += score * sim
+    
+    # Sort by score
+    ranked_books = sorted(book_scores.items(), key=lambda x: x[1], reverse=True)
+
+    book_ids = [b[0] for b in ranked_books[:limit]]
+
+    if not book_ids:
+        cursor.execute("""
+            SELECT book_id, COUNT(*) as score
+            FROM user_book_views
+            GROUP BY book_id
+            ORDER BY score DESC
+            LIMIT %s
+        """, (limit,))
+        
+        fallback_ids = [row["book_id"] for row in cursor.fetchall()]
+
+        if not fallback_ids:
+            return []
+
+        format_strings = ','.join(['%s'] * len(fallback_ids))
+
+        cursor.execute(f"""
+            SELECT b.book_id, b.title, b.cover_image_url, a.name as author
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            WHERE b.book_id IN ({format_strings})
+        """, tuple(fallback_ids))
+
+        return cursor.fetchall()
+
+    format_strings = ','.join(['%s'] * len(book_ids))
+
     cursor.execute(f"""
-        SELECT b.book_id, b.title, a.name AS author, b.cover_image_url
+        SELECT b.book_id, b.title, b.cover_image_url, a.name as author
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
-        WHERE b.book_id IN ({placeholders})
-        LIMIT 10
-    """, tuple(recommended_book_ids))
+        WHERE b.book_id IN ({format_strings})
+    """, tuple(book_ids))
 
     return cursor.fetchall()
 
@@ -2312,7 +2465,8 @@ def recommendations():
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    # cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True) 
 
     # --- Last viewed book (Continue Browsing) ---
 
@@ -2450,10 +2604,7 @@ def recommendations():
         ORDER BY a.name, b.published_year DESC
         LIMIT 10
     """, (session["user_id"], session["user_id"]))
-    author_books = cursor.fetchall()
-    
-    # --- 6 similar users ---
-    collab_books = get_collaborative_recommendations(session["user_id"], cursor)
+    author_books = cursor.fetchall()    
 
     # --- 7 Top Rated Books ---
     cursor.execute("""
@@ -2474,6 +2625,24 @@ def recommendations():
         LIMIT 15
     """)
     top_rated_books = cursor.fetchall()
+
+    # --- 6 similar users ---
+    collab_books = [] 
+    collab_books = get_collaborative_recommendations(session["user_id"], cursor)
+    # collab_books = [{"book_id": 1, "title": "HELLO TEST", "author": "Test Author","image_url": "default.jpg"}]
+    # print("FORCED DATA WORKING")
+    print("COLLAB BOOKS:", collab_books)
+    print("COUNT:", len(collab_books))
+
+    if not collab_books:
+        # collab_books = [{"title": "Test Book"}]
+        print("⚠️ No collaborative recommendations found")
+
+    # # cold start
+    # is_collab = True
+    # if not collab_books:
+    #     collab_books = top_rated_books[:10]
+    #     is_collab = False 
 
     cursor.close()
     conn.close()
