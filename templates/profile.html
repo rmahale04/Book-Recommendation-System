@@ -39,6 +39,27 @@
     .friend-card strong{font-size:1.1rem;color:#333}
     .friend-card small{color:#8b5cf6}
     .no-data{text-align:center;padding:50px 20px;color:#ccc;font-size:1.2rem;font-style:italic}
+
+    /* Currently Reading progress cards */
+    .cr-book-card{background:#fff;border-radius:16px;padding:18px;display:flex;gap:16px;align-items:flex-start;box-shadow:0 4px 16px rgba(139,92,246,.12);margin-bottom:16px;}
+    .cr-cover{width:75px;height:110px;object-fit:cover;border-radius:10px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,.15);}
+    .cr-info{flex:1;min-width:0;}
+    .cr-title{font-weight:700;font-size:15px;color:#1a1a2e;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .cr-author{font-size:13px;color:#888;margin:0 0 12px;}
+    .progress-bar-wrap{background:#f0eaff;border-radius:99px;height:9px;overflow:hidden;margin-bottom:5px;}
+    .progress-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#667eea,#764ba2);}
+    .progress-label{font-size:12px;color:#764ba2;font-weight:600;}
+    .progress-details{margin-top:14px;background:#f8f5ff;border-radius:12px;padding:14px;}
+    .progress-details summary{font-weight:700;font-size:13px;color:#5b21b6;cursor:pointer;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+    .form-row label,.form-full label{font-size:12px;font-weight:600;color:#555;display:block;}
+    .form-row input,.form-full input,.form-full textarea{width:100%;margin-top:4px;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;font-family:inherit;}
+    .form-full{margin-top:10px;}
+    .form-full textarea{resize:vertical;height:60px;}
+    .btn-save{margin-top:12px;width:100%;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+    .btn-markread{margin-top:8px;width:100%;padding:9px;background:#f0faf0;color:#15803d;border:1.5px solid #86efac;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
+    .flash-success{background:#d1fae5;color:#065f46;padding:10px 16px;border-radius:10px;margin-bottom:16px;font-weight:600;font-size:14px;}
+    .flash-error{background:#fee2e2;color:#991b1b;padding:10px 16px;border-radius:10px;margin-bottom:16px;font-weight:600;font-size:14px;}
     .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000}
     .popup-box{width:400px;background:#fff;border-radius:18px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto}
     .popup-box h3{margin-top:0;color:#5b21b6}
@@ -115,35 +136,138 @@
         <div class="library-section">
           <h3 style="margin:0 0 15px;color:#5b21b6;font-size:1.4rem;">Library</h3>
 
+          {# Flash messages from update_progress / mark_as_read #}
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+              <div class="flash-{{ category if category != 'message' else 'success' }}">{{ message }}</div>
+            {% endfor %}
+          {% endwith %}
+
           {% if shelves %}
-              {% for s in shelves %}
-                <h3 style="color:#6b21a8;margin:15px 0 10px;">{{ s.name }}</h3>
+            {% for s in shelves %}
 
-                {% if s.books %}
-                    <div class="library-grid">
-                        {% for book in s.books %}
-                            <div class="book-card">
-                                <img src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}"
-                                    onclick="window.location='/book/{{ book.book_id }}'">
+              <h3 style="color:#6b21a8;margin:18px 0 10px;">{{ s.name }}</h3>
 
-                                {% if session.get('user_id') == user.user_id %}
-                                    <form method="POST" 
-                                          action="{{ url_for('remove_from_shelf', shelf_id=s.shelf_id, book_id=book.book_id) }}">
-                                        <button type="submit"
-                                                style="margin-top:5px;width:100%;padding:6px;background:#e11d48;color:white;border:none;border-radius:8px;font-size:13px;">
-                                            Remove
-                                        </button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+              {% if s.books %}
+
+                {# ── Currently Reading: expanded cards with progress ── #}
+                {% if s.name == 'Currently Reading' %}
+                  {% for book in s.books %}
+                  <div class="cr-book-card">
+
+                    {# Cover — click to go to book page #}
+                    <a href="/book/{{ book.book_id }}">
+                      <img class="cr-cover"
+                           src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}"
+                           alt="{{ book.title }}">
+                    </a>
+
+                    <div class="cr-info">
+                      <p class="cr-title">{{ book.title }}</p>
+                      <p class="cr-author">{{ book.author_name or 'Unknown Author' }}</p>
+
+                      {# Progress bar #}
+                      {% set cur = book.current_page | default(0) %}
+                      {% set tot = book.total_pages | default(0) %}
+                      {% if tot and tot > 0 %}
+                        {% set pct = ((cur / tot) * 100) | round | int %}
+                      {% else %}
+                        {% set pct = 0 %}
+                      {% endif %}
+
+                      <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" style="width:{{ pct }}%;"></div>
+                      </div>
+                      <span class="progress-label">
+                        {{ pct }}%
+                        {% if tot %}&nbsp;· page {{ cur }} of {{ tot }}{% endif %}
+                      </span>
+
+                      {# Only the owner sees the update form #}
+                      {% if session.get('user_id') == user.user_id %}
+                      <details class="progress-details">
+                        <summary>Update Progress</summary>
+
+                        {# ── Update progress form ── #}
+                        <form method="POST" action="{{ url_for('update_progress', book_id=book.book_id) }}">
+                          <div class="form-row">
+                            <label>
+                              Current Page
+                              <input type="number" name="current_page" min="0"
+                                     value="{{ book.current_page or '' }}" placeholder="e.g. 120">
+                            </label>
+                            <label>
+                              Total Pages
+                              <input type="number" name="total_pages" min="1"
+                                     value="{{ book.total_pages or book.page_count or '' }}" placeholder="e.g. 350">
+                            </label>
+                          </div>
+                          <div class="form-full">
+                            <label>
+                              Started Reading
+                              <input type="date" name="start_date"
+                                     value="{{ book.start_date or '' }}">
+                            </label>
+                          </div>
+                          <div class="form-full">
+                            <label>
+                              Reading Notes (optional)
+                              <textarea name="notes" placeholder="Your thoughts, favourite quotes…">{{ book.notes or '' }}</textarea>
+                            </label>
+                          </div>
+                          <button class="btn-save" type="submit">💾 Save Progress</button>
+                        </form>
+
+                        {# ── Mark as Read form ── #}
+                        <form method="POST" action="{{ url_for('mark_as_read', book_id=book.book_id) }}"
+                              onsubmit="return confirm('Move this book to your Read shelf?')">
+                          <button class="btn-markread" type="submit">✓ Mark as Read</button>
+                        </form>
+
+                        {# ── Remove from shelf ── #}
+                        <form method="POST"
+                              action="{{ url_for('remove_from_shelf', shelf_id=s.shelf_id, book_id=book.book_id) }}"
+                              onsubmit="return confirm('Remove this book from the shelf?')">
+                          <button type="submit"
+                                  style="margin-top:8px;width:100%;padding:9px;background:#fff0f0;color:#e11d48;border:1.5px solid #fca5a5;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
+                            🗑 Remove from Shelf
+                          </button>
+                        </form>
+
+                      </details>
+                      {% endif %}
                     </div>
+                  </div>
+                  {% endfor %}
+
+                {# ── All other shelves: grid view as before ── #}
                 {% else %}
-                    <p class="no-data">No books in this shelf.</p>
+                  <div class="library-grid">
+                    {% for book in s.books %}
+                      <div class="book-card">
+                        <img src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}"
+                             onclick="window.location='/book/{{ book.book_id }}'">
+                        {% if session.get('user_id') == user.user_id %}
+                          <form method="POST"
+                                action="{{ url_for('remove_from_shelf', shelf_id=s.shelf_id, book_id=book.book_id) }}">
+                            <button type="submit"
+                                    style="margin-top:5px;width:100%;padding:6px;background:#e11d48;color:white;border:none;border-radius:8px;font-size:13px;">
+                              Remove
+                            </button>
+                          </form>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
                 {% endif %}
-              {% endfor %}
+
+              {% else %}
+                <p class="no-data">No books in this shelf.</p>
+              {% endif %}
+
+            {% endfor %}
           {% else %}
-              <p class="no-data">No shelves found.</p>
+            <p class="no-data">No shelves found.</p>
           {% endif %}
         </div>
 
