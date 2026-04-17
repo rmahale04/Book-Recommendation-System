@@ -1,0 +1,240 @@
+{# ================================================================
+   reading_progress_modal.html
+   Include this file at the BOTTOM of library.html / profile.html
+   (just before </body>) with:
+       {% include 'reading_progress_modal.html' %}
+
+   Then on any "Currently Reading" book card, add:
+       <button class="update-progress-btn"
+               data-book-id="{{ book.book_id }}"
+               data-book-title="{{ book.title }}">
+           📖 Update Progress
+       </button>
+
+   The modal handles everything via fetch() — no page reload.
+================================================================ #}
+
+<!-- ── Reading Progress Modal ───────────────────────────────── -->
+<div id="rp-modal-overlay" style="display:none; position:fixed; inset:0;
+     background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+  <div id="rp-modal" style="
+        background:#fff; border-radius:16px; padding:32px 28px; width:420px;
+        max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.25);
+        font-family:inherit; position:relative; max-height:90vh; overflow-y:auto;">
+
+    <!-- Close -->
+    <button id="rp-close" style="
+         position:absolute; top:14px; right:16px; border:none; background:none;
+         font-size:22px; cursor:pointer; color:#666; line-height:1;">×</button>
+
+    <h3 id="rp-title" style="margin:0 0 6px; font-size:18px; color:#1a1a2e; padding-right:24px;"></h3>
+    <p style="margin:0 0 20px; font-size:13px; color:#888;">Currently Reading</p>
+
+    <!-- Progress bar -->
+    <div style="background:#f0f0f0; border-radius:99px; height:10px; margin-bottom:6px; overflow:hidden;">
+      <div id="rp-bar" style="height:100%; border-radius:99px;
+           background:linear-gradient(90deg,#667eea,#764ba2); transition:width .4s; width:0%;"></div>
+    </div>
+    <p id="rp-pct-label" style="text-align:right; font-size:12px; color:#667eea; margin:0 0 20px; font-weight:600;"></p>
+
+    <!-- Page inputs -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+      <label style="font-size:13px; font-weight:600; color:#444;">
+        Current Page
+        <input id="rp-current" type="number" min="0"
+               style="margin-top:6px; width:100%; padding:10px 12px; border:1.5px solid #ddd;
+                      border-radius:8px; font-size:15px; box-sizing:border-box;"/>
+      </label>
+      <label style="font-size:13px; font-weight:600; color:#444;">
+        Total Pages
+        <input id="rp-total" type="number" min="1"
+               style="margin-top:6px; width:100%; padding:10px 12px; border:1.5px solid #ddd;
+                      border-radius:8px; font-size:15px; box-sizing:border-box;"/>
+      </label>
+    </div>
+
+    <!-- Start date -->
+    <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:16px;">
+      Started Reading
+      <input id="rp-start-date" type="date"
+             style="margin-top:6px; width:100%; padding:10px 12px; border:1.5px solid #ddd;
+                    border-radius:8px; font-size:14px; box-sizing:border-box;"/>
+    </label>
+
+    <!-- Notes -->
+    <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:20px;">
+      Reading Notes <span style="font-weight:400; color:#aaa;">(optional)</span>
+      <textarea id="rp-notes" rows="3" placeholder="Thoughts, favourite quotes, chapter you're on…"
+                style="margin-top:6px; width:100%; padding:10px 12px; border:1.5px solid #ddd;
+                       border-radius:8px; font-size:14px; resize:vertical; box-sizing:border-box;
+                       font-family:inherit;"></textarea>
+    </label>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:10px;">
+      <button id="rp-save" style="
+            flex:1; padding:12px; background:linear-gradient(135deg,#667eea,#764ba2);
+            color:#fff; border:none; border-radius:10px; font-size:15px;
+            font-weight:600; cursor:pointer; transition:opacity .2s;">
+        Save Progress
+      </button>
+      <button id="rp-mark-done" style="
+            padding:12px 16px; background:#f0faf0; color:#27ae60; border:1.5px solid #b2dfdb;
+            border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap;">
+        ✓ Mark as Read
+      </button>
+    </div>
+
+    <!-- Feedback -->
+    <p id="rp-feedback" style="text-align:center; font-size:13px; margin:12px 0 0; min-height:18px;"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const overlay   = document.getElementById('rp-modal-overlay');
+  const modal     = document.getElementById('rp-modal');
+  const titleEl   = document.getElementById('rp-title');
+  const barEl     = document.getElementById('rp-bar');
+  const pctEl     = document.getElementById('rp-pct-label');
+  const curIn     = document.getElementById('rp-current');
+  const totIn     = document.getElementById('rp-total');
+  const dateIn    = document.getElementById('rp-start-date');
+  const notesIn   = document.getElementById('rp-notes');
+  const saveBtn   = document.getElementById('rp-save');
+  const doneBtn   = document.getElementById('rp-mark-done');
+  const feedback  = document.getElementById('rp-feedback');
+  const closeBtn  = document.getElementById('rp-close');
+
+  let activeBookId = null;
+
+  // ── Open modal ──────────────────────────────────────────────
+  function openModal(bookId, bookTitle) {
+    activeBookId = bookId;
+    titleEl.textContent = bookTitle;
+    feedback.textContent = '';
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Load existing progress
+    fetch(`/reading_progress/${bookId}`)
+      .then(r => r.json())
+      .then(data => {
+        curIn.value   = data.current_page || '';
+        totIn.value   = data.total_pages  || '';
+        dateIn.value  = data.start_date   || '';
+        notesIn.value = data.notes        || '';
+        updateBar(data.current_page, data.total_pages);
+      })
+      .catch(() => feedback.textContent = 'Could not load progress.');
+  }
+
+  // ── Close modal ─────────────────────────────────────────────
+  function closeModal() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+    activeBookId = null;
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+  // ── Live bar update while typing ────────────────────────────
+  [curIn, totIn].forEach(el =>
+    el.addEventListener('input', () => updateBar(+curIn.value, +totIn.value))
+  );
+
+  function updateBar(cur, tot) {
+    const pct = (tot > 0) ? Math.min(100, Math.round(cur / tot * 100)) : 0;
+    barEl.style.width = pct + '%';
+    pctEl.textContent = tot > 0 ? `${pct}% · page ${cur || 0} of ${tot}` : '';
+  }
+
+  // ── Save progress ───────────────────────────────────────────
+  saveBtn.addEventListener('click', () => {
+    if (!activeBookId) return;
+    const cur = +curIn.value;
+    const tot = +totIn.value;
+
+    if (cur < 0 || (tot > 0 && cur > tot)) {
+      feedback.style.color = '#e74c3c';
+      feedback.textContent = 'Please check your page numbers.';
+      return;
+    }
+
+    saveBtn.textContent = 'Saving…';
+    saveBtn.disabled = true;
+
+    fetch(`/reading_progress/${activeBookId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        current_page: cur,
+        total_pages:  tot,
+        start_date:   dateIn.value,
+        notes:        notesIn.value,
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      feedback.style.color = '#27ae60';
+      feedback.textContent = `✓ Saved! ${data.percent}% complete`;
+      // Update any progress bars on the page for this book
+      document.querySelectorAll(`[data-progress-book="${activeBookId}"]`)
+        .forEach(el => {
+          el.style.width = data.percent + '%';
+          const lbl = el.closest('.progress-wrap')?.querySelector('.progress-label');
+          if (lbl) lbl.textContent = data.percent + '%';
+        });
+    })
+    .catch(() => {
+      feedback.style.color = '#e74c3c';
+      feedback.textContent = 'Error saving. Please try again.';
+    })
+    .finally(() => {
+      saveBtn.textContent = 'Save Progress';
+      saveBtn.disabled = false;
+    });
+  });
+
+  // ── Mark as Read — moves book to "Read" shelf ───────────────
+  doneBtn.addEventListener('click', () => {
+    if (!activeBookId) return;
+    if (!confirm('Mark this book as Read? It will move from "Currently Reading" to "Read".')) return;
+
+    doneBtn.textContent = 'Moving…';
+    doneBtn.disabled = true;
+
+    // Find the "Read" shelf_id from the page's hidden data (if available),
+    // or POST to /mark_as_read/<book_id> (route provided below)
+    fetch(`/mark_as_read/${activeBookId}`, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          feedback.style.color = '#27ae60';
+          feedback.textContent = '✓ Moved to Read shelf!';
+          // Optionally remove card from Currently Reading list
+          const card = document.querySelector(`[data-book-card="${activeBookId}"]`);
+          if (card) card.remove();
+          setTimeout(closeModal, 1200);
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(() => {
+        feedback.style.color = '#e74c3c';
+        feedback.textContent = 'Error. Please try again.';
+        doneBtn.textContent = '✓ Mark as Read';
+        doneBtn.disabled = false;
+      });
+  });
+
+  // ── Wire up all "Update Progress" buttons ───────────────────
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.update-progress-btn');
+    if (!btn) return;
+    openModal(btn.dataset.bookId, btn.dataset.bookTitle || 'Book');
+  });
+
+})();
+</script>
