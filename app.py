@@ -1271,7 +1271,7 @@ def book_details(book_id):
     # --- Book details ---
     cursor.execute("""
         SELECT b.book_id, b.author_id, b.title, a.name AS author, s.name AS series,
-               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.page_count,
+               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.playlist_link,b.page_count,
                GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
