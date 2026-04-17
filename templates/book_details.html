@@ -435,6 +435,12 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
         }
+        .playlist-btn {
+            background: #ec4899;
+        }
+        .playlist-btn:hover {
+            background: #db2777;
+        }
 
     </style>
 </head>
@@ -456,8 +462,14 @@
                             🛒 Buy This Book
                         </a>
                     {% endif %}
-                </div>
 
+                    {% if book.playlist_link %}
+                        <a href="{{ book.playlist_link }}" target="_blank" class="buy-btn playlist-btn">
+                            🎧 Listen Playlist
+                        </a>
+                    {% endif %}
+                </div>
+                
                 <div class="book-details-section">
                     <div>
                         <h1 class="book-title">{{ book.title }}</h1>
