@@ -30,22 +30,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-# db_config = {
-#     "host": "localhost",
-#     "port": 3306,
-#     "user": "root",
-#     "password": "Netra@432",
-#     "database": "books_db1"
-# }
-
-# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
+    "password": "Netra@432",
     "database": "books_db1"
 }
+
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db1"
+# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -1779,14 +1779,33 @@ def profile_by_username(username):
     shelves = cursor.fetchall()
 
     for shelf in shelves:
-        cursor.execute("""
-            SELECT 
-                b.book_id, b.title, b.cover_image_url
-            FROM user_shelf_books usb
-            JOIN books b ON usb.book_id = b.book_id
-            WHERE usb.shelf_id = %s
-            ORDER BY usb.added_date DESC
-        """, (shelf["shelf_id"],))
+        if shelf["name"] == "Currently Reading":
+            # For Currently Reading, also join reading_progress
+            cursor.execute("""
+                SELECT
+                    b.book_id, b.title, b.cover_image_url, b.page_count,
+                    a.name AS author_name,
+                    COALESCE(rp.current_page, 0)              AS current_page,
+                    COALESCE(rp.total_pages, b.page_count, 0) AS total_pages,
+                    rp.start_date,
+                    rp.notes
+                FROM user_shelf_books usb
+                JOIN books b ON usb.book_id = b.book_id
+                LEFT JOIN authors a ON b.author_id = a.author_id
+                LEFT JOIN reading_progress rp
+                    ON rp.book_id = b.book_id AND rp.user_id = %s
+                WHERE usb.shelf_id = %s
+                ORDER BY usb.added_date DESC
+            """, (user_id, shelf["shelf_id"]))
+        else:
+            cursor.execute("""
+                SELECT b.book_id, b.title, b.cover_image_url
+                FROM user_shelf_books usb
+                JOIN books b ON usb.book_id = b.book_id
+                WHERE usb.shelf_id = %s
+                ORDER BY usb.added_date DESC
+            """, (shelf["shelf_id"],))
+    
         shelf["books"] = cursor.fetchall()
 
 
@@ -4596,6 +4615,91 @@ def compare_users(username):
         shared_count=len(both_read_ids),
         common_rated=len(common_rated_ids),
     )
+    
+# -------------------------
+# Update reading progress (form POST -> redirect back to profile)
+# -------------------------
+@app.route("/update_progress/<int:book_id>", methods=["POST"])
+def update_progress(book_id):
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+ 
+    current_page = request.form.get("current_page", 0)
+    total_pages  = request.form.get("total_pages") or None
+    start_date   = request.form.get("start_date") or None
+    notes        = request.form.get("notes", "").strip() or None
+ 
+    try:
+        current_page = int(current_page)
+        if total_pages:
+            total_pages = int(total_pages)
+    except ValueError:
+        flash("Please enter valid page numbers.", "error")
+        return redirect(url_for("profile_root"))
+ 
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    cursor.execute("""
+        INSERT INTO reading_progress (user_id, book_id, current_page, total_pages, start_date, notes)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            current_page = VALUES(current_page),
+            total_pages  = VALUES(total_pages),
+            start_date   = VALUES(start_date),
+            notes        = VALUES(notes),
+            updated_at   = CURRENT_TIMESTAMP
+    """, (session["user_id"], book_id, current_page, total_pages, start_date, notes))
+    conn.commit()
+ 
+    cursor.close()
+    conn.close()
+ 
+    flash("Progress updated!", "success")
+    return redirect(url_for("profile_root"))
+ 
+ 
+# -------------------------
+# Mark as Read — moves book from "Currently Reading" to "Read" shelf
+# -------------------------
+@app.route("/mark_as_read/<int:book_id>", methods=["POST"])
+def mark_as_read(book_id):
+    if "user_id" not in session:
+        flash("Please log in first.")
+        return redirect(url_for("login"))
+ 
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    cursor.execute("""
+        SELECT shelf_id, name FROM shelves
+        WHERE user_id = %s AND name IN ('Currently Reading', 'Read')
+    """, (session["user_id"],))
+    shelves = {row["name"]: row["shelf_id"] for row in cursor.fetchall()}
+ 
+    cr_id   = shelves.get("Currently Reading")
+    read_id = shelves.get("Read")
+ 
+    if cr_id and read_id:
+        cursor.execute(
+            "DELETE FROM user_shelf_books WHERE shelf_id = %s AND book_id = %s",
+            (cr_id, book_id)
+        )
+        cursor.execute(
+            "INSERT IGNORE INTO user_shelf_books (shelf_id, book_id) VALUES (%s, %s)",
+            (read_id, book_id)
+        )
+        conn.commit()
+        flash("Book moved to your Read shelf!", "success")
+    else:
+        flash("Could not find your shelves.", "error")
+ 
+    cursor.close()
+    conn.close()
+    return redirect(url_for("profile_root"))
+
+
 # -------------------------
 # Run app
 # -------------------------
