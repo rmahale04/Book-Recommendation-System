@@ -194,11 +194,13 @@
                             <label>
                               Current Page
                               <input type="number" name="current_page" min="0"
+                                     max="{{ book.total_pages or book.page_count or '' }}"
                                      value="{{ book.current_page or '' }}" placeholder="e.g. 120">
                             </label>
                             <label>
                               Total Pages
                               <input type="number" name="total_pages" min="1"
+                                     max="{{ book.page_count or '' }}"
                                      value="{{ book.total_pages or book.page_count or '' }}" placeholder="e.g. 350">
                             </label>
                           </div>
