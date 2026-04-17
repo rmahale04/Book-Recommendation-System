@@ -4616,9 +4616,6 @@ def compare_users(username):
         common_rated=len(common_rated_ids),
     )
     
-# -------------------------
-# Update reading progress (form POST -> redirect back to profile)
-# -------------------------
 @app.route("/update_progress/<int:book_id>", methods=["POST"])
 def update_progress(book_id):
     if "user_id" not in session:
@@ -4640,6 +4637,35 @@ def update_progress(book_id):
  
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+ 
+    # Fetch the real page count from the books table
+    cursor.execute("SELECT page_count FROM books WHERE book_id = %s", (book_id,))
+    book = cursor.fetchone()
+    real_page_count = book["page_count"] if book and book["page_count"] else None
+ 
+    # Validate: total_pages cannot exceed the book's actual page count
+    if real_page_count and total_pages and total_pages > real_page_count:
+        flash(f"Total pages cannot exceed the book's page count ({real_page_count} pages).", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("profile_root"))
+ 
+    # Determine the upper limit for current_page
+    max_pages = total_pages or real_page_count
+ 
+    # Validate: current_page cannot exceed total_pages (or book's page count)
+    if max_pages and current_page > max_pages:
+        flash(f"Current page cannot exceed {max_pages} pages.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("profile_root"))
+ 
+    # Validate: no negative pages
+    if current_page < 0:
+        flash("Page number cannot be negative.", "error")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("profile_root"))
  
     cursor.execute("""
         INSERT INTO reading_progress (user_id, book_id, current_page, total_pages, start_date, notes)
@@ -4700,6 +4726,7 @@ def mark_as_read(book_id):
     return redirect(url_for("profile_root"))
 
 
+    
 # -------------------------
 # Run app
 # -------------------------
