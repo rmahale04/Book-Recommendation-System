@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 import mysql.connector
 from mysql.connector import Error
+from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
 import yagmail
@@ -30,22 +31,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-db_config = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "Netra@432",
-    "database": "books_db1"
-}
-
-# ruchita
 # db_config = {
 #     "host": "localhost",
-#     "port": 3307,
+#     "port": 3306,
 #     "user": "root",
-#     "password": "",
+#     "password": "Netra@432",
 #     "database": "books_db1"
 # }
+
+# ruchita
+db_config = {
+    "host": "localhost",
+    "port": 3307,
+    "user": "root",
+    "password": "",
+    "database": "books_db1"
+}
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -371,6 +372,7 @@ def admin_add_book():
         published_year = request.form.get("published_year")
         language = request.form.get("language")
         description = request.form.get("description")
+        description = description.replace('\r\n', '\n')
         isbn = request.form.get("isbn")
         cover_image_url = request.form.get("cover_image_url")
 
@@ -432,7 +434,20 @@ def edit_book(book_id):
         series_id = request.form.get("series_id") or None
         description = request.form.get("description")
         isbn = request.form.get("isbn")
-        cover = request.form.get("cover_image_url")
+        # cover = request.form.get("cover_image_url")
+        file = request.files.get("cover_image")
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join("static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            file.save(os.path.join(upload_folder, filename))
+
+            cover = f"/static/uploads/{filename}"
+        else:
+            cover = request.form.get("existing_cover")
 
         # ✅ UPDATE ALL FIELDS
         cursor.execute("""
@@ -534,7 +549,11 @@ def admin_add_author():
     if request.method == "POST":
         name = request.form["name"].strip()
         gender = request.form.get("gender") or None
-        biography = request.form.get("biography") or None
+        # biography = request.form.get("biography") or None
+        biography = request.form.get("biography")
+        if biography:
+            biography = biography.replace('\r\n', '\n')
+
         date_of_birth = request.form["date_of_birth"]
         date_of_death = request.form.get("date_of_death") or None
         profile_image_url = request.form.get("profile_image_url") or None
@@ -617,20 +636,46 @@ def edit_author(author_id):
         name = request.form["name"]
         dob = request.form.get("date_of_birth") or None
         dod = request.form.get("date_of_death") or None
+        gender = request.form.get("gender") or None
+        biography = request.form.get("biography") or None
+
+        # Website logic (dropdown + input)
+        website_option = request.form.get("website_option")
+        if website_option == "none":
+            website = None
+        else:
+            website = request.form.get("website") or None
+        
+         # Image upload
+        file = request.files.get("profile_image")
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join("static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            file.save(os.path.join(upload_folder, filename))
+            profile_image = f"/static/uploads/{filename}"
+        else:
+            profile_image = request.form.get("existing_image")
 
         try:
             cursor.execute("""
                 UPDATE authors
-                SET name=%s, date_of_birth=%s, date_of_death=%s
+                SET name=%s, gender=%s, biography=%s, 
+                    date_of_birth=%s, date_of_death=%s,
+                    profile_image_url=%s, website=%s
                 WHERE author_id=%s
-            """, (name, dob, dod, author_id))
+            """, (name, gender, biography, dob, dod, profile_image, website, author_id))
 
             conn.commit()
             flash("Author updated successfully.")
             return redirect(url_for("admin_dashboard"))
 
-        except Exception:
+        except Exception as e:
             conn.rollback()
+            print("ERROR:", e)
             flash("Error updating author.")
 
     # GET request → fetch author
@@ -921,7 +966,8 @@ def home():
 @app.route("/books")
 def view_books():
     search_query = request.args.get("q", "").strip()
-    year = request.args.get("year")
+    # year = request.args.get("year")
+    year_range = request.args.get("year_range")
     language = request.args.get("language")
     genres = request.args.getlist("genres")
     rating = request.args.get("rating")
@@ -985,9 +1031,9 @@ def view_books():
         ])
 
     # Year filter
-    if year:
-        query += " AND b.published_year = %s"
-        params.append(year)
+    # if year:
+    #     query += " AND b.published_year = %s"
+    #     params.append(year)
     # if year_from and year_to:
     #     try:
     #         year_from = int(year_from)
@@ -1010,6 +1056,11 @@ def view_books():
     #     query += " AND b.published_year <= %s"
     #     params.append(int(year_to))
 
+    if year_range:
+        start, end = map(int, year_range.split("-"))
+
+        query += " AND b.published_year BETWEEN %s AND %s"
+        params.extend([end, start])  # smaller first
 
     #  Language filter
     if language:
@@ -1094,6 +1145,35 @@ def view_books():
     # All genres for filter UI
     cursor.execute("SELECT genre_name FROM genres ORDER BY genre_name")
     all_genres = [row["genre_name"] for row in cursor.fetchall()]
+    
+    cursor.execute("""
+        SELECT MIN(published_year) AS min_year, MAX(published_year) AS max_year
+        FROM books
+        WHERE published_year IS NOT NULL
+    """)
+    year_data = cursor.fetchone()
+
+    min_year = year_data["min_year"] or 1900
+    max_year = year_data["max_year"] or 2025
+
+    year_ranges = []
+
+    step = 5
+    current = max_year
+
+    while current >= min_year:
+        start = current
+        end = current - step + 1
+
+        if end < min_year:
+            end = min_year
+
+        year_ranges.append({
+            "label": f"{start} - {end}",
+            "value": f"{start}-{end}"
+        })
+
+        current -= step
 
     cursor.close()
     conn.close()
@@ -1103,7 +1183,8 @@ def view_books():
         books=books,
         search_query=search_query,
         suggestion=suggestion,
-        all_genres=all_genres
+        all_genres=all_genres,
+        year_ranges=year_ranges
     )
 
 # @app.route("/books")
@@ -1271,7 +1352,7 @@ def book_details(book_id):
     # --- Book details ---
     cursor.execute("""
         SELECT b.book_id, b.author_id, b.title, a.name AS author, s.name AS series,
-               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.playlist_link,b.page_count,
+               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.page_count,
                GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
@@ -1778,6 +1859,16 @@ def profile_by_username(username):
     """, (user_id,))
     shelves = cursor.fetchall()
 
+    # for shelf in shelves:
+    #     cursor.execute("""
+    #         SELECT 
+    #             b.book_id, b.title, b.cover_image_url
+    #         FROM user_shelf_books usb
+    #         JOIN books b ON usb.book_id = b.book_id
+    #         WHERE usb.shelf_id = %s
+    #         ORDER BY usb.added_date DESC
+    #     """, (shelf["shelf_id"],))
+    #     shelf["books"] = cursor.fetchall()
     for shelf in shelves:
         if shelf["name"] == "Currently Reading":
             # For Currently Reading, also join reading_progress
@@ -1785,7 +1876,7 @@ def profile_by_username(username):
                 SELECT
                     b.book_id, b.title, b.cover_image_url, b.page_count,
                     a.name AS author_name,
-                    COALESCE(rp.current_page, 0)              AS current_page,
+                    COALESCE(rp.current_page, 0) AS current_page,
                     COALESCE(rp.total_pages, b.page_count, 0) AS total_pages,
                     rp.start_date,
                     rp.notes
@@ -2116,7 +2207,19 @@ def edit_profile(username):
         last_name = request.form.get('last_name', '').strip()
         bio = request.form.get('bio', '').strip()
         about_me = request.form.get('about_me', '').strip()
-        profile_image_url = request.form.get('profile_image_url', '').strip()
+        # profile_image_url = request.form.get('profile_image_url', '').strip()
+
+        file = request.files.get('profile_image')
+
+        if file and file.filename != "":
+            filename = file.filename
+            filepath = os.path.join('static/images', filename)
+            file.save(filepath)
+
+            profile_image_url = '/' + filepath
+        else:
+            profile_image_url = user['profile_image_url']
+
         gender = request.form.get('gender', '').strip()
         date_of_birth = request.form.get('date_of_birth', '').strip()
         profession = request.form.get('profession', '').strip()
@@ -2319,23 +2422,53 @@ def logout():
 
 # interaction score building
 def get_user_book_scores(cursor):
+    user_ratings = defaultdict(list)
+
+    # collecting ratings
+    cursor.execute("SELECT user_id, book_id, ratings, review_date FROM reviews")
+    review_rows = cursor.fetchall()
+
+    for row in review_rows:
+        user_id = row["user_id"]
+        rating = float(row["ratings"]) if row["ratings"] else 0
+        user_ratings[user_id].append(rating)
+
+    # calculating averages
+    user_avg = {}
+
+    for user_id, ratings in user_ratings.items():
+        if ratings:
+            user_avg[user_id] = sum(ratings) / len(ratings)
+        else:
+            user_avg[user_id] = 0
+
     user_scores = defaultdict(lambda: defaultdict(float))
 
     # 1. Ratings (strong signal)
-    cursor.execute("SELECT user_id, book_id, ratings, review_date FROM reviews")
-    # for user_id, book_id, rating, review_date in cursor.fetchall():
-    #     try:
-    #         rating = float(rating)
-    #     except:
-    #         rating = 0
-    for row in cursor.fetchall():
+    # cursor.execute("SELECT user_id, book_id, ratings, review_date FROM reviews")
+    
+    # for row in cursor.fetchall():
+    #     user_id = row["user_id"]
+    #     book_id = row["book_id"]
+    #     rating = row["ratings"]
+    #     review_date = row["review_date"]
+
+    #     recency = get_recency_weight(review_date)
+    #     user_scores[user_id][book_id] += rating * 2 * recency   # HIGH weight
+
+    # appplying normalized ratings
+    for row in review_rows:
         user_id = row["user_id"]
         book_id = row["book_id"]
-        rating = row["ratings"]
+        rating = float(row["ratings"]) if row["ratings"] else 0
         review_date = row["review_date"]
 
         recency = get_recency_weight(review_date)
-        user_scores[user_id][book_id] += rating * 2 * recency   # HIGH weight
+        avg = user_avg.get(user_id, 0)
+
+        normalized_rating = rating - avg
+
+        user_scores[user_id][book_id] += normalized_rating * 2 * recency
 
     # 2. Shelf (medium signal)
     cursor.execute("""
@@ -2351,6 +2484,8 @@ def get_user_book_scores(cursor):
         user_id = row["user_id"]
         book_id = row["book_id"]
 
+        user_scores[user_id][book_id] += 3  #medium weight
+
     # 3. Views (weak but useful)
     cursor.execute("SELECT user_id, book_id, view_date FROM user_book_views")
     # for user_id, book_id, view_date in cursor.fetchall():
@@ -2361,6 +2496,10 @@ def get_user_book_scores(cursor):
         user_id = row["user_id"]
         book_id = row["book_id"]
         view_date = row["view_date"]
+
+        recency = get_recency_weight(view_date)
+
+        user_scores[user_id][book_id] += 1 * recency   # weak signal
     
     return user_scores
 
@@ -2411,36 +2550,48 @@ def get_collaborative_recommendations(current_user_id, cursor, limit=15):
 
     similarities = []
 
+    # similarity with threshold
     for user_id, scores in user_scores.items():
         if user_id == current_user_id:
             continue
 
         sim = cosine_similarity(current_user_data, scores)
 
-        # if sim > 0.05:   # 🔥 IMPORTANT FILTER
-        #     similarities.append((user_id, sim))
-        similarities.append((user_id, sim))
+        if sim > 0.1:
+            similarities.append((user_id, sim))
+        
+    # fallback if empty
+    if not similarities:
+    # fallback to top users (even if weak)
+        for user_id, scores in user_scores.items():
+            if user_id == current_user_id:
+                continue
 
+            sim = cosine_similarity(current_user_data, scores)
+            similarities.append((user_id, sim))
+
+    # sorting
     similarities.sort(key=lambda x: x[1], reverse=True)
     similarities = similarities[:10]
 
-    # 🔥 Rank books (NO SET anymore)
+    # score books 
     book_scores = defaultdict(float)
 
-    for user_id, sim in similarities[:10]:
+    for user_id, sim in similarities:
         for book_id, score in user_scores[user_id].items():
             # if book_id not in current_user_data:
             #     book_scores[book_id] += score * sim
             if book_id in current_user_data:
-                book_scores[book_id] += score * sim * 0.3
+                book_scores[book_id] += score * sim * 0.3  # already seen book then reduce importance
             else:
                 book_scores[book_id] += score * sim
     
-    # Sort by score
+    # rank
     ranked_books = sorted(book_scores.items(), key=lambda x: x[1], reverse=True)
 
     book_ids = [b[0] for b in ranked_books[:limit]]
 
+    # Fallback (popular books)
     if not book_ids:
         cursor.execute("""
             SELECT book_id, COUNT(*) as score
@@ -2466,6 +2617,7 @@ def get_collaborative_recommendations(current_user_id, cursor, limit=15):
 
         return cursor.fetchall()
 
+    # final books fectching
     format_strings = ','.join(['%s'] * len(book_ids))
 
     cursor.execute(f"""
@@ -4615,7 +4767,8 @@ def compare_users(username):
         shared_count=len(both_read_ids),
         common_rated=len(common_rated_ids),
     )
-    
+
+
 @app.route("/update_progress/<int:book_id>", methods=["POST"])
 def update_progress(book_id):
     if "user_id" not in session:
@@ -4725,8 +4878,6 @@ def mark_as_read(book_id):
     conn.close()
     return redirect(url_for("profile_root"))
 
-
-    
 # -------------------------
 # Run app
 # -------------------------
