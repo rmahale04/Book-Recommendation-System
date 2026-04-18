@@ -325,7 +325,7 @@
     <h2>Edit Profile</h2>
     <p class="subtitle">Update your personal information and preferences</p>
     
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       <div class="form-group">
         <label>First name</label>
         <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="Enter your first name">
@@ -369,8 +369,16 @@
       </div>
 
       <div class="form-group">
-        <label>Profile image URL</label>
-        <input type="text" name="profile_image_url" value="{{ user.profile_image_url or '' }}" placeholder="https://example.com/image.jpg">
+        <label>Book Image Path</label>
+        <!-- <input type="text" name="profile_image_url" value="{{ user.profile_image_url or '' }}" placeholder="https://example.com/image.jpg"> -->
+        <input type="file"
+          name="profile_image"
+          accept="image/*"> 
+      
+          <img id="preview"
+            src="{{ user.profile_image_url }}"
+            style="margin-top:10px; max-height:150px;">
+
       </div>
 
       <div class="actions">
@@ -381,5 +389,14 @@
       {% if errors.database %}<div class="error">{{ errors.database }}</div>{% endif %}
     </form>
   </div>
+
+  <script>
+    const input = document.querySelector("input[name='profile_image_url']");
+    const preview = document.getElementById("preview");
+
+    input.addEventListener("input", function() {
+        preview.src = this.value;
+    });
+  </script>
 </body>
 </html>
