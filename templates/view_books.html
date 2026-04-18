@@ -103,42 +103,25 @@
       <!-- Year -->
       <div class="filter-group">
         <label>Published Year</label>
-        <select name="year">
+        <!-- <select name="year">
           <option value="">All</option>
           {% for y in range(2025, 1900, -1) %}
             <option value="{{ y }}" {% if request.args.get('year') == y|string %}selected{% endif %}>
               {{ y }}
             </option>
           {% endfor %}
+        </select> -->
+        <select name="year_range">
+          <option value="">All</option>
+          {% for r in year_ranges %}
+            <option value="{{ r.value }}"
+              {% if request.args.get('year_range') == r.value %}selected{% endif %}>
+              {{ r.label }}
+            </option>
+          {% endfor %}
         </select>
       </div>
-      <!-- <div class="filter-group">
-        <label>Published Year Range</label>
-
-        <div style="display: flex; gap: 8px;">
-          <select name="year_from">
-            <option value="">From</option>
-            {% for y in range(2025, 1900, -1) %}
-              <option value="{{ y }}"
-                {% if request.args.get('year_from') == y|string %}selected{% endif %}>
-                {{ y }}
-              </option>
-            {% endfor %}
-          </select>
-
-          <select name="year_to">
-            <option value="">To</option>
-            {% for y in range(2025, 1900, -1) %}
-              <option value="{{ y }}"
-                {% if request.args.get('year_to') == y|string %}selected{% endif %}>
-                {{ y }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <small>Select a publication year range</small>
-      </div> -->
+      
 
 
       <!-- Language -->
