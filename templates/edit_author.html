@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Edit Author</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/book_form.css') }}">
     <style>
@@ -12,20 +13,29 @@
 
 body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;
+    /* height: 100vh; */
     background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
     display: flex;
     justify-content: center;
-    align-items: center;
+    /* align-items: center; */
+    align-items: flex-start;   /* 🔥 NOT center */
+    padding: 30px 0;
+}
+
+html, body {
+    overflow-x: hidden;
 }
 
 /* Card container */
 .form-container {
     background: #fff;
-    width: 400px;
-    padding: 35px;
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
     border-radius: 14px;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    margin: 20px;
 }
 
 /* Heading */
@@ -37,6 +47,9 @@ body {
 
 /* Labels */
 label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
     font-weight: 600;
     font-size: 14px;
     color: #333;
@@ -44,20 +57,26 @@ label {
 
 /* Inputs */
 input,
-select {
+select,
+textarea  {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin-top: 6px;
     margin-bottom: 18px;
     border-radius: 6px;
     border: 1px solid #ddd;
     font-size: 14px;
+    background: #fafafa;
+    transition: all 0.25s ease;
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
     outline: none;
     border-color: #6f7ae0;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(111,122,224,0.15);
 }
 
 /* Submit button */
@@ -91,6 +110,25 @@ button:hover {
     text-decoration: underline;
 }
 
+textarea {
+    width: 100%;
+    min-height: 140px;
+    max-height: 250px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    resize: vertical;         /* allow resize */
+    overflow-y: auto;         /* scroll when long */
+    line-height: 1.5;
+}
+
+img {
+    border-radius: 8px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+}
+
     </style>
 </head>
 <body>
@@ -98,7 +136,7 @@ button:hover {
 <div class="form-container">
     <h2>Edit Author</h2>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <label>Author Name</label>
         <input type="text"
                name="name"
@@ -114,6 +152,37 @@ button:hover {
         <input type="date"
                name="date_of_death"
                value="{{ author.date_of_death }}">
+        
+        <label>Gender</label>
+        <select name="gender">
+            <option value="">Select</option>
+            <option value="Male" {% if author.gender=='Male' %}selected{% endif %}>Male</option>
+            <option value="Female" {% if author.gender=='Female' %}selected{% endif %}>Female</option>
+            <option value="Other" {% if author.gender=='Other' %}selected{% endif %}>Other</option>
+        </select>
+
+        <label>Biography</label>
+        <textarea name="biography" placeholder="Write author biography...">{{ author.biography or '' }}</textarea>
+
+        <label>Profile Image</label>
+        {% if author.profile_image_url %}
+            <img src="{{ author.profile_image_url }}" width="100"><br>
+        {% endif %}
+        <input type="file" name="profile_image" accept="image/*">
+        <input type="hidden" name="existing_image" value="{{ author.profile_image_url }}">
+
+        <label>Website</label>
+
+        <select name="website_option" onchange="toggleWebsite(this.value)">
+            <option value="none" {% if not author.website %}selected{% endif %}>None</option>
+            <option value="custom" {% if author.website %}selected{% endif %}>Enter URL</option>
+        </select>
+
+        <input type="text"
+            name="website"
+            id="websiteInput"
+            placeholder="Enter website URL"
+            value="{{ author.website or '' }}">
 
         <button type="submit">Update Author</button>
     </form>
@@ -122,6 +191,24 @@ button:hover {
         ← Back to Dashboard
     </a>
 </div>
+
+<script>
+function toggleWebsite(value) {
+    const input = document.getElementById("websiteInput");
+    if (value === "none") {
+        input.value = "";
+        input.disabled = true;
+    } else {
+        input.disabled = false;
+    }
+}
+
+// run on load
+window.onload = function() {
+    const selected = document.querySelector("select[name='website_option']").value;
+    toggleWebsite(selected);
+}
+</script>
 
 </body>
 </html>
