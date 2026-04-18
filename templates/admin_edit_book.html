@@ -165,7 +165,7 @@ button:hover {
 <div class="container">
     <h2>Edit Book Information</h2>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
 
         <div class="form-grid">
 
@@ -234,7 +234,13 @@ button:hover {
             <!-- Cover -->
             <div>
                 <label>Cover Image URL</label>
-                <input type="text" name="cover_image_url" value="{{ book.cover_image_url }}">
+                <!-- <input type="text" name="cover_image_url" value="{{ book.cover_image_url }}"> -->
+                 {% if book.cover_image_url %}
+                    <img src="{{ book.cover_image_url }}" width="100">
+                {% endif %}
+                
+                <input type="file" name="cover_image" accept="image/*">
+                <input type="hidden" name="existing_cover" value="{{ book.cover_image_url }}">
             </div>
 
             <!-- Genres -->
