@@ -31,22 +31,22 @@ app.secret_key = "NextRead_2025_LoginKey!"
 # =========================
 
 # netra
-# db_config = {
-#     "host": "localhost",
-#     "port": 3306,
-#     "user": "root",
-#     "password": "Netra@432",
-#     "database": "books_db1"
-# }
-
-# ruchita
 db_config = {
     "host": "localhost",
-    "port": 3307,
+    "port": 3306,
     "user": "root",
-    "password": "",
+    "password": "Netra@432",
     "database": "books_db1"
 }
+
+# ruchita
+# db_config = {
+#     "host": "localhost",
+#     "port": 3307,
+#     "user": "root",
+#     "password": "",
+#     "database": "books_db1"
+# }
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -1352,7 +1352,7 @@ def book_details(book_id):
     # --- Book details ---
     cursor.execute("""
         SELECT b.book_id, b.author_id, b.title, a.name AS author, s.name AS series,
-               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.page_count,
+               b.published_year, b.cover_image_url, b.language, b.description,b.buy_link,b.playlist_link,b.page_count,
                GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
@@ -4444,9 +4444,8 @@ def generate_charts(cursor, time_range):
     
     # 2. Gender Distribution of user Pie Chart
     cursor.execute("""
-        SELECT gender, COUNT(*) AS user_count
+        SELECT COALESCE(gender, 'Not Defined') AS gender, COUNT(*) AS user_count
         FROM users
-        WHERE gender IS NOT NULL
         GROUP BY gender
         ORDER BY user_count DESC
     """)
@@ -4456,7 +4455,7 @@ def generate_charts(cursor, time_range):
         plt.figure(figsize=(10, 8))
         labels = [row['gender'] for row in gender_data]
         sizes = [row['user_count'] for row in gender_data]
-        colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
+        colors = ['#4facfe', '#f093fb', '#43e97b', '#aaaaaa']  # Blue, Pink, Green, Grey (Not Defined)
         # explode = [0.05] * len(labels)  # Slight separation for all slices
         
         plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
@@ -4470,9 +4469,8 @@ def generate_charts(cursor, time_range):
 
     # 3. Gender Distribution of author Pie Chart
     cursor.execute("""
-        SELECT gender, COUNT(*) AS author_count
+        SELECT COALESCE(gender, 'Not Defined') AS gender, COUNT(*) AS author_count
         FROM authors
-        WHERE gender IS NOT NULL
         GROUP BY gender
         ORDER BY author_count DESC
     """)
@@ -4482,7 +4480,7 @@ def generate_charts(cursor, time_range):
         plt.figure(figsize=(10, 8))
         labels = [row['gender'] for row in gender_data_author]
         sizes = [row['author_count'] for row in gender_data_author]
-        colors = ['#4facfe', '#f093fb', '#43e97b']  # Blue, Pink, Green
+        colors = ['#4facfe', '#f093fb', '#43e97b', '#aaaaaa']  # Blue, Pink, Green, Grey (Not Defined)
         # explode = [0.05] * len(labels)  # Slight separation for all slices
         
         plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.2f%%', 
