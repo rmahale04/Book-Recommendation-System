@@ -1448,7 +1448,14 @@ def book_details(book_id):
     
 
     # --- Similar Books (based on shared genres, ranked by overlap count) ---
-    cursor.execute("""
+    # Exclude books from the same series if the current book belongs to one
+    series_exclude_clause = ""
+    series_exclude_params = []
+    if book_series_id and series_name and series_name.lower() != "standalone":
+        series_exclude_clause = "AND (b.series_id IS NULL OR b.series_id != %s)"
+        series_exclude_params = [book_series_id]
+
+    cursor.execute(f"""
         SELECT DISTINCT
             b.book_id,
             b.title,
@@ -1464,25 +1471,54 @@ def book_details(book_id):
             WHERE bg2.book_id = %s
         )
         AND b.book_id != %s
+        {series_exclude_clause}
         GROUP BY b.book_id, b.title, a.name, b.cover_image_url
         ORDER BY shared_genres DESC
         LIMIT 6
-    """, (book_id, book_id))
+    """, (book_id, book_id, *series_exclude_params))
 
     similar_books = cursor.fetchall()
 
-    # Fallback: if no genre matches found, show other books by the same author
+    # Fallback: if no genre matches found, show other books by the same author (excluding same series)
     if not similar_books:
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT b.book_id, b.title, a.name AS author, b.cover_image_url
             FROM books b
             LEFT JOIN authors a ON b.author_id = a.author_id
             WHERE b.author_id = %s
             AND b.book_id != %s
+            {series_exclude_clause}
             LIMIT 6
-        """, (book["author_id"], book_id))
+        """, (book["author_id"], book_id, *series_exclude_params))
 
         similar_books = cursor.fetchall()
+
+    # --- More by this author (excluding books in the same series) ---
+    more_by_author = []
+    if book["author_id"]:
+        if book_series_id and series_name and series_name.lower() != "standalone":
+            # Exclude books that belong to the same series
+            cursor.execute("""
+                SELECT b.book_id, b.title, b.cover_image_url, b.published_year
+                FROM books b
+                WHERE b.author_id = %s
+                AND b.book_id != %s
+                AND (b.series_id IS NULL OR b.series_id != %s)
+                ORDER BY b.published_year DESC
+                LIMIT 6
+            """, (book["author_id"], book_id, book_series_id))
+        else:
+            # Book is standalone or has no series — exclude only the current book
+            cursor.execute("""
+                SELECT b.book_id, b.title, b.cover_image_url, b.published_year
+                FROM books b
+                WHERE b.author_id = %s
+                AND b.book_id != %s
+                ORDER BY b.published_year DESC
+                LIMIT 6
+            """, (book["author_id"], book_id))
+
+        more_by_author = cursor.fetchall()
 
     return render_template(
         "book_details.html",
@@ -1493,7 +1529,8 @@ def book_details(book_id):
         reviews=reviews,
         user_review=user_review,
         series_books=series_books,
-        similar_books = similar_books
+        similar_books=similar_books,
+        more_by_author=more_by_author
     )
 
 
@@ -4879,4 +4916,3 @@ def mark_as_read(book_id):
 # -------------------------
 if __name__ == "__main__":
     app.run(debug=True)
-    
