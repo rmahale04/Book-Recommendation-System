@@ -1447,33 +1447,31 @@ def book_details(book_id):
 
     
 
-    # --- Similar Books (based on genre) ---
-    book_year = book.get("publication_year")
+    # --- Similar Books (based on shared genres, ranked by overlap count) ---
+    cursor.execute("""
+        SELECT DISTINCT
+            b.book_id,
+            b.title,
+            a.name AS author,
+            b.cover_image_url,
+            COUNT(bg.genre_id) AS shared_genres
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        JOIN book_genres bg ON b.book_id = bg.book_id
+        WHERE bg.genre_id IN (
+            SELECT bg2.genre_id
+            FROM book_genres bg2
+            WHERE bg2.book_id = %s
+        )
+        AND b.book_id != %s
+        GROUP BY b.book_id, b.title, a.name, b.cover_image_url
+        ORDER BY shared_genres DESC
+        LIMIT 6
+    """, (book_id, book_id))
 
-    similar_books = []
+    similar_books = cursor.fetchall()
 
-    if book_year:
-        cursor.execute("""
-            SELECT DISTINCT 
-                b.book_id,
-                b.title,
-                a.name AS author,
-                b.cover_image_url
-            FROM books b
-            LEFT JOIN authors a ON b.author_id = a.author_id
-            LEFT JOIN book_genres bg ON b.book_id = bg.book_id
-            WHERE bg.genre_id IN (
-                SELECT bg2.genre_id
-                FROM book_genres bg2
-                WHERE bg2.book_id = %s
-            )
-            AND b.book_id != %s
-            AND b.publication_year BETWEEN %s AND %s
-            LIMIT 
-        """, (book_id, book_id, book_year - 5, book_year + 5))
-
-        similar_books = cursor.fetchall()
-
+    # Fallback: if no genre matches found, show other books by the same author
     if not similar_books:
         cursor.execute("""
             SELECT b.book_id, b.title, a.name AS author, b.cover_image_url
@@ -1481,7 +1479,7 @@ def book_details(book_id):
             LEFT JOIN authors a ON b.author_id = a.author_id
             WHERE b.author_id = %s
             AND b.book_id != %s
-            LIMIT 4
+            LIMIT 6
         """, (book["author_id"], book_id))
 
         similar_books = cursor.fetchall()
@@ -4881,3 +4879,4 @@ def mark_as_read(book_id):
 # -------------------------
 if __name__ == "__main__":
     app.run(debug=True)
+    
