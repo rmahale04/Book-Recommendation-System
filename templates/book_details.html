@@ -531,7 +531,7 @@
                             <label>Create New Shelf:</label>
                             <input type="text" id="new-shelf" placeholder="New shelf name..." class="shelf-input">
 
-                            <button onclick="addToShelf({{ book.book_id }})" class="add-confirm-btn">
+                            <button onclick="addToShelf({ book.book_id })" class="add-confirm-btn">
                                 Add
                             </button>
                         </div>
@@ -709,6 +709,47 @@
         </div>
         {% endif %}
 
+
+        {% if more_by_author %}
+<div class="book-container" style="padding: 30px 40px;">
+    <h2 style="font-size:1.6rem; font-weight:700; color:#6b21a8; margin-bottom:8px;">
+        ✍️ More by {{ book.author }}
+    </h2>
+    <p style="color:#8b5cf6; font-size:0.95rem; margin-bottom:25px;">
+        Other books by this author
+    </p>
+    <div style="display:flex; gap:18px; flex-wrap:wrap;">
+        {% for mb in more_by_author %}
+        <a href="{{ url_for('book_details', book_id=mb.book_id) }}"
+           style="text-decoration:none; flex:0 0 130px; max-width:130px;">
+            <div style="
+                border-radius:12px;
+                overflow:hidden;
+                border:2px solid #e9d5ff;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+                transition: transform 0.25s;
+                background:#faf5ff;
+            "
+            onmouseover="this.style.transform='translateY(-5px)'"
+            onmouseout="this.style.transform=''">
+                <img src="{{ mb.cover_image_url or url_for('static', filename='images/default_book.png') }}"
+                     style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:8px;">
+                    <p style="font-size:0.85rem; font-weight:600; color:#6b21a8;
+                              display:-webkit-box; -webkit-line-clamp:2;
+                              -webkit-box-orient:vertical; overflow:hidden;">
+                        {{ mb.title }}
+                    </p>
+                    <p style="font-size:0.75rem; color:#8b5cf6; margin-top:4px;">
+                        {{ mb.published_year or '' }}
+                    </p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 
         <div class="reviews-container">
