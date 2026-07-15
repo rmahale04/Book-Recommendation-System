@@ -379,7 +379,9 @@ Complete Software Engineering documentation includes:
 - UI Screenshots
 - Development Process
 
-📄 **Documentation:** *(https://drive.google.com/file/d/1BdkapI9o5-A6gdY-_NUpSDlfIMucWfcW/view?usp=sharing)*
+📄 **View Complete Documentation:**  
+[Book Recommendation System Documentation (PDF)](https://drive.google.com/file/d/1b1W3nyY3YD00msFUw_q6s9MQVe_5qkeI/view?usp=sharing)
+
 
 ---
 
