@@ -2,362 +2,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReadNext - Sign In</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReadNext - Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+    :root {
+        --surface: #111319;
+        --surface-container: #1d2025;
+        --surface-container-low: #191c21;
+        --surface-container-high: #272a30;
+        --on-surface: #e1e2ea;
+        --on-surface-variant: #c1c6d3;
+        --outline: #8b919d;
+        --outline-variant: #414751;
+        --primary: #a6c8ff;
+        --primary-container: #1466b8;
+        --on-primary-container: #d7e4ff;
+        --accent-purple: #a855f7;
+        --status-success: #22c55e;
+        --status-error: #ef4444;
+        --border-subtle: rgba(20, 102, 184, 0.2);
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .split-container {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--surface);
+        color: var(--on-surface);
+        min-height: 100vh;
+    }
 
-        /* Left Side - Brand */
-        .brand-side {
-            flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        font-size: 20px;
+        line-height: 1;
+        vertical-align: middle;
+    }
 
-        .brand-side::before {
-            content: '';
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            top: -200px;
-            right: -200px;
-        }
+    .split-container {
+        display: flex;
+        min-height: 100vh;
+    }
 
-        .brand-side::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 50%;
-            bottom: -100px;
-            left: -100px;
-        }
+    /* Left Side - Brand */
+    .brand-side {
+        flex: 1;
+        background: radial-gradient(circle at top left, var(--primary-container) 0%, var(--surface) 100%);
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-        .brand-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            max-width: 500px;
-        }
+    .brand-side::before {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: rgba(166, 200, 255, 0.15);
+        border-radius: 50%;
+        filter: blur(100px);
+        top: -200px;
+        right: -200px;
+    }
 
-        .logo-wrapper {
-            background: rgba(255, 255, 255, 0.95);
-            width: 120px;
-            height: 120px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-        }
+    .brand-side::after {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: rgba(168, 85, 247, 0.1);
+        border-radius: 50%;
+        filter: blur(100px);
+        bottom: -150px;
+        left: -150px;
+    }
 
-        .logo-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+    .brand-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 480px;
+    }
 
-        .brand-content h1 {
-            font-size: 48px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-        }
+    .logo-wrapper {
+        background: var(--surface-container);
+        width: 96px;
+        height: 96px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 32px;
+        box-shadow: 0 0 20px rgba(166, 200, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+    }
 
-        .brand-content p {
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.6;
-            margin-bottom: 40px;
-        }
+    .logo-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: brightness(1.1);
+    }
 
-        .features {
-            text-align: left;
-            margin-top: 48px;
-        }
+    .brand-content h1 {
+        font-size: 44px;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 20px;
+        letter-spacing: -1px;
+    }
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
-            color: white;
-        }
+    .brand-content > p {
+        font-size: 18px;
+        color: var(--on-surface-variant);
+        line-height: 1.6;
+        margin-bottom: 44px;
+    }
 
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            flex-shrink: 0;
-        }
+    .features {
+        text-align: left;
+        margin-top: 8px;
+    }
 
-        .feature-text {
-            font-size: 16px;
-            line-height: 1.5;
-        }
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
 
-        /* Right Side - Form */
-        .form-side {
-            flex: 1;
-            background: #ffffff;
-            padding: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow-y: auto;
-        }
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--surface-container);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
 
-        .form-container {
-            width: 100%;
-            max-width: 440px;
-        }
+    .feature-text h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 2px;
+    }
 
-        .form-header {
-            margin-bottom: 40px;
-        }
+    .feature-text p {
+        font-size: 13px;
+        color: var(--on-surface-variant);
+    }
 
-        .form-header h2 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 8px;
-        }
+    /* Right Side - Form */
+    .form-side {
+        flex: 1;
+        background: var(--surface);
+        padding: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+    }
 
-        .form-header p {
-            font-size: 16px;
-            color: #718096;
-        }
+    .form-container {
+        width: 100%;
+        max-width: 420px;
+    }
 
-        .flashes, .error-list {
-            list-style: none;
-            margin-bottom: 24px;
-        }
+    .form-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
 
-        .flashes li {
-            background: #d4edda;
-            color: #155724;
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            border-left: 4px solid #28a745;
-        }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 24px;
+    }
 
-        .error-list li {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            border-left: 4px solid #dc3545;
-        }
+    .form-header h2 {
+        font-size: 30px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
 
-        .form-group {
-            margin-bottom: 24px;
-        }
+    .form-header p {
+        font-size: 15px;
+        color: var(--on-surface-variant);
+    }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
+    .flashes, .error-list {
+        list-style: none;
+        margin-bottom: 24px;
+    }
 
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 8px;
-        }
+    .flashes li, .error-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
 
-        .form-group input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            background: #ffffff;
-            color: #2d3748;
-        }
+    .flashes li {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--status-success);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+    .error-list li {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--status-error);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
 
-        .sign-in-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-        }
+    .form-group { margin-bottom: 22px; }
 
-        .sign-in-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        margin-bottom: 8px;
+    }
 
-        .sign-in-btn:active {
-            transform: translateY(0);
-        }
+    .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        .divider {
-            text-align: center;
-            margin: 32px 0;
-            position: relative;
-        }
+    .label-row a {
+        font-size: 12px;
+        color: var(--primary);
+        text-decoration: none;
+    }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 100%;
-            height: 1px;
-            background: #e2e8f0;
-        }
+    .label-row a:hover { text-decoration: underline; }
 
-        .divider span {
-            position: relative;
-            background: #fff;
-            padding: 0 16px;
-            color: #a0aec0;
-            font-size: 14px;
-        }
+    .form-group input {
+        width: 100%;
+        padding: 13px 16px;
+        font-size: 15px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 12px;
+        background: var(--surface-container);
+        color: #ffffff;
+        transition: all 0.2s ease;
+    }
 
-        .signup-link {
-            text-align: center;
-            margin-top: 24px;
-            font-size: 15px;
-            color: #4a5568;
-        }
+    .form-group input::placeholder { color: var(--outline); }
 
-        .signup-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
+    .form-group input:focus {
+        outline: none;
+        border-color: transparent;
+        box-shadow: 0 0 0 2px var(--primary);
+    }
 
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
+    .sign-in-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary-container);
+        color: var(--on-primary-container);
+        font-size: 16px;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+    }
 
-        .author-cta {
-            margin-top: 40px;
-            padding: 24px;
-            background: #f7fafc;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-        }
+    .sign-in-btn:hover {
+        background: rgba(20, 102, 184, 0.8);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(20, 102, 184, 0.3);
+    }
 
-        .author-cta p {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
+    .sign-in-btn:active { transform: translateY(0); }
 
-        .author-links {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
+    .signup-link {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: var(--on-surface-variant);
+    }
 
-        .author-links a {
-            padding: 10px 24px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #4a5568;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            background: white;
-        }
+    .signup-link a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
 
-        .author-links a:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
+    .signup-link a:hover { text-decoration: underline; }
 
-        /* Responsive */
-        @media (max-width: 968px) {
-            .split-container {
-                flex-direction: column;
-            }
+    .author-cta {
+        margin-top: 44px;
+        padding: 24px;
+        border-radius: 16px;
+        background: rgba(39, 42, 48, 0.4);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border-subtle);
+        text-align: center;
+    }
 
-            .brand-side {
-                min-height: 40vh;
-                padding: 40px 30px;
-            }
+    .author-cta p {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+        margin-bottom: 16px;
+    }
 
-            .brand-content h1 {
-                font-size: 36px;
-            }
+    .author-links {
+        display: flex;
+        gap: 12px;
+    }
 
-            .features {
-                display: none;
-            }
+    .author-links a {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 11px 16px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--on-surface);
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        background: transparent;
+    }
 
-            .form-side {
-                padding: 40px 30px;
-            }
+    .author-links a:hover {
+        background: var(--surface-container-high);
+    }
 
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .author-links {
-                flex-direction: column;
-            }
-        }
-    </style>
+    /* Responsive */
+    @media (max-width: 968px) {
+        .split-container { flex-direction: column; }
+        .brand-side { min-height: 40vh; padding: 40px 30px; }
+        .brand-content h1 { font-size: 34px; }
+        .features { display: none; }
+        .form-side { padding: 40px 30px; }
+        .author-links { flex-direction: column; }
+    }
+</style>
 </head>
 <body>
     <div class="split-container">
@@ -369,19 +384,28 @@
                 </div>
                 <h1>ReadNext</h1>
                 <p>Discover books you'll actually love through personalized recommendations</p>
-                
+
                 <div class="features">
                     <div class="feature-item">
-                        <div class="feature-icon">📚</div>
-                        <div class="feature-text">Get personalized book recommendations</div>
+                        <div class="feature-icon"><span class="material-symbols-outlined">auto_stories</span></div>
+                        <div class="feature-text">
+                            <h3>Personalized Recommendations</h3>
+                            <p>Get book picks tailored to your taste</p>
+                        </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">⭐</div>
-                        <div class="feature-text">Track your reading journey</div>
+                        <div class="feature-icon"><span class="material-symbols-outlined">star</span></div>
+                        <div class="feature-text">
+                            <h3>Track Your Reading Journey</h3>
+                            <p>Shelve, rate, and review as you go</p>
+                        </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">💬</div>
-                        <div class="feature-text">Connect with fellow readers</div>
+                        <div class="feature-icon"><span class="material-symbols-outlined">chat_bubble</span></div>
+                        <div class="feature-text">
+                            <h3>Connect With Fellow Readers</h3>
+                            <p>Follow friends and compare your shelves</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -391,6 +415,10 @@
         <div class="form-side">
             <div class="form-container">
                 <div class="form-header">
+                    <span class="badge">
+                        <span class="material-symbols-outlined" style="font-size:14px;">menu_book</span>
+                        Reader Access
+                    </span>
                     <h2>Welcome back</h2>
                     <p>Sign in to continue your reading journey</p>
                 </div>
@@ -399,7 +427,7 @@
                   {% if messages %}
                     <ul class="flashes">
                       {% for message in messages %}
-                        <li>{{ message }}</li>
+                        <li><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>{{ message }}</li>
                       {% endfor %}
                     </ul>
                   {% endif %}
@@ -408,7 +436,7 @@
                 {% if errors %}
                   <ul class="error-list">
                     {% for field, error in errors.items() %}
-                      <li>{{ error }}</li>
+                      <li><span class="material-symbols-outlined" style="font-size:16px;">error</span>{{ error }}</li>
                     {% endfor %}
                   </ul>
                 {% endif %}
@@ -420,7 +448,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Password</label>
+                        <div class="label-row">
+                            <label for="password">Password</label>
+                            <a href="{{ url_for('forgot_password') }}">Forgot?</a>
+                        </div>
                         <input type="password" id="password" name="password" placeholder="Enter your password" required>
                     </div>
 
@@ -436,8 +467,14 @@
                 <div class="author-cta">
                     <p>Are you an author?</p>
                     <div class="author-links">
-                        <a href="{{ url_for('author_login') }}">Author Sign In</a>
-                        <a href="{{ url_for('author_register') }}">Author Sign Up</a>
+                        <a href="{{ url_for('author_login') }}">
+                            <span class="material-symbols-outlined" style="font-size:16px;">edit_note</span>
+                            Author Sign In
+                        </a>
+                        <a href="{{ url_for('author_register') }}">
+                            <span class="material-symbols-outlined" style="font-size:16px;">person_add</span>
+                            Author Sign Up
+                        </a>
                     </div>
                 </div>
             </div>
