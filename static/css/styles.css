@@ -1,12 +1,3 @@
-/* ============================================================
-   NOTE: Only the body background rule below was changed
-   (from the purple gradient to the dark theme background).
-   Everything else is unchanged from your original styles.css.
-   Pages like home.html now override this locally too, but this
-   keeps any page that hasn't been restyled yet from showing the
-   old purple gradient by default.
-   ============================================================ */
-
 * {
     margin: 0;
     padding: 0;
