@@ -4,29 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ReadNext - Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --surface: #111319;
+            --surface-container: #1d2025;
+            --surface-container-low: #191c21;
+            --surface-container-high: #272a30;
+            --on-surface: #e1e2ea;
+            --on-surface-variant: #c1c6d3;
+            --outline: #8b919d;
+            --outline-variant: #414751;
+            --primary: #a6c8ff;
+            --primary-container: #1466b8;
+            --on-primary-container: #d7e4ff;
+            --accent-purple: #a855f7;
+            --status-success: #22c55e;
+            --status-error: #ef4444;
+            --border-subtle: rgba(20, 102, 184, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            line-height: 1;
+            vertical-align: middle;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--surface);
+            color: var(--on-surface);
             min-height: 100vh;
-            display: flex;
         }
 
         .split-container {
             display: flex;
-            width: 100%;
             min-height: 100vh;
         }
 
         /* Left Side - Brand */
         .brand-side {
             flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at top left, var(--primary-container) 0%, var(--surface) 100%);
             padding: 60px;
             display: flex;
             flex-direction: column;
@@ -39,10 +61,11 @@
         .brand-side::before {
             content: '';
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 500px;
+            height: 500px;
+            background: rgba(166, 200, 255, 0.15);
             border-radius: 50%;
+            filter: blur(100px);
             top: -200px;
             right: -200px;
         }
@@ -52,30 +75,32 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(168, 85, 247, 0.1);
             border-radius: 50%;
-            bottom: -100px;
-            left: -100px;
+            filter: blur(100px);
+            bottom: -150px;
+            left: -150px;
         }
 
         .brand-content {
             position: relative;
             z-index: 1;
             text-align: center;
-            max-width: 500px;
+            max-width: 480px;
             padding-top: 40px;
         }
 
         .logo-wrapper {
-            background: rgba(255, 255, 255, 0.95);
-            width: 120px;
-            height: 120px;
-            border-radius: 30px;
+            background: var(--surface-container);
+            width: 96px;
+            height: 96px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 20px rgba(166, 200, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 20px;
         }
 
@@ -83,26 +108,27 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            filter: brightness(1.1);
         }
 
         .brand-content h1 {
-            font-size: 48px;
-            font-weight: 700;
-            color: white;
+            font-size: 44px;
+            font-weight: 800;
+            color: #ffffff;
             margin-bottom: 20px;
             letter-spacing: -1px;
         }
 
         .brand-content p {
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            color: var(--on-surface-variant);
             line-height: 1.6;
         }
 
         /* Right Side - Form */
         .form-side {
             flex: 1;
-            background: #ffffff;
+            background: var(--surface);
             padding: 60px;
             display: flex;
             align-items: center;
@@ -116,19 +142,19 @@
         }
 
         .form-header {
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
 
         .form-header h2 {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 700;
-            color: #1a202c;
+            color: #ffffff;
             margin-bottom: 8px;
         }
 
         .form-header p {
-            font-size: 16px;
-            color: #718096;
+            font-size: 15px;
+            color: var(--on-surface-variant);
         }
 
         .flashes, .error-list {
@@ -136,167 +162,156 @@
             margin-bottom: 24px;
         }
 
-        .flashes li {
-            background: #d4edda;
-            color: #155724;
-            padding: 14px 18px;
+        .flashes li, .error-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
             border-radius: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-size: 14px;
-            border-left: 4px solid #28a745;
+        }
+
+        .flashes li {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--status-success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         .error-list li {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            border-left: 4px solid #dc3545;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--status-error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        .form-group {
-            margin-bottom: 24px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
+
+        .form-row .form-group { margin-bottom: 0; }
 
         .form-group label {
             display: block;
             font-size: 14px;
-            font-weight: 600;
-            color: #2d3748;
+            font-weight: 500;
+            color: var(--on-surface-variant);
             margin-bottom: 8px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 13px 16px;
             font-size: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border: 1px solid var(--outline-variant);
+            border-radius: 12px;
+            background: var(--surface-container);
+            color: #ffffff;
             transition: all 0.2s ease;
-            background: #ffffff;
-            color: #2d3748;
         }
+
+        .form-group input::placeholder { color: var(--outline); }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: transparent;
+            box-shadow: 0 0 0 2px var(--primary);
         }
 
         .sign-in-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--primary-container);
+            color: var(--on-primary-container);
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
+            transition: all 0.2s ease;
+            margin-top: 4px;
         }
 
         .sign-in-btn:hover {
+            background: rgba(20, 102, 184, 0.8);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 20px rgba(20, 102, 184, 0.3);
         }
 
-        .sign-in-btn:active {
-            transform: translateY(0);
-        }
+        .sign-in-btn:active { transform: translateY(0); }
 
         .signup-link {
             text-align: center;
             margin-top: 24px;
-            font-size: 15px;
-            color: #4a5568;
+            font-size: 14px;
+            color: var(--on-surface-variant);
         }
 
         .signup-link a {
-            color: #667eea;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 600;
         }
 
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
+        .signup-link a:hover { text-decoration: underline; }
 
         .author-cta {
             margin-top: 40px;
             padding: 24px;
-            background: #f7fafc;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: rgba(39, 42, 48, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
             text-align: center;
         }
 
         .author-cta p {
-            font-size: 14px;
-            color: #4a5568;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--on-surface-variant);
             margin-bottom: 16px;
-            font-weight: 500;
         }
 
         .author-links {
             display: flex;
             gap: 12px;
-            justify-content: center;
         }
 
         .author-links a {
-            padding: 10px 24px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 11px 16px;
+            border: 1px solid var(--outline-variant);
+            border-radius: 10px;
             text-decoration: none;
-            color: #4a5568;
-            font-size: 14px;
-            font-weight: 500;
+            color: var(--on-surface);
+            font-size: 13px;
+            font-weight: 600;
             transition: all 0.2s ease;
-            background: white;
+            background: transparent;
         }
 
         .author-links a:hover {
-            border-color: #667eea;
-            color: #667eea;
+            background: var(--surface-container-high);
         }
 
         /* Responsive */
         @media (max-width: 968px) {
-            .split-container {
-                flex-direction: column;
-            }
-
-            .brand-side {
-                min-height: 40vh;
-                padding: 40px 30px;
-            }
-
-            .brand-content h1 {
-                font-size: 36px;
-            }
-
-            .form-side {
-                padding: 40px 30px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .author-links {
-                flex-direction: column;
-            }
+            .split-container { flex-direction: column; }
+            .brand-side { min-height: 40vh; padding: 40px 30px; }
+            .brand-content h1 { font-size: 34px; }
+            .form-side { padding: 40px 30px; }
+            .form-row { grid-template-columns: 1fr; }
+            .author-links { flex-direction: column; }
         }
     </style>
 </head>
@@ -325,7 +340,7 @@
                   {% if messages %}
                     <ul class="flashes">
                       {% for message in messages %}
-                        <li>{{ message }}</li>
+                        <li><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>{{ message }}</li>
                       {% endfor %}
                     </ul>
                   {% endif %}
@@ -334,7 +349,7 @@
                 {% if errors %}
                   <ul class="error-list">
                     {% for field, error in errors.items() %}
-                      <li>{{ error }}</li>
+                      <li><span class="material-symbols-outlined" style="font-size:16px;">error</span>{{ error }}</li>
                     {% endfor %}
                   </ul>
                 {% endif %}
@@ -350,7 +365,7 @@
                             <input type="text" id="last_name" name="last_name" value="{{ form_data.last_name if form_data else '' }}" required>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" value="{{ form_data.username if form_data else '' }}" required>
