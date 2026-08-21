@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Your Interests</title>
+    <title>Select Your Interests - ReadNext</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg: #0d0e13;
+            --panel: #171a22;
+            --panel-high: #1f232e;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f1f2f6;
+            --text-dim: #9ea3b0;
+            --accent-1: #6d8dff;
+            --accent-2: #a855f7;
+            --accent-glow: rgba(109, 141, 255, 0.35);
+            --warning: #f59e0b;
         }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,56 +36,62 @@
 
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 30%, rgba(109, 141, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
             pointer-events: none;
         }
 
-        .container { 
+        .container {
             max-width: 1000px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
+            background: rgba(23, 26, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
             padding: 50px 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
             z-index: 1;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: white;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.05rem;
+            color: var(--text-dim);
             margin-bottom: 10px;
         }
 
         .counter {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--panel-high);
+            border: 1px solid var(--border);
             padding: 8px 20px;
             border-radius: 20px;
             margin-bottom: 30px;
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--text-dim);
             transition: all 0.3s ease;
         }
 
         .counter.active {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border-color: transparent;
             transform: scale(1.05);
+            box-shadow: 0 6px 18px var(--accent-glow);
         }
 
         .flash-messages {
@@ -84,40 +100,34 @@
         }
 
         .flash-messages li {
-            background: rgba(255, 193, 7, 0.2);
-            border-left: 4px solid #ffc107;
+            background: rgba(245, 158, 11, 0.12);
+            border-left: 4px solid var(--warning);
             padding: 12px 20px;
             border-radius: 8px;
-            color: #fff;
+            color: var(--text);
             margin-bottom: 10px;
             animation: slideIn 0.3s ease;
+            font-size: 14px;
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .interests-grid { 
+        .interests-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
             margin: 30px 0;
         }
 
-        .interest-wrapper {
-            position: relative;
-        }
+        .interest-wrapper { position: relative; }
 
-        .interest-card { 
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
+        .interest-card {
+            background: var(--panel-high);
+            border: 1px solid var(--border);
+            color: var(--text);
             border-radius: 16px;
             padding: 25px 15px;
             cursor: pointer;
@@ -129,7 +139,6 @@
             font-weight: 600;
             font-size: 0.95rem;
             min-height: 100px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -137,11 +146,8 @@
         .interest-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -151,20 +157,20 @@
             z-index: 1;
         }
 
-        .interest-card:hover { 
+        .interest-card:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+            border-color: rgba(109, 141, 255, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
-        input[type=checkbox] { 
-            display: none;
-        }
+        input[type=checkbox] { display: none; }
 
         input[type=checkbox]:checked + label {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: transparent;
             color: white;
+            border-color: transparent;
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
+            box-shadow: 0 8px 25px var(--accent-glow);
         }
 
         input[type=checkbox]:checked + label::before {
@@ -178,26 +184,21 @@
             right: 10px;
             width: 24px;
             height: 24px;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             font-weight: bold;
+            z-index: 2;
             animation: checkmark 0.3s ease;
         }
 
         @keyframes checkmark {
-            0% {
-                transform: scale(0) rotate(-45deg);
-            }
-            50% {
-                transform: scale(1.2) rotate(10deg);
-            }
-            100% {
-                transform: scale(1) rotate(0deg);
-            }
+            0% { transform: scale(0) rotate(-45deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
 
         .button-container {
@@ -208,81 +209,56 @@
             flex-wrap: wrap;
         }
 
-        button { 
+        button {
             padding: 15px 45px;
             border: none;
             border-radius: 50px;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
             color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px var(--accent-glow);
             position: relative;
             overflow: hidden;
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        button:hover::before {
-            width: 300px;
-            height: 300px;
+            font-family: inherit;
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+            box-shadow: 0 8px 22px var(--accent-glow);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
+        button:active { transform: translateY(0); }
 
         button:disabled {
-            opacity: 0.6;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        button span {
-            position: relative;
-            z-index: 1;
-        }
+        button span { position: relative; z-index: 1; }
 
         .select-all-btn {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 25px;
+            background: var(--panel-high);
+            border: 1px solid var(--border);
+            box-shadow: none;
+            padding: 12px 25px;
             font-size: 0.95rem;
         }
 
         .select-all-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: #262b38;
+            box-shadow: none;
+            transform: translateY(-2px);
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 30px 20px;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .subtitle {
-                font-size: 1rem;
-            }
+            .container { padding: 30px 20px; }
+            h1 { font-size: 1.9rem; }
+            .subtitle { font-size: 1rem; }
 
             .interests-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -295,16 +271,11 @@
                 font-size: 0.9rem;
             }
 
-            button {
-                padding: 12px 35px;
-                font-size: 1rem;
-            }
+            button { padding: 12px 35px; font-size: 1rem; }
         }
 
         @media (max-width: 480px) {
-            .interests-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
+            .interests-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
         }
     </style>
 </head>
@@ -360,7 +331,7 @@
         function updateCounter() {
             const checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length;
             countSpan.textContent = checkedCount;
-            
+
             if (checkedCount >= 5) {
                 counter.classList.add('active');
                 submitBtn.disabled = false;
@@ -376,11 +347,11 @@
 
         selectAllBtn.addEventListener('click', function() {
             const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
+
             checkboxes.forEach(checkbox => {
                 checkbox.checked = !allChecked;
             });
-            
+
             this.querySelector('span').textContent = allChecked ? 'Select All' : 'Deselect All';
             updateCounter();
         });
