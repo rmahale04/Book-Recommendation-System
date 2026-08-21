@@ -3,76 +3,539 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReadNext - Your Personal Reading Companion</title>
+    <title>ReadNext - Discover Your Next Great Read</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0e13;
+            --panel: #15171f;
+            --panel-high: #1e212b;
+            --panel-highest: #262a36;
+            --text: #f1f2f6;
+            --text-dim: #9ea3b0;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent-1: #6d8dff;
+            --accent-2: #a855f7;
+            --accent-3: #22d3ee;
+            --accent-glow: rgba(109, 141, 255, 0.35);
+            --tertiary: #ffb56b;
+            --success: #34d399;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body.home-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background:
+                radial-gradient(circle at 15% 0%, rgba(109, 141, 255, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 85% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
+                var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .home-main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 64px 32px 96px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Hero */
+        .hero-panel {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            min-height: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            border: 1px solid var(--border);
+            background: linear-gradient(160deg, #1a1d29 0%, #101218 70%);
+            animation: fadeInUp 0.7s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDkIfvGxo27WsU-r4JK0fzX1IpK2sUKqXdYFOaCh8TI-GiEi58lm2C1kYEO82aV8oMvtFtyLEb2NtDmi0RmvF6wuiwZXf16uXFMdZmCixtuyUet0lfZIybldIGeoaXEQzOli4GxyxIZtatZnhQDwElTTTKQwOdZqM4JNfHPdRpQrH7M0HYcmpgqAc0Rk7QNgCz6z_NQGoPFTUT5DCTqd0U9OVvBWBu0eNBSI7u9iYVlHvrP7G_zTKY');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.22;
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .hero-glow.glow-1 {
+            background: var(--accent-1);
+            top: -180px;
+            left: -120px;
+        }
+
+        .hero-glow.glow-2 {
+            background: var(--accent-2);
+            bottom: -200px;
+            right: -140px;
+        }
+
+        .hero-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--bg) 0%, rgba(13,14,19,0.75) 45%, transparent 100%);
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 26px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px;
+            border-radius: 999px;
+            background: rgba(109, 141, 255, 0.12);
+            border: 1px solid rgba(109, 141, 255, 0.3);
+            color: var(--accent-1);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .hero-title {
+            font-size: 52px;
+            line-height: 58px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .hero-title .gradient-text {
+            background: linear-gradient(120deg, var(--accent-1), var(--accent-3) 50%, var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 17px;
+            line-height: 26px;
+            color: var(--text-dim);
+            max-width: 560px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 14px 30px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 28px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 34px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        /* Bento grid layout */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .bento-grid { grid-template-columns: 1fr 2fr; }
+        }
+
+        /* Discovery widget */
+        .discovery-panel {
+            background: linear-gradient(160deg, var(--panel) 0%, #101218 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .discovery-panel::before {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 220px;
+            height: 220px;
+            background: var(--accent-1);
+            opacity: 0.15;
+            border-radius: 50%;
+            filter: blur(70px);
+        }
+
+        .discovery-inner { position: relative; z-index: 1; }
+
+        .widget-title {
+            font-size: 19px;
+            line-height: 28px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .widget-title .icon-chip {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .widget-title .icon-chip .material-symbols-outlined { font-size: 18px; }
+
+        .search-box { position: relative; margin-bottom: 24px; }
+
+        .search-box .material-symbols-outlined {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--panel-high);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px 12px 42px;
+            font-size: 14px;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .search-input::placeholder { color: var(--text-dim); }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .genre-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .genre-tag {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel-high);
+            color: var(--text-dim);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .genre-tag:hover {
+            border-color: var(--accent-1);
+            color: var(--text);
+            transform: translateY(-1px);
+        }
+
+        .genre-tag.active {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .discover-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .discover-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        @media (min-width: 768px) {
+            .features-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .feature-card {
+            background: linear-gradient(160deg, var(--panel) 0%, #101218 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, var(--card-accent, var(--accent-1)), transparent 60%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 34px rgba(0,0,0,0.35);
+        }
+
+        .feature-card:hover::after { opacity: 1; }
+
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+        }
+
+        .feature-icon.icon-primary { background: linear-gradient(135deg, var(--accent-1), var(--accent-3)); }
+        .feature-icon.icon-tertiary { background: linear-gradient(135deg, var(--tertiary), #ff8a5c); }
+        .feature-icon.icon-success { background: linear-gradient(135deg, var(--success), #16a085); }
+        .feature-icon.icon-purple { background: linear-gradient(135deg, var(--accent-2), #d946ef); }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.55;
+        }
+
+        @media (max-width: 640px) {
+            .home-main { padding: 32px 20px 100px; }
+            .hero-title { font-size: 36px; line-height: 42px; }
+            .hero-panel { min-height: 380px; padding: 28px 20px; }
+        }
+    </style>
 </head>
-<body>
+<body class="home-page">
     {% include "nav_page.html" %}
-    <!-- Hero Section -->
-    <main class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">Discover Your Next Great Read</h1>
-            <p class="hero-subtitle">Personalized book recommendations powered by your unique reading preferences and our intelligent algorithm.</p>
-            
+
+    <main class="home-main">
+        <!-- Hero Section -->
+        <section class="hero-panel">
+            <div class="hero-glow glow-1"></div>
+            <div class="hero-glow glow-2"></div>
+            <div class="hero-bg"></div>
+            <div class="hero-gradient"></div>
+            <div class="hero-inner">
+                <span class="hero-badge">
+                    <span class="material-symbols-outlined" style="font-size:14px;">auto_awesome</span>
+                    Powered by smart recommendations
+                </span>
+                <h1 class="hero-title">Discover Your Next <span class="gradient-text">Great Read</span></h1>
+                <p class="hero-subtitle">Personalized book recommendations tailored to your unique tastes. Dive into a world of literary discovery powered by advanced analytics.</p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('recommendations') }}" class="btn-primary">Get Started</a>
+                    <a href="{{ url_for('view_books') }}" class="btn-secondary">Browse Books</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Discovery Widget & Features Grid -->
+        <div class="bento-grid">
+            <!-- Discovery Widget -->
+            <div class="discovery-panel">
+                <div class="discovery-inner">
+                    <h3 class="widget-title">
+                        <span class="icon-chip"><span class="material-symbols-outlined">explore</span></span>
+                        Quick Discovery
+                    </h3>
+
+                    <div class="search-box">
+                        <span class="material-symbols-outlined">search</span>
+                        <input type="text" class="search-input" placeholder="Search by title, author, or keyword..." id="searchInput">
+                    </div>
+
+                    <span class="genre-label">Popular Genres</span>
+                    <div class="genre-tags">
+                        <span class="genre-tag" onclick="toggleGenre(this)">Fiction</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Mystery</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Romance</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Sci-Fi</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Biography</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">History</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Fantasy</span>
+                        <span class="genre-tag" onclick="toggleGenre(this)">Self Help</span>
+                    </div>
+
+                    <button class="discover-btn" id="discoverBtn">✨ Discover Books</button>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
             <div class="features-grid">
-                <div class="feature-item">
-                    <span class="feature-icon">🎯</span>
-                    <span class="feature-text">Personalized recommendations based on your reading history</span>
+                <div class="feature-card" style="--card-accent:#6d8dff;">
+                    <div class="feature-icon icon-primary"><span class="material-symbols-outlined">auto_awesome</span></div>
+                    <div>
+                        <h3>Personalized recommendations</h3>
+                        <p>Algorithms that learn your preferences to suggest books you'll actually love.</p>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <span class="feature-icon">🔍</span>
-                    <span class="feature-text">Advanced search across multiple books</span>
+                <div class="feature-card" style="--card-accent:#ffb56b;">
+                    <div class="feature-icon icon-tertiary"><span class="material-symbols-outlined">manage_search</span></div>
+                    <div>
+                        <h3>Advanced search</h3>
+                        <p>Filter by mood, pacing, character types, and hyper-specific themes.</p>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <span class="feature-icon">⭐</span>
-                    <span class="feature-text">Detailed reviews and ratings from fellow readers</span>
+                <div class="feature-card" style="--card-accent:#34d399;">
+                    <div class="feature-icon icon-success"><span class="material-symbols-outlined">reviews</span></div>
+                    <div>
+                        <h3>Detailed reviews</h3>
+                        <p>Access comprehensive community insights and professional critiques.</p>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <span class="feature-icon">📊</span>
-                    <span class="feature-text">Track your reading progress and goals</span>
+                <div class="feature-card" style="--card-accent:#a855f7;">
+                    <div class="feature-icon icon-purple"><span class="material-symbols-outlined">donut_large</span></div>
+                    <div>
+                        <h3>Reading progress</h3>
+                        <p>Track your reading habits, pages read, and set personalized literary goals.</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="cta-buttons">
-                <a href="{{ url_for('recommendations') }}" class="btn-primary">Get Started</a>
-                <a href="{{ url_for('view_books') }}" class="btn-secondary">Browse Books</a>
-            </div>
-        </div>
-
-        <!-- Book Discovery Widget -->
-        <div class="discovery-widget floating-animation">
-            <h3 class="widget-title">Find Your Perfect Book</h3>
-            
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="Search by title, author, or keyword..." id="searchInput" />
-            </div>
-
-            <div class="genre-tags">
-                <span class="genre-tag" onclick="toggleGenre(this)">Fiction</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Mystery</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Romance</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Sci-Fi</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Biography</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">History</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Fantasy</span>
-                <span class="genre-tag" onclick="toggleGenre(this)">Self Help</span>
-            </div>
-
-            <button class="discover-btn" id="discoverBtn">
-                ✨ Discover Books
-            </button>
         </div>
     </main>
+
     <script>
         let selectedGenre = "";
 
         function toggleGenre(element) {
-            // remove active class from all
             document.querySelectorAll(".genre-tag").forEach(tag => {
                 tag.classList.remove("active");
             });
 
-            // toggle selected
             if (selectedGenre === element.innerText) {
                 selectedGenre = "";
             } else {
@@ -100,7 +563,6 @@
             }
         });
 
-        // Optional: press Enter to search
         document.getElementById("searchInput").addEventListener("keypress", function (e) {
             if (e.key === "Enter") {
                 document.getElementById("discoverBtn").click();
