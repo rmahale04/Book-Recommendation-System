@@ -35,7 +35,7 @@ db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "Netra@432",
+    "password": "Keyuri@123",
     "database": "books_db1"
 }
 
@@ -923,9 +923,33 @@ def edit_series(series_id):
     conn.close()
     return render_template("edit_series.html", series=series)
 
-#delete series
-@app.route("/admin/series/delete/<int:series_id>")
+# #delete series
+# @app.route("/admin/series/delete/<int:series_id>")
+# def delete_series(series_id):
+#     if session.get("role", "").lower() != "admin":
+#         flash("Access denied.", "danger")
+#         return redirect(url_for("admin_dashboard"))
+
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+
+#     try:
+#         cursor.execute("DELETE FROM series WHERE series_id = %s", (series_id,))
+#         conn.commit()
+#         flash("Series deleted successfully!", "success")
+#     except:
+#         conn.rollback()
+#         flash("Cannot delete series. It may be linked to books.", "danger")
+
+#     cursor.close()
+#     conn.close()
+#     return redirect(url_for("admin_dashboard"))
+
+# Delete Series
+
+@app.route("/admin/series/delete/<int:series_id>", methods=["POST"])
 def delete_series(series_id):
+
     if session.get("role", "").lower() != "admin":
         flash("Access denied.", "danger")
         return redirect(url_for("admin_dashboard"))
@@ -934,20 +958,30 @@ def delete_series(series_id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("DELETE FROM series WHERE series_id = %s", (series_id,))
+        cursor.execute(
+            "DELETE FROM series WHERE series_id = %s",
+            (series_id,)
+        )
+
         conn.commit()
+
         flash("Series deleted successfully!", "success")
-    except:
+
+    except Exception as e:
         conn.rollback()
-        flash("Cannot delete series. It may be linked to books.", "danger")
 
-    cursor.close()
-    conn.close()
+        print("Delete Series Error:", e)
+
+        flash(
+            "Cannot delete series. It may be linked to books.",
+            "danger"
+        )
+
+    finally:
+        cursor.close()
+        conn.close()
+
     return redirect(url_for("admin_dashboard"))
-
-
-
-
 # -------------------------
 # Home
 # -------------------------
