@@ -3,68 +3,318 @@
 <head>
     <title>Add New Genre</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
-        }
+/* ================================
+   GLOBAL
+================================ */
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
 
-        body {
-            margin: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+body {
+    margin: 0;
+    min-height: 100vh;
 
-        .form-container {
-            background: #fff;
-            width: 400px;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
+    background:
+        radial-gradient(circle at 15% 20%, rgba(109, 141, 255, 0.15), transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(168, 85, 247, 0.14), transparent 35%),
+        #0d0e13;
 
-        h2 {
-            text-align: center;
-            color: #6f7ae0;
-            margin-bottom: 25px;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-        label {
-            font-weight: 600;
-            font-size: 14px;
-        }
+    color: #f1f2f6;
+    padding: 25px 20px;
+}
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            margin-bottom: 18px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #6f7ae0, #7b4bb7);
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+/* ================================
+   FORM CONTAINER
+================================ */
+.form-container {
+    position: relative;
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #6f7ae0;
-            text-decoration: none;
-        }
-    </style>
+    background: linear-gradient(
+        145deg,
+        #15171f,
+        #11131a
+    );
+
+    width: 400px;
+    max-width: 100%;
+
+    padding: 38px 35px;
+
+    border-radius: 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.55),
+        0 0 35px rgba(109, 141, 255, 0.08);
+
+    overflow: hidden;
+}
+
+
+/* Top glow */
+.form-container::before {
+    content: "";
+
+    position: absolute;
+
+    top: -70px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 220px;
+    height: 110px;
+
+    background: rgba(109, 141, 255, 0.16);
+
+    filter: blur(50px);
+
+    pointer-events: none;
+}
+
+
+/* ================================
+   HEADING
+================================ */
+h2 {
+    position: relative;
+
+    text-align: center;
+
+    color: #f1f2f6;
+
+    margin: 0 0 28px;
+
+    font-size: 26px;
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+}
+
+h2::after {
+    content: "";
+
+    display: block;
+
+    width: 55px;
+    height: 3px;
+
+    margin: 10px auto 0;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        90deg,
+        #6d8dff,
+        #a855f7
+    );
+}
+
+
+/* ================================
+   LABEL
+================================ */
+label {
+    display: block;
+
+    font-weight: 600;
+    font-size: 14px;
+
+    margin-bottom: 7px;
+
+    color: #d9dce5;
+}
+
+
+/* ================================
+   INPUT
+================================ */
+input {
+    width: 100%;
+
+    padding: 12px 13px;
+
+    margin-top: 0;
+    margin-bottom: 18px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    background: #1e212b;
+
+    color: #f1f2f6;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+
+/* Placeholder */
+input::placeholder {
+    color: #777d8c;
+}
+
+
+/* Focus effect */
+input:focus {
+    border-color: #6d8dff;
+
+    background: #222530;
+
+    box-shadow:
+        0 0 0 3px rgba(109, 141, 255, 0.12),
+        0 0 18px rgba(109, 141, 255, 0.12);
+}
+
+
+/* ================================
+   BUTTON
+================================ */
+button {
+    width: 100%;
+
+    padding: 13px 16px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: linear-gradient(
+        135deg,
+        #6d8dff,
+        #a855f7
+    );
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(109, 141, 255, 0.22);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+/* Button hover */
+button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(109, 141, 255, 0.35);
+
+    opacity: 0.97;
+}
+
+
+/* Button click */
+button:active {
+    transform: translateY(0);
+}
+
+
+/* ================================
+   BACK LINK
+================================ */
+.back-link {
+    display: block;
+
+    text-align: center;
+
+    margin-top: 17px;
+
+    color: #9ea3b0;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.back-link:hover {
+    color: #6d8dff;
+}
+
+
+/* ================================
+   SCROLLBAR
+================================ */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0d0e13;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #303442;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6d8dff;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 500px) {
+
+    body {
+        padding: 20px 15px;
+    }
+
+    .form-container {
+        width: 100%;
+        padding: 30px 25px;
+        border-radius: 17px;
+    }
+
+    h2 {
+        font-size: 23px;
+    }
+}
+
+
+@media (max-width: 380px) {
+
+    .form-container {
+        padding: 25px 20px;
+    }
+
+    h2 {
+        font-size: 21px;
+    }
+
+    button {
+        font-size: 14px;
+    }
+}
+</style>
 </head>
 <body>
 

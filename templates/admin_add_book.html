@@ -4,215 +4,857 @@
     <title>Add New Book</title>
 
 <style>
+/* =========================================
+   DARK MODERN FORM UI
+   ========================================= */
+
+:root {
+    --bg: #0d0e13;
+    --panel: #15171f;
+    --panel-high: #1e212b;
+    --panel-highest: #262a36;
+
+    --text: #f1f2f6;
+    --text-dim: #9ea3b0;
+
+    --border: rgba(255, 255, 255, 0.08);
+
+    --accent-1: #6d8dff;
+    --accent-2: #a855f7;
+    --accent-3: #22d3ee;
+
+    --accent-glow: rgba(109, 141, 255, 0.35);
+
+    --success: #34d399;
+    --danger: #ff6b6b;
+}
+
+
+/* =========================================
+   RESET
+   ========================================= */
+
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+
+    font-family:
+        'Inter',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Arial,
+        sans-serif;
 }
+
+
+/* =========================================
+   BODY
+   ========================================= */
 
 body {
+
     margin: 0;
-    background: linear-gradient(135deg, #6a78e6, #7a4bb8);
+
     min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 15% 0%,
+            rgba(109, 141, 255, 0.16) 0%,
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(168, 85, 247, 0.14) 0%,
+            transparent 45%
+        ),
+        var(--bg);
+
+    color: var(--text);
 }
 
-/* Wrapper */
+
+/* =========================================
+   PAGE WRAPPER
+   ========================================= */
+
 .page-wrapper {
-    padding: 80px 20px;
+
+    min-height: 100vh;
+
+    padding: 55px 20px 80px;
+
     display: flex;
+
     justify-content: center;
+
+    align-items: flex-start;
 }
 
-/* Card */
+
+/* =========================================
+   FORM CONTAINER
+   ========================================= */
+
 .form-container {
-    background: #ffffff;
+
+    position: relative;
+
     width: 900px;
-    padding: 40px 50px;
-    border-radius: 18px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+
+    max-width: 100%;
+
+    padding: 40px 45px;
+
+    background:
+        linear-gradient(
+            160deg,
+            var(--panel) 0%,
+            #101218 100%
+        );
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 20px 55px
+        rgba(0, 0, 0, 0.38);
+
+    overflow: hidden;
 }
 
-/* Title */
-.form-container h2 {
-    color: #5f6ee6;
-    font-size: 26px;
-    margin-bottom: 6px;
-    font-weight: 700;
+
+/* Decorative glow */
+
+.form-container::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    top: -160px;
+    right: -100px;
+
+    border-radius: 50%;
+
+    background:
+        var(--accent-1);
+
+    opacity: 0.10;
+
+    filter: blur(90px);
+
+    pointer-events: none;
 }
+
+
+/* =========================================
+   TITLE
+   ========================================= */
+
+.form-container h2 {
+
+    position: relative;
+
+    color: var(--text);
+
+    font-size: 28px;
+
+    margin-bottom: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+}
+
+
+.form-container h2::after {
+
+    content: "";
+
+    display: block;
+
+    width: 70px;
+    height: 4px;
+
+    margin-top: 12px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--accent-1),
+            var(--accent-3),
+            var(--accent-2)
+        );
+}
+
 
 .form-container p {
+
     font-size: 14px;
-    color: #777;
-    margin-bottom: 25px;
+
+    color: var(--text-dim);
+
+    margin-top: 15px;
+
+    margin-bottom: 28px;
+
+    line-height: 1.6;
 }
 
-/* Section title */
+
+/* =========================================
+   SECTION TITLE
+   ========================================= */
+
 .section-title {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
-    font-weight: 600;
-    color: #5f6ee6;
-    margin-bottom: 12px;
+
+    font-weight: 700;
+
+    color: var(--text);
+
+    margin-bottom: 15px;
+
+    font-size: 18px;
 }
+
 
 .section-title::before {
+
     content: "";
+
     width: 4px;
-    height: 20px;
-    background: #5f6ee6;
-    border-radius: 4px;
+
+    height: 21px;
+
+    background:
+        linear-gradient(
+            180deg,
+            var(--accent-1),
+            var(--accent-2)
+        );
+
+    border-radius: 5px;
+
+    box-shadow:
+        0 0 10px
+        rgba(109, 141, 255, 0.3);
 }
 
-/* Divider */
+
+/* =========================================
+   DIVIDER
+   ========================================= */
+
 .divider {
-    height: 2px;
-    background: #e5e7ff;
+
+    height: 1px;
+
+    background:
+        var(--border);
+
     margin-bottom: 30px;
+
+    position: relative;
 }
 
-/* Grid */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
+
+.divider::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: -1px;
+
+    width: 80px;
+    height: 3px;
+
+    border-radius: 5px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--accent-1),
+            var(--accent-2)
+        );
 }
+
+
+/* =========================================
+   FORM GRID
+   ========================================= */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 24px;
+}
+
 
 .full-width {
+
     grid-column: 1 / -1;
 }
 
-/* Labels */
+
+/* =========================================
+   LABELS
+   ========================================= */
+
 label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
+
     display: block;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: var(--text);
+
+    margin-bottom: 8px;
 }
 
-/* Inputs */
+
+/* =========================================
+   INPUTS
+   ========================================= */
+
 input,
 select,
 textarea {
+
     width: 100%;
-    padding: 12px 14px;
+
+    padding: 13px 15px;
+
     border-radius: 10px;
-    border: 1px solid #dcdcdc;
+
+    border:
+        1px solid var(--border);
+
     font-size: 14px;
-    background: #fafafa;
-    transition: 0.3s;
+
+    color: var(--text);
+
+    background:
+        var(--panel-high);
+
+    transition:
+        all 0.25s ease;
 }
 
-textarea {
-    resize: none;
-    height: 110px;
+
+/* Placeholder */
+
+input::placeholder,
+textarea::placeholder {
+
+    color:
+        var(--text-dim);
 }
+
+
+/* Hover */
+
+input:hover,
+select:hover,
+textarea:hover {
+
+    border-color:
+        rgba(255, 255, 255, 0.16);
+}
+
+
+/* Focus */
 
 input:focus,
 select:focus,
 textarea:focus {
+
     outline: none;
-    border-color: #5f6ee6;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(95,110,230,0.15);
+
+    border-color:
+        var(--accent-1);
+
+    background:
+        var(--panel-highest);
+
+    box-shadow:
+        0 0 0 4px
+        var(--accent-glow);
 }
 
-/* Actions */
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 30px;
+
+/* =========================================
+   SELECT
+   ========================================= */
+
+select {
+
+    cursor: pointer;
 }
+
+
+/* =========================================
+   TEXTAREA
+   ========================================= */
+
+textarea {
+
+    resize: vertical;
+
+    min-height: 115px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   FORM ACTIONS
+   ========================================= */
+
+.form-actions {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin-top: 35px;
+
+    padding-top: 30px;
+
+    border-top:
+        1px solid var(--border);
+}
+
+
+/* =========================================
+   BUTTON
+   ========================================= */
 
 button {
-    padding: 14px 30px;
+
+    padding: 14px 35px;
+
+    min-width: 260px;
+
     border: none;
+
     border-radius: 12px;
-    background: linear-gradient(135deg, #6a78e6, #7a4bb8);
-    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--accent-1),
+            var(--accent-2)
+        );
+
+    color: white;
+
     font-size: 15px;
-    font-weight: 600;
+
+    font-weight: 700;
+
     cursor: pointer;
-    transition: 0.3s;
+
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 8px 25px
+        var(--accent-glow);
 }
+
 
 button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 12px 32px
+        var(--accent-glow);
 }
 
-/* Back link */
-.back-link {
-    display: inline-block;
-    margin-top: 25px;
-    color: #5f6ee6;
-    text-decoration: none;
-    font-weight: 500;
+
+button:active {
+
+    transform:
+        translateY(-1px);
 }
+
+
+/* =========================================
+   BACK LINK
+   ========================================= */
+
+.back-link {
+
+    display: block;
+
+    width: fit-content;
+
+    margin: 25px auto 0;
+
+    color:
+        var(--accent-1);
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
 
 .back-link:hover {
-    text-decoration: underline;
+
+    color:
+        var(--accent-3);
+
+    text-decoration: none;
+
+    transform:
+        translateX(-3px);
 }
-/* GENRE GRID */
+
+
+/* =========================================
+   GENRE GRID
+   ========================================= */
+
 .genre-grid {
+
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    margin-top: 10px;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(210px, 1fr)
+        );
+
+    gap: 13px;
+
+    margin-top: 12px;
 }
 
-/* GENRE CARD */
+
+/* =========================================
+   GENRE BOX
+   ========================================= */
+
 .genre-box {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    background: #fafafa;
+
+    padding: 13px 15px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 11px;
+
+    background:
+        var(--panel-high);
+
     cursor: pointer;
-    transition: all 0.3s ease;
+
+    transition:
+        all 0.25s ease;
 }
 
-/* Checkbox */
-.genre-box input {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
 
-/* Label */
-.genre-box label {
-    cursor: pointer;
-    margin: 0;
-    font-size: 14px;
-    flex: 1;
-}
-
-/* Hover effect */
 .genre-box:hover {
-    border-color: #5f6ee6;
-    background: rgba(95,110,230,0.08);
+
+    border-color:
+        rgba(109, 141, 255, 0.5);
+
+    background:
+        rgba(109, 141, 255, 0.08);
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 6px 18px
+        rgba(0, 0, 0, 0.2);
 }
 
-/* Selected state */
+
+/* =========================================
+   GENRE CHECKBOX
+   ========================================= */
+
+.genre-box input {
+
+    width: 18px;
+
+    height: 18px;
+
+    margin: 0;
+
+    cursor: pointer;
+
+    accent-color:
+        var(--accent-1);
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================
+   GENRE LABEL
+   ========================================= */
+
+.genre-box label {
+
+    cursor: pointer;
+
+    margin: 0;
+
+    font-size: 14px;
+
+    flex: 1;
+
+    color:
+        var(--text-dim);
+
+    font-weight: 500;
+
+    transition:
+        color 0.2s ease;
+}
+
+
+/* =========================================
+   SELECTED GENRE
+   ========================================= */
+
 .genre-box input:checked + label {
-    color: #5f6ee6;
-    font-weight: 600;
+
+    color:
+        var(--accent-1);
+
+    font-weight: 700;
 }
 
-.genre-box input:checked {
-    accent-color: #5f6ee6;
-}
 
-/* Optional: highlight whole box when checked */
-.genre-box input:checked ~ label,
-.genre-box input:checked {
-}
+/* Highlight complete box */
 
 .genre-box:has(input:checked) {
-    border-color: #5f6ee6;
-    background: rgba(95,110,230,0.12);
+
+    border-color:
+        rgba(109, 141, 255, 0.55);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(109, 141, 255, 0.12),
+            rgba(168, 85, 247, 0.08)
+        );
+
+    box-shadow:
+        0 5px 18px
+        rgba(109, 141, 255, 0.08);
+}
+
+
+/* =========================================
+   SCROLLBAR
+   ========================================= */
+
+::-webkit-scrollbar {
+
+    width: 8px;
+
+    height: 8px;
+}
+
+
+::-webkit-scrollbar-track {
+
+    background:
+        var(--bg);
+}
+
+
+::-webkit-scrollbar-thumb {
+
+    background:
+        linear-gradient(
+            180deg,
+            var(--accent-1),
+            var(--accent-2)
+        );
+
+    border-radius: 10px;
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+
+    background:
+        var(--accent-3);
+}
+
+
+/* =========================================
+   RESPONSIVE - TABLET
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .page-wrapper {
+
+        padding:
+            30px 15px 60px;
+    }
+
+
+    .form-container {
+
+        padding:
+            28px 22px;
+
+        border-radius: 16px;
+    }
+
+
+    .form-container h2 {
+
+        font-size: 25px;
+    }
+
+
+    .form-grid {
+
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+
+    .full-width {
+
+        grid-column: auto;
+    }
+
+
+    .genre-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .form-actions {
+
+        margin-top: 30px;
+
+        padding-top: 25px;
+    }
+
+
+    button {
+
+        width: 100%;
+
+        min-width: 0;
+    }
+}
+
+
+/* =========================================
+   RESPONSIVE - MOBILE
+   ========================================= */
+
+@media (max-width: 480px) {
+
+    .page-wrapper {
+
+        padding:
+            20px 10px 40px;
+    }
+
+
+    .form-container {
+
+        padding:
+            23px 16px;
+
+        border-radius: 14px;
+    }
+
+
+    .form-container h2 {
+
+        font-size: 23px;
+    }
+
+
+    .form-container p {
+
+        font-size: 13px;
+    }
+
+
+    .section-title {
+
+        font-size: 16px;
+    }
+
+
+    input,
+    select,
+    textarea {
+
+        padding:
+            12px 13px;
+    }
+
+
+    .genre-box {
+
+        padding:
+            12px 13px;
+    }
+
+
+    button {
+
+        padding:
+            13px 20px;
+
+        font-size: 14px;
+    }
 }
 </style>
 </head>
