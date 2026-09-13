@@ -5,12 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendations - ReadNext</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/table_styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #0d0e13;
+            --panel: #171a22;
+            --panel-high: #1f232e;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f1f2f6;
+            --text-dim: #9ea3b0;
+            --accent-1: #6d8dff;
+            --accent-2: #a855f7;
+            --accent-glow: rgba(109, 141, 255, 0.35);
+            --star: #facc15;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background: var(--bg) !important;
+        }
+
         .recommendations-section {
             margin-bottom: 20px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 12px;
+            padding: 16px 12px;
         }
 
         .section-header {
@@ -18,9 +40,9 @@
             margin: 0 0 8px 0;
             padding: 0 10px;
             font-weight: 700;
-            color: white;
+            color: var(--text);
             position: relative;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            text-shadow: none;
             animation: fadeInUp 0.6s ease;
         }
 
@@ -29,157 +51,151 @@
             display: block;
             width: 80px;
             height: 4px;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
             margin-top: 12px;
             border-radius: 2px;
             animation: scaleIn 0.6s ease 0.3s both;
         }
 
         @keyframes scaleIn {
-            from {
-                transform: scaleX(0);
-                transform-origin: left;
-            }
-            to {
-                transform: scaleX(1);
-                transform-origin: left;
-            }
+            from { transform: scaleX(0); transform-origin: left; }
+            to { transform: scaleX(1); transform-origin: left; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .scroll-wrapper {
             position: relative;
             padding: 0 40px;
-            margin-bottom: 20px;
+            margin-bottom: 4px;
         }
 
         .books-container {
             display: flex;
-            gap: 30px;
-            padding: 25px 5px;
+            gap: 20px;
+            padding: 16px 5px;
             overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
-            scrollbar-color: rgba(79, 172, 254, 0.6) rgba(255, 255, 255, 0.1);
+            scrollbar-color: var(--accent-1) rgba(255, 255, 255, 0.08);
         }
 
-        .books-container::-webkit-scrollbar {
-            height: 10px;
-        }
+        .books-container::-webkit-scrollbar { height: 8px; }
 
         .books-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 10px;
-            backdrop-filter: blur(10px);
         }
 
         .books-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--accent-1);
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.4);
         }
 
         .books-container::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #3d9ae6 0%, #00d9e6 100%);
+            background: #557bff;
         }
 
+        /* SQUARE BOOK CARD — matches view_books.html */
         .book-card {
-            background: white;
-            border-radius: 14px;
-            padding: 14px;
-            min-width: 150px;
-            width: 150px;
-            flex-shrink: 0;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            color: inherit;
             display: flex;
             flex-direction: column;
+            aspect-ratio: 1 / 1;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 0;
+            min-width: 170px;
+            width: 170px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            text-decoration: none;
+            color: inherit;
             position: relative;
             overflow: hidden;
-            animation: fadeInScale 0.5s ease both;
+            animation: fadeInScale 0.4s ease both;
         }
 
         @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.94); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .book-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .book-card:hover::before {
-            transform: scaleX(1);
-        }
+        .book-card::before { content: none; }
 
         .book-card:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+            border-color: rgba(109, 141, 255, 0.35);
         }
 
         .book-cover-container {
-            text-align: center;
-            margin-bottom: 18px;
             position: relative;
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
+            text-align: initial;
+            margin-bottom: 0;
         }
 
         .book-cover {
-            width: 110px;
-            height: 160px;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            transition: transform 0.3s ease;
+            display: block;
+            border-radius: 0;
+            box-shadow: none;
+            background: var(--panel-high);
+            transition: none;
         }
 
-        .book-card:hover .book-cover {
-            transform: scale(1.05) rotateY(5deg);
+        .book-card:hover .book-cover { transform: none; }
+
+        .book-cover-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(13,14,19,0.85) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .book-card:hover .book-cover-container::after { opacity: 1; }
+
+        .book-info {
+            flex: 0 0 auto;
+            padding: 8px 10px 9px;
         }
 
         .book-title {
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 12px;
-            line-height: 1.3;
-            margin: 8px 0 6px 0;
-            min-height: 32px;
-            display: -webkit-box;
-            /* -webkit-line-clamp: 2; */
-            -webkit-box-orient: vertical;
+            background: none;
+            -webkit-text-fill-color: var(--text);
+            color: var(--text);
+            font-size: 12.5px;
+            line-height: 1.25;
+            margin: 0 0 2px 0;
+            min-height: 0;
+            display: block;
             overflow: hidden;
             text-overflow: ellipsis;
-            transition: all 0.3s ease;
+            white-space: nowrap;
+            transition: none;
         }
 
-        .book-card:hover .book-title {
-            transform: translateX(3px);
-        }
+        .book-card:hover .book-title { transform: none; }
 
         .book-author {
-            color: #666;
+            color: var(--text-dim);
             font-size: 11px;
             font-weight: 500;
-            margin-bottom: 6px;
+            margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -190,208 +206,164 @@
 
         .book-author::before {
             content: '✍️';
-            font-size: 11px;
+            font-size: 10px;
             flex-shrink: 0;
         }
 
+        /* Extra info (rating / recommended tag / friend count) sits as an
+           overlay chip on the cover so the card stays a true square */
         .book-rating-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 2;
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: var(--star);
             font-size: 10px;
             font-weight: 700;
             padding: 3px 7px;
             border-radius: 20px;
-            margin-top: 4px;
             width: fit-content;
+            margin-top: 0;
+            white-space: nowrap;
+        }
+
+        .friend-count-badge {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            z-index: 2;
+            font-size: 10px;
+            font-weight: 600;
+            color: #ffffff;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            padding: 3px 7px;
+            border-radius: 8px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .scroll-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
             color: white;
             border: none;
-            width: 50px;
-            height: 50px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 28px;
+            font-size: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px var(--accent-glow);
             font-weight: 300;
             line-height: 1;
-            backdrop-filter: blur(10px);
         }
 
         .scroll-arrow:hover {
-            transform: translateY(-50%) scale(1.15);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.7);
-            background: linear-gradient(135deg, #5568d3 0%, #64408a 100%);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 8px 22px var(--accent-glow);
         }
 
-        .scroll-arrow:active {
-            transform: translateY(-50%) scale(1.05);
-        }
+        .scroll-arrow:active { transform: translateY(-50%) scale(1.02); }
 
-        .scroll-arrow.left {
-            left: 10px;
-        }
-
-        .scroll-arrow.right {
-            right: 10px;
-        }
+        .scroll-arrow.left { left: 0; }
+        .scroll-arrow.right { right: 0; }
 
         .scroll-arrow:disabled {
-            opacity: 0.3;
+            opacity: 0.25;
             cursor: not-allowed;
             transform: translateY(-50%);
         }
 
         .scroll-arrow:disabled:hover {
             transform: translateY(-50%);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 6px 18px var(--accent-glow);
         }
 
         .empty-state {
             text-align: center;
-            padding: 100px 40px;
-            color: white;
-            font-size: 18px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 90px 40px;
+            color: var(--text);
+            font-size: 17px;
+            background: var(--panel);
+            border-radius: 20px;
+            border: 1px dashed var(--border);
             margin: 20px;
-            animation: fadeInUp 0.8s ease;
+            animation: fadeInUp 0.7s ease;
         }
 
         .empty-state::before {
             content: "📚";
             display: block;
-            font-size: 80px;
-            margin-bottom: 20px;
-            opacity: 0.8;
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.85;
             animation: float 3s ease-in-out infinite;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-14px); }
         }
 
-        /* Stagger animation for horizontal cards */
-        .book-card:nth-child(1) { animation-delay: 0.1s; }
-        .book-card:nth-child(2) { animation-delay: 0.15s; }
-        .book-card:nth-child(3) { animation-delay: 0.2s; }
-        .book-card:nth-child(4) { animation-delay: 0.25s; }
-        .book-card:nth-child(5) { animation-delay: 0.3s; }
-        .book-card:nth-child(6) { animation-delay: 0.35s; }
-        .book-card:nth-child(n+7) { animation-delay: 0.4s; }
+        .book-card:nth-child(1) { animation-delay: 0.05s; }
+        .book-card:nth-child(2) { animation-delay: 0.08s; }
+        .book-card:nth-child(3) { animation-delay: 0.11s; }
+        .book-card:nth-child(4) { animation-delay: 0.14s; }
+        .book-card:nth-child(5) { animation-delay: 0.17s; }
+        .book-card:nth-child(6) { animation-delay: 0.2s; }
+        .book-card:nth-child(n+7) { animation-delay: 0.22s; }
 
         @media (max-width: 768px) {
-            .scroll-wrapper {
-                padding: 0 55px;
-            }
+            .scroll-wrapper { padding: 0 48px; }
 
-            .section-header {
-                font-size: 1.6rem;
-                padding: 0 15px;
-            }
+            .section-header { font-size: 1.4rem; padding: 0 12px; }
 
-            .book-card {
-                min-width: 180px;
-                width: 180px;
-                padding: 20px;
-            }
+            .book-card { min-width: 150px; width: 150px; }
 
-            .book-cover {
-                width: 130px;
-                height: 195px;
-            }
+            .book-title { font-size: 12px; }
+            .book-author { font-size: 10.5px; }
 
-            .book-title {
-                font-size: 15px;
-                min-height: 40px;
-            }
+            .scroll-arrow { width: 40px; height: 40px; font-size: 22px; }
 
-            .book-author {
-                font-size: 13px;
-            }
-
-            .scroll-arrow {
-                width: 44px;
-                height: 44px;
-                font-size: 24px;
-            }
-
-            .books-container {
-                gap: 20px;
-                padding: 20px 5px;
-            }
+            .books-container { gap: 14px; padding: 14px 5px; }
         }
 
         @media (max-width: 480px) {
-            .scroll-wrapper {
-                padding: 0 50px;
-            }
+            .scroll-wrapper { padding: 0 42px; }
 
-            .section-header {
-                font-size: 1.4rem;
-            }
+            .section-header { font-size: 1.2rem; }
 
-            .book-card {
-                min-width: 160px;
-                width: 160px;
-                padding: 15px;
-            }
+            .book-card { min-width: 130px; width: 130px; }
 
-            .book-cover {
-                width: 120px;
-                height: 180px;
-            }
+            .scroll-arrow { width: 36px; height: 36px; font-size: 20px; }
 
-            .book-title {
-                font-size: 14px;
-            }
+            .books-container { gap: 12px; }
 
-            .scroll-arrow {
-                width: 40px;
-                height: 40px;
-                font-size: 22px;
-            }
-
-            .books-container {
-                gap: 15px;
-            }
-
-            .empty-state {
-                padding: 60px 20px;
-                font-size: 16px;
-            }
-
-            .empty-state::before {
-                font-size: 60px;
-            }
+            .empty-state { padding: 56px 20px; font-size: 15px; }
+            .empty-state::before { font-size: 52px; }
         }
-        
     </style>
 </head>
 <body>
     {% include "nav_page.html" %}
 
-    <!-- <h1 class="page-header">Your Recommendations</h1> -->
-
     <div class="container">
-
 
         {% if continue_books %}
             <div class="recommendations-section">
@@ -402,12 +374,14 @@
                         {% for book in continue_books %}
                         <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
                             <div class="book-cover-container">
-                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
-                                     alt="{{ book.title }}" 
+                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}"
+                                     alt="{{ book.title }}"
                                      class="book-cover">
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -430,10 +404,12 @@
                                 <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}"
                                      alt="{{ book.title }}"
                                      class="book-cover">
+                                <div class="book-rating-badge">⭐ {{ book.avg_rating }} · {{ book.review_count }}</div>
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
-                            <div class="book-rating-badge">⭐ {{ book.avg_rating }} &nbsp;·&nbsp; {{ book.review_count }} reviews</div>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -456,8 +432,10 @@
                                      alt="{{ book.title }}" 
                                      class="book-cover">
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -479,8 +457,10 @@
                                      alt="{{ book.title }}" 
                                      class="book-cover">
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -503,10 +483,12 @@
                                 <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
                                      alt="{{ book.title }}" 
                                      class="book-cover">
+                                <div class="friend-count-badge">{{ book.friend_count }} friend(s) like this</div>
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
-                            <small>{{ book.friend_count }} friend(s) like this</small>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -524,11 +506,13 @@
                         {% for book in author_books %}
                         <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
                             <div class="book-cover-container">
-                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}" 
+                                <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}"
                                     alt="{{ book.title }}" class="book-cover">
                             </div>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            <div class="book-info">
+                                <div class="book-title">{{ book.title }}</div>
+                                <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
@@ -537,11 +521,11 @@
             </div>
         {% endif %}
 
-    
+
     {% if collab_books %}
     <div class="recommendations-section">
         <h2 class="section-header">👥 Users Like You Also Read</h2>
-         
+
         <div class="scroll-wrapper">
             <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
             <div class="books-container" onscroll="updateArrows(this)">
@@ -550,10 +534,12 @@
                     <div class="book-cover-container">
                         <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}"
                             alt="{{ book.title }}" class="book-cover">
+                        <div class="book-rating-badge">🔥 Recommended</div>
                     </div>
-                    <div class="book-title">{{ book.title }}</div>
-                    <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
-                    <div class="book-rating-badge">🔥 Recommended</div>
+                    <div class="book-info">
+                        <div class="book-title">{{ book.title }}</div>
+                        <div class="book-author">{{ book.author or 'Unknown Author' }}</div>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
