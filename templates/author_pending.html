@@ -5,27 +5,78 @@
     <title>Author Approval Pending - ReadNext</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login_style.css') }}">
     <style>
+    /* ================================
+       PENDING / STATUS BOX
+    ================================= */
+
+    .pending-box {
+        text-align: center;
+        padding: 40px;
+        background: var(--surface-container, #1d2025);
+        border: 1px solid var(--outline-variant, #414751);
+        border-radius: 14px;
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.30),
+            0 2px 8px rgba(0, 0, 0, 0.20);
+    }
+
+    .pending-box h2 {
+        color: var(--primary, #a6c8ff);
+        margin-bottom: 15px;
+        font-size: 24px;
+        font-weight: 650;
+    }
+
+    .pending-box p {
+        color: var(--on-surface-variant, #c1c6d3);
+        font-size: 15px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* ================================
+       INFORMATION MESSAGE
+    ================================= */
+
+    .info {
+        background: rgba(20, 102, 184, 0.10);
+        border-left: 4px solid var(--primary-container, #1466b8);
+        color: var(--on-surface-variant, #c1c6d3);
+        padding: 14px 16px;
+        margin-top: 20px;
+        border-radius: 8px;
+        text-align: left;
+        line-height: 1.6;
+        border-top: 1px solid rgba(20, 102, 184, 0.15);
+        border-right: 1px solid rgba(20, 102, 184, 0.15);
+        border-bottom: 1px solid rgba(20, 102, 184, 0.15);
+    }
+
+    /* ================================
+       RESPONSIVE
+    ================================= */
+
+    @media (max-width: 600px) {
+
         .pending-box {
-            text-align: center;
-            padding: 40px;
+            padding: 30px 22px;
+            border-radius: 12px;
         }
+
         .pending-box h2 {
-            color: #667eea;
-            margin-bottom: 15px;
+            font-size: 21px;
         }
+
         .pending-box p {
-            color: #555;
-            font-size: 15px;
-            line-height: 1.6;
+            font-size: 14px;
         }
+
         .info {
-            background: rgba(102,126,234,0.1);
-            border-left: 4px solid #667eea;
-            padding: 12px;
-            margin-top: 20px;
-            border-radius: 6px;
+            padding: 12px 14px;
+            font-size: 13px;
         }
-    </style>
+    }
+</style>
 </head>
 <body>
     <div class="login-container">
