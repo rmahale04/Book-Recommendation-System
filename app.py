@@ -22,6 +22,8 @@ from reportlab.lib.units import inch
 from reportlab.platypus import HRFlowable
 from collections import defaultdict
 import math
+from datetime import datetime, date, timedelta
+
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -35,7 +37,7 @@ db_config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "Keyuri@123",
+    "password": "Netra@432",
     "database": "books_db1"
 }
 
@@ -923,33 +925,9 @@ def edit_series(series_id):
     conn.close()
     return render_template("edit_series.html", series=series)
 
-# #delete series
-# @app.route("/admin/series/delete/<int:series_id>")
-# def delete_series(series_id):
-#     if session.get("role", "").lower() != "admin":
-#         flash("Access denied.", "danger")
-#         return redirect(url_for("admin_dashboard"))
-
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-
-#     try:
-#         cursor.execute("DELETE FROM series WHERE series_id = %s", (series_id,))
-#         conn.commit()
-#         flash("Series deleted successfully!", "success")
-#     except:
-#         conn.rollback()
-#         flash("Cannot delete series. It may be linked to books.", "danger")
-
-#     cursor.close()
-#     conn.close()
-#     return redirect(url_for("admin_dashboard"))
-
-# Delete Series
-
-@app.route("/admin/series/delete/<int:series_id>", methods=["POST"])
+#delete series
+@app.route("/admin/series/delete/<int:series_id>")
 def delete_series(series_id):
-
     if session.get("role", "").lower() != "admin":
         flash("Access denied.", "danger")
         return redirect(url_for("admin_dashboard"))
@@ -958,37 +936,29 @@ def delete_series(series_id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute(
-            "DELETE FROM series WHERE series_id = %s",
-            (series_id,)
-        )
-
+        cursor.execute("DELETE FROM series WHERE series_id = %s", (series_id,))
         conn.commit()
-
         flash("Series deleted successfully!", "success")
-
-    except Exception as e:
+    except:
         conn.rollback()
+        flash("Cannot delete series. It may be linked to books.", "danger")
 
-        print("Delete Series Error:", e)
-
-        flash(
-            "Cannot delete series. It may be linked to books.",
-            "danger"
-        )
-
-    finally:
-        cursor.close()
-        conn.close()
-
+    cursor.close()
+    conn.close()
     return redirect(url_for("admin_dashboard"))
+
+
+
+
 # -------------------------
 # Home
 # -------------------------
 @app.route("/home")
 def home():
     if "user_id" in session:
-        return render_template("home.html", user=session.get("username"))
+        return render_template("home.html", 
+                                active_page='home',
+                                user=session.get("username"))
     else:
         flash("Please log in first.")
         return redirect(url_for("login"))
@@ -1214,6 +1184,7 @@ def view_books():
 
     return render_template(
         "view_books.html",
+        active_page='books',
         books=books,
         search_query=search_query,
         suggestion=suggestion,
@@ -1973,13 +1944,14 @@ def profile_by_username(username):
     conn.close()
 
     return render_template("profile.html",
+                           active_page='profile',
                            user=user,
                            followers=followers,
                            following=following,
                            followers_count=followers_count,
                            following_count=following_count,
                            friends=friends,
-                           reviews=reviews,   # ← Now passing full reviews
+                           reviews=reviews,  
                            shelves=shelves)
     
 @app.route("/remove_from_shelf/<int:shelf_id>/<int:book_id>", methods=["POST"])
@@ -2988,6 +2960,7 @@ def find_users():
     conn.close()
 
     return render_template("find_users.html",
+                           active_page='find_users',
                            users=users,
                            pending_requests=pending_requests,
                            search_query=search_query,
@@ -4944,6 +4917,258 @@ def mark_as_read(book_id):
     cursor.close()
     conn.close()
     return redirect(url_for("profile_root"))
+
+
+# =========================================================
+#  READING STATISTICS PAGE
+# =========================================================
+
+@app.route("/stats")
+def my_stats():
+    """Redirect /stats to the logged-in user's stats page."""
+    if "user_id" not in session:
+        flash("Please log in to view your statistics.", "error")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT username FROM users WHERE user_id = %s", (session["user_id"],))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        flash("User not found.", "error")
+        return redirect(url_for("home"))
+    return redirect(url_for("user_stats", username=row["username"]))
+
+
+@app.route("/stats/<username>")
+def user_stats(username):
+    if "user_id" not in session:
+        flash("Please log in to view statistics.", "error")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # ---------- the user being viewed ----------
+    cursor.execute("""
+        SELECT user_id, username, first_name, last_name,
+               profile_image_url, join_date
+        FROM users WHERE username = %s
+    """, (username,))
+    user = cursor.fetchone()
+
+    if not user:
+        cursor.close()
+        conn.close()
+        flash("User not found.", "error")
+        return redirect(url_for("home"))
+
+    uid = user["user_id"]
+    is_own = (uid == session["user_id"])
+
+    # ---------- shelf counts ----------
+    cursor.execute("""
+        SELECT s.name AS shelf_name, COUNT(DISTINCT usb.book_id) AS cnt
+        FROM shelves s
+        LEFT JOIN user_shelf_books usb ON usb.shelf_id = s.shelf_id
+        WHERE s.user_id = %s
+        GROUP BY s.shelf_id, s.name
+    """, (uid,))
+    shelf_counts = {r["shelf_name"]: r["cnt"] for r in cursor.fetchall()}
+
+    read_count    = shelf_counts.get("Read", 0)
+    reading_count = shelf_counts.get("Currently Reading", 0)
+    wtr_count     = shelf_counts.get("Want To Read", 0)
+
+    # total distinct books across every shelf
+    cursor.execute("""
+        SELECT COUNT(DISTINCT usb.book_id) AS cnt
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        WHERE s.user_id = %s
+    """, (uid,))
+    total_books = cursor.fetchone()["cnt"] or 0
+
+    # ---------- pages read ----------
+    cursor.execute("""
+        SELECT COALESCE(SUM(COALESCE(rp.total_pages, b.page_count, 0)), 0) AS pages
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        JOIN books b   ON usb.book_id = b.book_id
+        LEFT JOIN reading_progress rp
+               ON rp.book_id = b.book_id AND rp.user_id = %s
+        WHERE s.user_id = %s AND s.name = 'Read'
+    """, (uid, uid))
+    pages_read = int(cursor.fetchone()["pages"] or 0)
+
+    # ---------- reviews & ratings ----------
+    cursor.execute("""
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN review_text IS NOT NULL AND review_text <> '' THEN 1 ELSE 0 END) AS written,
+               AVG(ratings) AS avg_rating
+        FROM reviews
+        WHERE user_id = %s AND ratings IS NOT NULL
+    """, (uid,))
+    rv = cursor.fetchone()
+    total_rated    = rv["total"] or 0
+    reviews_written = int(rv["written"] or 0)
+    avg_rating     = round(float(rv["avg_rating"]), 2) if rv["avg_rating"] else 0
+
+    # rating distribution 1..5
+    cursor.execute("""
+        SELECT ratings, COUNT(*) AS cnt
+        FROM reviews
+        WHERE user_id = %s AND ratings IS NOT NULL
+        GROUP BY ratings
+    """, (uid,))
+    raw_dist = {int(r["ratings"]): r["cnt"] for r in cursor.fetchall()}
+    max_dist = max(raw_dist.values()) if raw_dist else 0
+    rating_dist = []
+    for star in range(5, 0, -1):
+        cnt = raw_dist.get(star, 0)
+        rating_dist.append({
+            "star": star,
+            "count": cnt,
+            "pct": round((cnt / max_dist) * 100) if max_dist else 0,
+            "share": round((cnt / total_rated) * 100) if total_rated else 0,
+        })
+
+    # ---------- genre breakdown (books actually on shelves) ----------
+    cursor.execute("""
+        SELECT g.genre_name, COUNT(DISTINCT b.book_id) AS cnt
+        FROM user_shelf_books usb
+        JOIN shelves s      ON usb.shelf_id = s.shelf_id
+        JOIN books b        ON usb.book_id = b.book_id
+        JOIN book_genres bg ON bg.book_id = b.book_id
+        JOIN genres g       ON g.genre_id = bg.genre_id
+        WHERE s.user_id = %s
+        GROUP BY g.genre_id, g.genre_name
+        ORDER BY cnt DESC
+        LIMIT 8
+    """, (uid,))
+    genre_rows = cursor.fetchall()
+    genre_total = sum(r["cnt"] for r in genre_rows) or 1
+    max_genre   = max((r["cnt"] for r in genre_rows), default=0)
+    genres = [{
+        "name": r["genre_name"],
+        "count": r["cnt"],
+        "pct": round((r["cnt"] / max_genre) * 100) if max_genre else 0,
+        "share": round((r["cnt"] / genre_total) * 100),
+    } for r in genre_rows]
+
+    # ---------- top authors ----------
+    cursor.execute("""
+        SELECT a.author_id, a.name, COUNT(DISTINCT b.book_id) AS cnt
+        FROM user_shelf_books usb
+        JOIN shelves s   ON usb.shelf_id = s.shelf_id
+        JOIN books b     ON usb.book_id = b.book_id
+        JOIN authors a   ON b.author_id = a.author_id
+        WHERE s.user_id = %s
+        GROUP BY a.author_id, a.name
+        ORDER BY cnt DESC, a.name ASC
+        LIMIT 5
+    """, (uid,))
+    top_authors = cursor.fetchall()
+    max_author = max((r["cnt"] for r in top_authors), default=0)
+    for a in top_authors:
+        a["pct"] = round((a["cnt"] / max_author) * 100) if max_author else 0
+
+    # ---------- currently reading, with progress ----------
+    cursor.execute("""
+        SELECT b.book_id, b.title, b.cover_image_url,
+               a.name AS author_name,
+               COALESCE(rp.current_page, 0) AS current_page,
+               COALESCE(rp.total_pages, b.page_count, 0) AS total_pages
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        JOIN books b   ON usb.book_id = b.book_id
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN reading_progress rp
+               ON rp.book_id = b.book_id AND rp.user_id = %s
+        WHERE s.user_id = %s AND s.name = 'Currently Reading'
+        ORDER BY usb.added_date DESC
+        LIMIT 6
+    """, (uid, uid))
+    current_books = cursor.fetchall()
+    for b in current_books:
+        tp = b["total_pages"] or 0
+        b["pct"] = min(100, round((b["current_page"] / tp) * 100)) if tp else 0
+
+    # ---------- records ----------
+    cursor.execute("""
+        SELECT b.book_id, b.title, b.cover_image_url, b.page_count, b.published_year
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        JOIN books b   ON usb.book_id = b.book_id
+        WHERE s.user_id = %s AND s.name = 'Read' AND b.page_count IS NOT NULL AND b.page_count > 0
+        ORDER BY b.page_count DESC LIMIT 1
+    """, (uid,))
+    longest_book = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT b.book_id, b.title, b.cover_image_url, b.published_year
+        FROM user_shelf_books usb
+        JOIN shelves s ON usb.shelf_id = s.shelf_id
+        JOIN books b   ON usb.book_id = b.book_id
+        WHERE s.user_id = %s AND s.name = 'Read' AND b.published_year IS NOT NULL
+        ORDER BY b.published_year ASC LIMIT 1
+    """, (uid,))
+    oldest_book = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT b.book_id, b.title, b.cover_image_url, r.ratings
+        FROM reviews r
+        JOIN books b ON r.book_id = b.book_id
+        WHERE r.user_id = %s
+        ORDER BY r.ratings DESC, r.review_date DESC LIMIT 1
+    """, (uid,))
+    top_rated_book = cursor.fetchone()
+
+    # ---------- friends (accepted requests) ----------
+    cursor.execute("""
+        SELECT COUNT(DISTINCT u.user_id) AS cnt
+        FROM friend_requests fr
+        JOIN users u ON (fr.requester_id = u.user_id AND fr.requestee_id = %s)
+                     OR (fr.requestee_id = u.user_id AND fr.requester_id = %s)
+        WHERE fr.status = 'accepted'
+    """, (uid, uid))
+    friends_count = cursor.fetchone()["cnt"]
+
+    # ---------- days on ReadNext ----------
+    days_member = 0
+    if user.get("join_date"):
+        jd = user["join_date"]
+        jd = jd.date() if isinstance(jd, datetime) else jd
+        days_member = max(0, (date.today() - jd).days)
+
+    # derived
+    completion_rate = round((read_count / total_books) * 100) if total_books else 0
+    avg_pages = round(pages_read / read_count) if read_count else 0
+
+    cursor.close()
+    conn.close()
+
+    return render_template("stats.html",
+        user=user, is_own=is_own,
+        active_page="profile",
+        total_books=total_books, read_count=read_count,
+        reading_count=reading_count, wtr_count=wtr_count,
+        pages_read=pages_read, avg_pages=avg_pages,
+        total_rated=total_rated, reviews_written=reviews_written,
+        avg_rating=avg_rating, rating_dist=rating_dist,
+        genres=genres, top_authors=top_authors,
+        current_books=current_books,
+        longest_book=longest_book, oldest_book=oldest_book,
+        top_rated_book=top_rated_book,
+        friends_count=friends_count,
+        days_member=days_member, completion_rate=completion_rate,
+    )
+
+
+
 
 # -------------------------
 # Run app
