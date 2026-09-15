@@ -1,235 +1,236 @@
-<style>
-    :root {
-        --nav-surface: #0d0e13;
-        --nav-panel: #15171f;
-        --nav-panel-high: #1e212b;
-        --nav-text-dim: #9ea3b0;
-        --nav-border: rgba(255, 255, 255, 0.08);
-        --nav-accent-1: #6d8dff;
-        --nav-accent-2: #a855f7;
-        --nav-accent-glow: rgba(109, 141, 255, 0.35);
-    }
+    <style>
+        :root {
+            --nav-surface: #0d0e13;
+            --nav-panel: #15171f;
+            --nav-panel-high: #1e212b;
+            --nav-text-dim: #9ea3b0;
+            --nav-border: rgba(255, 255, 255, 0.08);
+            --nav-accent-1: #6d8dff;
+            --nav-accent-2: #a855f7;
+            --nav-accent-glow: rgba(109, 141, 255, 0.35);
+        }
 
-    .header {
-        background: linear-gradient(180deg, #14161d 0%, #0f1116 100%);
-        padding: 14px 0;
-        border-bottom: 1px solid var(--nav-border);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
-        position: sticky;
-        top: 0;
-        z-index: 999;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
+        .header {
+            background: linear-gradient(180deg, #14161d 0%, #0f1116 100%);
+            padding: 14px 0;
+            border-bottom: 1px solid var(--nav-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
 
-    .header-content {
-        max-width: 1280px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 24px;
-        gap: 24px;
-    }
-
-    .logo-container {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .logo {
-        height: 30px;
-        width: auto;
-        object-fit: contain;
-        display: block;
-        transform: scale(2.5);
-        transform-origin: left center;
-        background: transparent;
-        filter: brightness(0) invert(1);
-    }
-
-    .nav-search-form {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex: 1;
-        max-width: 380px;
-        margin: 0;
-        padding: 0;
-    }
-
-    .search-box-wrapper {
-        position: relative;
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    .nav-search-input {
-        width: 100%;
-        padding: 10px 40px 10px 16px;
-        border-radius: 999px;
-        border: 1px solid var(--nav-border);
-        background: var(--nav-panel-high);
-        outline: none;
-        font-size: 14px;
-        font-family: inherit;
-        color: #f1f2f6;
-        transition: all 0.25s ease;
-    }
-
-    .nav-search-input::placeholder {
-        color: var(--nav-text-dim);
-    }
-
-    .nav-search-input:focus {
-        border-color: var(--nav-accent-1);
-        background: #22242f;
-        box-shadow: 0 0 0 4px var(--nav-accent-glow);
-    }
-
-    .mic-icon {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        font-size: 14px;
-        color: var(--nav-text-dim);
-        transition: color 0.2s ease;
-    }
-
-    .mic-icon:hover { color: var(--nav-accent-1); }
-
-    .search-submit-btn {
-        padding: 10px 20px;
-        background: linear-gradient(135deg, var(--nav-accent-1) 0%, var(--nav-accent-2) 100%);
-        color: white;
-        border: none;
-        border-radius: 999px;
-        font-size: 14px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        white-space: nowrap;
-        flex-shrink: 0;
-        box-shadow: 0 4px 16px var(--nav-accent-glow);
-    }
-
-    .search-submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 22px var(--nav-accent-glow);
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 4px;
-        flex-shrink: 0;
-        list-style: none;
-    }
-
-    .nav-links a {
-        color: var(--nav-text-dim);
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 600;
-        padding: 9px 16px;
-        border-radius: 999px;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .nav-links a:hover {
-        background: var(--nav-panel-high);
-        color: #f1f2f6;
-    }
-
-    .nav-links a.active {
-        background: linear-gradient(135deg, var(--nav-accent-1) 0%, var(--nav-accent-2) 100%);
-        color: white !important;
-        box-shadow: 0 4px 14px var(--nav-accent-glow);
-    }
-
-    .nav-links a.active:hover {
-        transform: translateY(-1px);
-    }
-
-    @media (max-width: 968px) {
         .header-content {
-            flex-direction: column;
-            gap: 14px;
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            gap: 24px;
         }
 
-        .nav-search-form {
-            max-width: 100%;
-            width: 100%;
-        }
-
-        .nav-links {
-            flex-wrap: wrap;
-            justify-content: center;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
         }
 
         .logo {
-            height: 26px;
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            transform: scale(2.5);
+            transform-origin: left center;
+            background: transparent;
+            filter: brightness(0) invert(1);
         }
-    }
-</style>
 
-<header class="header">
-    <div class="header-content">
-        <div class="logo-container">
-            <a href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="logo">
-            </a>
-        </div>
+        .nav-search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            max-width: 380px;
+            margin: 0;
+            padding: 0;
+        }
 
-        <form method="GET" action="{{ url_for('view_books') }}" class="nav-search-form">
-            <div class="search-box-wrapper">
-                <input type="text" id="searchInput" name="q"
-                    placeholder="Search books, authors..."
-                    value="{{ request.args.get('q','') }}"
-                    class="nav-search-input">
-                <span class="mic-icon" onclick="startVoiceSearch()">🎙️</span>
+        .search-box-wrapper {
+            position: relative;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .nav-search-input {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--nav-border);
+            background: var(--nav-panel-high);
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+            color: #f1f2f6;
+            transition: all 0.25s ease;
+        }
+
+        .nav-search-input::placeholder {
+            color: var(--nav-text-dim);
+        }
+
+        .nav-search-input:focus {
+            border-color: var(--nav-accent-1);
+            background: #22242f;
+            box-shadow: 0 0 0 4px var(--nav-accent-glow);
+        }
+
+        .mic-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--nav-text-dim);
+            transition: color 0.2s ease;
+        }
+
+        .mic-icon:hover { color: var(--nav-accent-1); }
+
+        .search-submit-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--nav-accent-1) 0%, var(--nav-accent-2) 100%);
+            color: white;
+            border: none;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px var(--nav-accent-glow);
+        }
+
+        .search-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px var(--nav-accent-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--nav-text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 9px 16px;
+            border-radius: 999px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            background: var(--nav-panel-high);
+            color: #f1f2f6;
+        }
+
+        .nav-links a.active {
+            background: linear-gradient(135deg, var(--nav-accent-1) 0%, var(--nav-accent-2) 100%);
+            color: white !important;
+            box-shadow: 0 4px 14px var(--nav-accent-glow);
+        }
+
+        .nav-links a.active:hover {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 968px) {
+            .header-content {
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .nav-search-form {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .logo {
+                height: 26px;
+            }
+        }
+    </style>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <a href="{{ url_for('home') }}">
+                    <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="logo">
+                </a>
             </div>
-            <button type="submit" class="search-submit-btn">Search</button>
-        </form>
 
-        <nav class="nav-links">
-            <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home</a>
-            <a href="{{ url_for('view_books') }}" class="{% if active_page=='books' %}active{% endif %}">Books</a>
-            <a href="{{ url_for('recommendations') }}" class="{% if active_page=='recommendations' %}active{% endif %}">Recommendations</a>
-            <a href="{{ url_for('find_users') }}" class="{% if active_page=='find_users' %}active{% endif %}">Discover Friends</a>
-            <a href="{{ url_for('profile_root') }}" class="{% if active_page=='profile' %}active{% endif %}">Profile</a>
-        </nav>
-    </div>
-</header>
+            <form method="GET" action="{{ url_for('view_books') }}" class="nav-search-form">
+                <div class="search-box-wrapper">
+                    <input type="text" id="searchInput" name="q"
+                        placeholder="Search books, authors..."
+                        value="{{ request.args.get('q','') }}"
+                        class="nav-search-input">
+                    <span class="mic-icon" onclick="startVoiceSearch()">🎙️</span>
+                </div>
+                <button type="submit" class="search-submit-btn">Search</button>
+            </form>
 
-<script>
-function startVoiceSearch() {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Voice search not supported in your browser. Use Chrome.");
-        return;
+            <nav class="nav-links">
+                <a href="{{ url_for('home') }}" class="{% if active_page=='home' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('view_books') }}" class="{% if active_page=='books' %}active{% endif %}">Books</a>
+                <a href="{{ url_for('recommendations') }}" class="{% if active_page=='recommendations' %}active{% endif %}">Recommendations</a>
+                <a href="{{ url_for('find_users') }}" class="{% if active_page=='find_users' %}active{% endif %}">Discover Friends</a>
+                <a href="{{ url_for('my_stats') }}" class="{% if active_page=='stats' %}active{% endif %}">Stats</a>
+                <a href="{{ url_for('profile_root') }}" class="{% if active_page=='profile' %}active{% endif %}">Profile</a>
+            </nav>
+        </div>
+    </header>
+
+    <script>
+    function startVoiceSearch() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Voice search not supported in your browser. Use Chrome.");
+            return;
+        }
+
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = "en-IN";
+        recognition.interimResults = false;
+
+        recognition.start();
+
+        recognition.onstart = function() {
+            console.log("Voice recognition started...");
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById("searchInput").value = transcript;
+            document.forms[0].submit();
+        };
+
+        recognition.onerror = function(event) {
+            alert("Error occurred: " + event.error);
+        };
     }
-
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = "en-IN";
-    recognition.interimResults = false;
-
-    recognition.start();
-
-    recognition.onstart = function() {
-        console.log("Voice recognition started...");
-    };
-
-    recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("searchInput").value = transcript;
-        document.forms[0].submit();
-    };
-
-    recognition.onerror = function(event) {
-        alert("Error occurred: " + event.error);
-    };
-}
-</script>
+    </script>
