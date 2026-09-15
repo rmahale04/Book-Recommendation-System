@@ -5170,6 +5170,98 @@ def user_stats(username):
 
 
 
+
+# =========================================================
+#  BOOK-VS-BOOK COMPARISON
+# =========================================================
+
+@app.route("/compare_books")
+def compare_books():
+    book1_id = request.args.get("book1", type=int)
+    book2_id = request.args.get("book2", type=int)
+
+    if not book1_id or not book2_id:
+        flash("Pick two books to compare.", "error")
+        return redirect(url_for("view_books"))
+
+    if book1_id == book2_id:
+        flash("Pick two different books to compare.", "error")
+        return redirect(url_for("view_books"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    def get_book(bid):
+        cursor.execute("""
+            SELECT b.book_id, b.title, a.name AS author, s.name AS series,
+                   b.published_year, b.cover_image_url, b.language,
+                   b.description, b.page_count,
+                   GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            LEFT JOIN series s  ON b.series_id = s.series_id
+            LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+            LEFT JOIN genres g  ON bg.genre_id = g.genre_id
+            WHERE b.book_id = %s
+            GROUP BY b.book_id
+        """, (bid,))
+        book = cursor.fetchone()
+        if not book:
+            return None
+
+        cursor.execute("""
+            SELECT AVG(ratings) AS avg_rating, COUNT(*) AS total_reviews
+            FROM reviews WHERE book_id = %s AND ratings IS NOT NULL
+        """, (bid,))
+        r = cursor.fetchone()
+        book["avg_rating"] = round(r["avg_rating"], 1) if r["avg_rating"] else 0
+        book["total_reviews"] = r["total_reviews"] or 0
+
+        # how many readers have this book on any shelf, as a simple popularity signal
+        cursor.execute("""
+            SELECT COUNT(DISTINCT usb.shelf_id) AS cnt
+            FROM user_shelf_books usb
+            WHERE usb.book_id = %s
+        """, (bid,))
+        book["shelved_count"] = cursor.fetchone()["cnt"] or 0
+
+        book["genre_list"] = [g.strip() for g in book["genres"].split(",")] if book["genres"] else []
+        return book
+
+    book1 = get_book(book1_id)
+    book2 = get_book(book2_id)
+
+    if not book1 or not book2:
+        cursor.close()
+        conn.close()
+        flash("One of the selected books could not be found.", "error")
+        return redirect(url_for("view_books"))
+
+    # simple head-to-head flags for the template to highlight the "winner" per row
+    winners = {
+        "rating": 1 if book1["avg_rating"] > book2["avg_rating"]
+                  else (2 if book2["avg_rating"] > book1["avg_rating"] else 0),
+        "pages": 1 if (book1["page_count"] or 0) > (book2["page_count"] or 0)
+                 else (2 if (book2["page_count"] or 0) > (book1["page_count"] or 0) else 0),
+        "reviews": 1 if book1["total_reviews"] > book2["total_reviews"]
+                   else (2 if book2["total_reviews"] > book1["total_reviews"] else 0),
+        "year": 1 if (book1["published_year"] or 0) > (book2["published_year"] or 0)
+                else (2 if (book2["published_year"] or 0) > (book1["published_year"] or 0) else 0),
+    }
+
+    shared_genres = sorted(set(book1["genre_list"]) & set(book2["genre_list"]))
+
+    cursor.close()
+    conn.close()
+
+    return render_template("compare_books.html",
+        book1=book1, book2=book2,
+        winners=winners, shared_genres=shared_genres,
+    )
+
+
+
+
 # -------------------------
 # Run app
 # -------------------------
