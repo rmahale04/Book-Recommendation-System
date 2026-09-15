@@ -5153,7 +5153,7 @@ def user_stats(username):
 
     return render_template("stats.html",
         user=user, is_own=is_own,
-        active_page="profile",
+        active_page="stats",
         total_books=total_books, read_count=read_count,
         reading_count=reading_count, wtr_count=wtr_count,
         pages_read=pages_read, avg_pages=avg_pages,
