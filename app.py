@@ -15,6 +15,8 @@ import os
 from difflib import SequenceMatcher
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine_similarity
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -2670,6 +2672,152 @@ def get_collaborative_recommendations(current_user_id, cursor, limit=15):
 
     return cursor.fetchall()
 
+
+def get_content_recommendations(cursor, seed_book_ids, limit=15):
+    if not seed_book_ids:
+        return []
+
+    cursor.execute("""
+        SELECT
+            b.book_id,
+            b.title,
+            b.description,
+            b.cover_image_url,
+            a.name AS author,
+            GROUP_CONCAT(DISTINCT g.genre_name
+                         SEPARATOR ' ') AS genres
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN book_genres bg ON b.book_id = bg.book_id
+        LEFT JOIN genres g ON bg.genre_id = g.genre_id
+        GROUP BY b.book_id, b.title, b.description,
+                 b.cover_image_url, a.name
+    """)
+
+    books = cursor.fetchall()
+
+    if len(books) < 2:
+        return []
+
+    # Combine information that describes each book.
+    texts = []
+    for book in books:
+        text = " ".join([
+            book.get("title") or "",
+            book.get("author") or "",
+            book.get("genres") or "",
+            book.get("description") or ""
+        ])
+        texts.append(text)
+
+    # Convert book text into numerical TF-IDF vectors.
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        max_features=5000
+    )
+    tfidf_matrix = vectorizer.fit_transform(texts)
+
+    # Compare every book with every other book.
+    similarity_matrix = sklearn_cosine_similarity(tfidf_matrix)
+
+    book_index = {
+        book["book_id"]: i
+        for i, book in enumerate(books)
+    }
+
+    # Combine similarity scores from books the user likes.
+    scores = {}
+
+    for seed_id in seed_book_ids:
+        if seed_id not in book_index:
+            continue
+
+        seed_index = book_index[seed_id]
+
+        for i, book in enumerate(books):
+            if book["book_id"] in seed_book_ids:
+                continue
+
+            score = float(similarity_matrix[seed_index, i])
+            book_id = book["book_id"]
+
+            scores[book_id] = max(
+                scores.get(book_id, 0),
+                score
+            )
+
+    ranked_ids = sorted(
+        scores,
+        key=lambda book_id: scores[book_id],
+        reverse=True
+    )[:limit]
+
+    book_by_id = {
+        book["book_id"]: book for book in books
+    }
+
+    return [
+        book_by_id[book_id]
+        for book_id in ranked_ids
+        if scores[book_id] > 0
+    ]
+
+
+
+def get_hybrid_recommendations(current_user_id, cursor, limit=15):
+    user_scores = get_user_book_scores(cursor)
+    current_scores = user_scores.get(current_user_id, {})
+
+    # Use the user's strongest interactions as content seeds.
+    seed_ids = [
+        book_id
+        for book_id, score in sorted(
+            current_scores.items(),
+            key=lambda item: item[1],
+            reverse=True
+        )[:5]
+    ]
+
+    content_books = get_content_recommendations(
+        cursor, seed_ids, limit=30
+    )
+
+    collaborative_books = get_collaborative_recommendations(
+        current_user_id, cursor, limit=30
+    )
+
+    # Don't recommend books the user has already interacted with.
+    seen_ids = set(current_scores.keys())
+
+    combined_scores = {}
+    book_lookup = {}
+
+    # RRF combines ranking positions, not raw similarity scores.
+    for ranked_list in (content_books, collaborative_books):
+        for rank, book in enumerate(ranked_list, start=1):
+            book_id = book["book_id"]
+
+            if book_id in seen_ids:
+                continue
+
+            combined_scores[book_id] = (
+                combined_scores.get(book_id, 0)
+                + 1 / (60 + rank)
+            )
+            book_lookup[book_id] = book
+
+    ranked_ids = sorted(
+        combined_scores,
+        key=lambda book_id: combined_scores[book_id],
+        reverse=True
+    )
+
+    return [
+        book_lookup[book_id]
+        for book_id in ranked_ids[:limit]
+    ]
+
+
 @app.route("/recommendations")
 def recommendations():
     if "user_id" not in session:
@@ -2838,23 +2986,12 @@ def recommendations():
     """)
     top_rated_books = cursor.fetchall()
 
-    # --- 6 similar users ---
-    collab_books = [] 
-    collab_books = get_collaborative_recommendations(session["user_id"], cursor)
-    # collab_books = [{"book_id": 1, "title": "HELLO TEST", "author": "Test Author","image_url": "default.jpg"}]
-    # print("FORCED DATA WORKING")
-    print("COLLAB BOOKS:", collab_books)
-    print("COUNT:", len(collab_books))
-
-    if not collab_books:
-        # collab_books = [{"title": "Test Book"}]
-        print("⚠️ No collaborative recommendations found")
-
-    # # cold start
-    # is_collab = True
-    # if not collab_books:
-    #     collab_books = top_rated_books[:10]
-    #     is_collab = False 
+    # --- Hybrid recommendations: content-based + collaborative filtering ---
+    hybrid_books = get_hybrid_recommendations(
+        session["user_id"], cursor, limit=15
+    )
+    print("HYBRID BOOKS:", hybrid_books)
+    print("HYBRID COUNT:", len(hybrid_books))
 
     cursor.close()
     conn.close()
@@ -2866,7 +3003,7 @@ def recommendations():
         continue_books=continue_books,
         friends_books=friends_books,
         author_books=author_books,
-        collab_books=collab_books,
+        hybrid_books=hybrid_books,
         top_rated_books=top_rated_books,
         active_page="recommendations"
     )
