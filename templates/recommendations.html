@@ -522,19 +522,19 @@
         {% endif %}
 
 
-    {% if collab_books %}
+    {% if hybrid_books %}
     <div class="recommendations-section">
-        <h2 class="section-header">👥 Users Like You Also Read</h2>
+        <h2 class="section-header">✨ Smart Picks For You</h2>
 
         <div class="scroll-wrapper">
             <button class="scroll-arrow left" onclick="scrollContainer(this, 'left')">‹</button>
             <div class="books-container" onscroll="updateArrows(this)">
-                {% for book in collab_books %}
+                {% for book in hybrid_books %}
                 <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-card">
                     <div class="book-cover-container">
                         <img src="{{ book.cover_image_url or url_for('static', filename='images/no_cover.png') }}"
                             alt="{{ book.title }}" class="book-cover">
-                        <div class="book-rating-badge">🔥 Recommended</div>
+                        <div class="book-rating-badge">✨ For You</div>
                     </div>
                     <div class="book-info">
                         <div class="book-title">{{ book.title }}</div>
