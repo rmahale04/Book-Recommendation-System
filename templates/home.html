@@ -437,6 +437,177 @@
             .hero-title { font-size: 36px; line-height: 42px; }
             .hero-panel { min-height: 380px; padding: 28px 20px; }
         }
+
+        /* ===== Scan a Book Cover ===== */
+        .scan-panel {
+            background: linear-gradient(160deg, var(--panel) 0%, #101218 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .scan-panel::before {
+            content: '';
+            position: absolute;
+            left: -70px;
+            bottom: -90px;
+            width: 260px;
+            height: 260px;
+            background: var(--accent-2);
+            opacity: 0.14;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        .scan-info, .scan-drop, .scan-results { position: relative; z-index: 1; }
+
+        @media (min-width: 900px) {
+            .scan-panel { grid-template-columns: 1fr 1fr; align-items: center; }
+            .scan-results { grid-column: 1 / -1; }
+        }
+
+        .scan-info .widget-title { margin-bottom: 12px; }
+
+        .scan-desc {
+            font-size: 14px;
+            line-height: 22px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            max-width: 460px;
+        }
+
+        .scan-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .scan-actions button { font-family: inherit; }
+        .scan-actions button:disabled { opacity: 0.55; cursor: wait; transform: none; }
+
+        .scan-status {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 16px;
+            min-height: 18px;
+        }
+
+        .scan-status.error { color: #ff7b7b; }
+
+        .scan-status.loading::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border: 2px solid var(--accent-1);
+            border-right-color: transparent;
+            border-radius: 50%;
+            vertical-align: -2px;
+            animation: scanSpin 0.7s linear infinite;
+        }
+
+        @keyframes scanSpin { to { transform: rotate(360deg); } }
+
+        .scan-drop {
+            min-height: 210px;
+            border: 2px dashed rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scan-drop:hover, .scan-drop.dragover {
+            border-color: var(--accent-1);
+            background: rgba(109, 141, 255, 0.08);
+        }
+
+        .scan-drop .material-symbols-outlined { font-size: 38px; color: var(--accent-1); }
+
+        .scan-preview {
+            display: none;
+            max-width: 100%;
+            max-height: 230px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .scan-drop.has-preview .scan-preview { display: block; }
+        .scan-drop.has-preview .scan-drop-hint { display: none; }
+
+        .scan-results { display: flex; flex-direction: column; gap: 10px; }
+        .scan-results[hidden] { display: none; }
+
+        .scan-results-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .scan-match {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--panel-high);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .scan-match:hover { border-color: var(--accent-1); transform: translateY(-2px); }
+
+        .scan-cover {
+            width: 52px;
+            height: 76px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--panel-highest);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .scan-match-title { display: block; font-size: 15px; font-weight: 700; }
+        .scan-match-author { display: block; font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+
+        .scan-score {
+            margin-left: auto;
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-1);
+            background: rgba(109, 141, 255, 0.12);
+            border: 1px solid rgba(109, 141, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .scan-note { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+        .scan-note summary { cursor: pointer; }
+
+        @media (max-width: 640px) {
+            .scan-panel { padding: 22px 18px; }
+        }
     </style>
 </head>
 <body class="home-page">
@@ -461,6 +632,37 @@
                     <a href="{{ url_for('view_books') }}" class="btn-secondary">Browse Books</a>
                 </div>
             </div>
+        </section>
+
+        <!-- Scan a Book Cover (OCR) -->
+        <section class="scan-panel" id="scanPanel">
+            <div class="scan-info">
+                <h3 class="widget-title">
+                    <span class="icon-chip"><span class="material-symbols-outlined">photo_camera</span></span>
+                    Scan a Book Cover
+                </h3>
+                <p class="scan-desc">Spotted a book you like? Snap a photo of the cover and we'll find it in our library.</p>
+
+                <div class="scan-actions">
+                    <button type="button" class="btn-primary" id="scanCamBtn">📷 Take Photo</button>
+                    <button type="button" class="btn-secondary" id="scanUploadBtn">Upload Image</button>
+                </div>
+                <div class="scan-status" id="scanStatus" role="status" aria-live="polite"></div>
+
+                <!-- capture="environment" opens the rear camera on phones; the other input opens the gallery/files -->
+                <input type="file" id="scanCamera" accept="image/*" capture="environment" hidden>
+                <input type="file" id="scanUpload" accept="image/png,image/jpeg,image/webp" hidden>
+            </div>
+
+            <div class="scan-drop" id="scanDrop">
+                <img class="scan-preview" id="scanPreview" alt="Selected cover preview">
+                <div class="scan-drop-hint">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                    <div>Drag &amp; drop a cover here<br>or click to choose a file</div>
+                </div>
+            </div>
+
+            <div class="scan-results" id="scanResults" hidden></div>
         </section>
 
         <!-- Discovery Widget & Features Grid -->
@@ -568,6 +770,139 @@
                 document.getElementById("discoverBtn").click();
             }
         });
+
+        // ===== Scan a Book Cover (OCR) =====
+        (function () {
+            const MAX_BYTES = 8 * 1024 * 1024;
+            const ALLOWED = ['image/png', 'image/jpeg', 'image/webp'];
+
+            const camInput  = document.getElementById('scanCamera');
+            const fileInput = document.getElementById('scanUpload');
+            const camBtn    = document.getElementById('scanCamBtn');
+            const upBtn     = document.getElementById('scanUploadBtn');
+            const drop      = document.getElementById('scanDrop');
+            const preview   = document.getElementById('scanPreview');
+            const statusEl  = document.getElementById('scanStatus');
+            const results   = document.getElementById('scanResults');
+            let busy = false;
+
+            function setStatus(text, kind) {
+                statusEl.textContent = text || '';
+                statusEl.className = 'scan-status' + (kind ? ' ' + kind : '');
+            }
+
+            function setBusy(state) {
+                busy = state;
+                camBtn.disabled = state;
+                upBtn.disabled = state;
+            }
+
+            function el(tag, className, text) {
+                const node = document.createElement(tag);
+                if (className) node.className = className;
+                if (text !== undefined) node.textContent = text;
+                return node;
+            }
+
+            function render(data) {
+                results.innerHTML = '';
+                results.hidden = false;
+
+                if (!data.matches.length) {
+                    results.appendChild(el('p', 'scan-note',
+                        'No matching book found in our library. Try a straighter, brighter photo of the front cover.'));
+                } else {
+                    results.appendChild(el('div', 'scan-results-title', 'Best matches'));
+                    data.matches.forEach(function (b) {
+                        const card = el('a', 'scan-match');
+                        card.href = b.url;
+
+                        if (b.cover_image_url) {
+                            const img = el('img', 'scan-cover');
+                            img.src = b.cover_image_url;
+                            img.alt = '';
+                            card.appendChild(img);
+                        } else {
+                            card.appendChild(el('div', 'scan-cover', '📚'));
+                        }
+
+                        const info = el('div');
+                        info.appendChild(el('span', 'scan-match-title', b.title));
+                        info.appendChild(el('span', 'scan-match-author', b.author || 'Unknown author'));
+                        card.appendChild(info);
+
+                        card.appendChild(el('span', 'scan-score', Math.round(b.score) + '% match'));
+                        results.appendChild(card);
+                    });
+                }
+
+                const details = el('details', 'scan-note');
+                details.appendChild(el('summary', '', 'Text detected on the cover'));
+                details.appendChild(el('p', '', data.ocr_text || '(nothing detected)'));
+                results.appendChild(details);
+            }
+
+            async function scan(file) {
+                if (busy) return;
+
+                if (ALLOWED.indexOf(file.type) === -1) {
+                    setStatus('Please choose a PNG, JPG or WEBP image.', 'error');
+                    return;
+                }
+                if (file.size > MAX_BYTES) {
+                    setStatus('That image is too large (max 8 MB).', 'error');
+                    return;
+                }
+
+                preview.src = URL.createObjectURL(file);
+                drop.classList.add('has-preview');
+                results.hidden = true;
+                setBusy(true);
+                setStatus('Reading cover… this can take a few seconds', 'loading');
+
+                const form = new FormData();
+                form.append('cover_image', file);
+
+                try {
+                    const res = await fetch("{{ url_for('scan_cover') }}", { method: 'POST', body: form });
+                    let data = {};
+                    try { data = await res.json(); } catch (e) { /* non-JSON error page */ }
+
+                    if (!res.ok) throw new Error(data.error || 'Scan failed. Please try again.');
+
+                    setStatus('');
+                    render(data);
+                    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } catch (err) {
+                    setStatus(err.message, 'error');
+                } finally {
+                    setBusy(false);
+                }
+            }
+
+            camBtn.addEventListener('click', function () { camInput.click(); });
+            upBtn.addEventListener('click', function () { fileInput.click(); });
+            drop.addEventListener('click', function () { if (!busy) fileInput.click(); });
+
+            [camInput, fileInput].forEach(function (input) {
+                input.addEventListener('change', function () {
+                    const file = input.files[0];
+                    input.value = '';          // lets the same photo be chosen again
+                    if (file) scan(file);
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(function (evt) {
+                drop.addEventListener(evt, function (e) { e.preventDefault(); drop.classList.add('dragover'); });
+            });
+            ['dragleave', 'drop'].forEach(function (evt) {
+                drop.addEventListener(evt, function (e) { e.preventDefault(); drop.classList.remove('dragover'); });
+            });
+            drop.addEventListener('drop', function (e) {
+                const file = e.dataTransfer.files[0];
+                if (file) scan(file);
+            });
+        })();
     </script>
 </body>
 </html>
