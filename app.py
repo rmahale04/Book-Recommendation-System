@@ -25,10 +25,19 @@ from reportlab.platypus import HRFlowable
 from collections import defaultdict
 import math
 from datetime import datetime, date, timedelta
+from book_cover_ocr import extract_text, find_matching_books   # book-cover OCR
 
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
+
+# --- OCR book-cover scanner settings ---
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024   # reject uploads > 8 MB
+ALLOWED_IMAGE_EXT = {"png", "jpg", "jpeg", "webp"}
+
+@app.errorhandler(413)
+def upload_too_large(e):
+    return jsonify(error="That image is too large (max 8 MB)."), 413
 
 # =========================
 # Database configuration
@@ -964,6 +973,50 @@ def home():
     else:
         flash("Please log in first.")
         return redirect(url_for("login"))
+
+# -------------------------
+# Scan a book cover (OCR) - called from the home page via fetch()
+# -------------------------
+@app.route("/api/scan_cover", methods=["POST"])
+def scan_cover():
+    if "user_id" not in session:
+        return jsonify(error="Please log in first."), 401
+
+    file = request.files.get("cover_image")
+    ext = ""
+    if file and file.filename and "." in file.filename:
+        ext = file.filename.rsplit(".", 1)[-1].lower()
+
+    if not file or ext not in ALLOWED_IMAGE_EXT:
+        return jsonify(error="Please upload a PNG, JPG or WEBP image."), 400
+
+    try:
+        # Image is read straight from memory - nothing is saved to disk
+        ocr_text = extract_text(file.stream)
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        matches = find_matching_books(cursor, ocr_text)
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print("OCR error:", e)
+        return jsonify(error="Could not read that image. Try a clearer, well-lit photo."), 500
+
+    return jsonify(
+        ocr_text=ocr_text,
+        matches=[
+            {
+                "book_id": m["book_id"],
+                "title": m["title"],
+                "author": m["author"],
+                "cover_image_url": m["cover_image_url"],
+                "score": m["score"],
+                "url": url_for("book_details", book_id=m["book_id"]),
+            }
+            for m in matches
+        ],
+    )
 
 
 # -------------------------
