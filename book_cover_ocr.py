@@ -46,7 +46,7 @@ def clean_text(text):
     return " ".join(text.split())
 
 
-def find_matching_books(cursor, ocr_text, limit=5, min_score=55):
+def find_matching_books(cursor, ocr_text, limit=3, min_score=55):
     """
     cursor must be created with dictionary=True.
     Returns up to `limit` books (best first), each with an added 'score' key.
