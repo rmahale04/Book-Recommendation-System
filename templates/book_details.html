@@ -473,6 +473,31 @@
 
         .delete-review-row { margin-top: 10px; text-align: right; }
 
+        /* Review sentiment (from the ANN) */
+        .review-meta { display: flex; align-items: center; gap: 10px; }
+
+        .sentiment-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .sentiment-badge.positive { color: #34d399; background: rgba(52, 211, 153, 0.12);  border-color: rgba(52, 211, 153, 0.3); }
+        .sentiment-badge.neutral  { color: #9ca3af; background: rgba(156, 163, 175, 0.12); border-color: rgba(156, 163, 175, 0.3); }
+        .sentiment-badge.negative { color: #f87171; background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.3); }
+
+        .sentiment-summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 14px 0 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
         .delete-review-row a {
             color: #ef4444;
             font-size: 12px;
@@ -803,6 +828,15 @@
                     </div>
                     {% endif %}
 
+                    {% if sentiment_counts and (sentiment_counts.positive + sentiment_counts.neutral + sentiment_counts.negative) > 0 %}
+                    <div class="sentiment-summary">
+                        <span>Review sentiment:</span>
+                        <span class="sentiment-badge positive">{{ sentiment_counts.positive }} Positive</span>
+                        <span class="sentiment-badge neutral">{{ sentiment_counts.neutral }} Neutral</span>
+                        <span class="sentiment-badge negative">{{ sentiment_counts.negative }} Negative</span>
+                    </div>
+                    {% endif %}
+
                     <div class="review-scroll">
                         {% if reviews %}
                             {% for r in reviews %}
@@ -815,7 +849,10 @@
                                             <div class="review-stars">{{ '★' * r.ratings + '☆' * (5 - r.ratings) }}</div>
                                         </div>
                                     </div>
-                                    <span class="review-date">{{ r.review_date.strftime('%b %d, %Y') }}</span>
+                                    <div class="review-meta">
+                                        {% if r.sentiment %}<span class="sentiment-badge {{ r.sentiment }}">{{ r.sentiment|capitalize }}</span>{% endif %}
+                                        <span class="review-date">{{ r.review_date.strftime('%b %d, %Y') }}</span>
+                                    </div>
                                 </div>
 
                                 {% if r.review_text %}
