@@ -26,6 +26,7 @@ from collections import defaultdict
 import math
 from datetime import datetime, date, timedelta
 from book_cover_ocr import extract_text, find_matching_books   # book-cover OCR
+from review_sentiment import add_sentiment                     # review sentiment
 
 
 app = Flask(__name__)
@@ -1469,6 +1470,7 @@ def book_details(book_id):
         ORDER BY r.review_date DESC
     """, (book_id,))
     reviews = cursor.fetchall()
+    sentiment_counts = add_sentiment(reviews)   # adds r["sentiment"] to every review
 
     # --- Current user's review ---
     user_review = None
@@ -1587,6 +1589,7 @@ def book_details(book_id):
         avg_rating=avg_rating,
         total_reviews=total_reviews,
         reviews=reviews,
+        sentiment_counts=sentiment_counts,
         user_review=user_review,
         series_books=series_books,
         similar_books=similar_books,
