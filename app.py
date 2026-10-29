@@ -26,8 +26,11 @@ from collections import defaultdict
 import math
 from datetime import datetime, date, timedelta
 from book_cover_ocr import extract_text, find_matching_books   # book-cover OCR
-from review_sentiment import add_sentiment                     # review sentiment
-
+import google.auth
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.errors import HttpError
+from review_sentiment import add_sentiment
 
 app = Flask(__name__)
 app.secret_key = "NextRead_2025_LoginKey!"
@@ -1470,8 +1473,9 @@ def book_details(book_id):
         ORDER BY r.review_date DESC
     """, (book_id,))
     reviews = cursor.fetchall()
-    sentiment_counts = add_sentiment(reviews)   # adds r["sentiment"] to every review
-
+    sentiment_counts = add_sentiment(reviews)
+    print("sentiment_counts=",sentiment_counts)
+    
     # --- Current user's review ---
     user_review = None
     if "user_id" in session:
@@ -1582,9 +1586,22 @@ def book_details(book_id):
 
         more_by_author = cursor.fetchall()
 
+    # --- Optional PDF linked to this book ---
+    cursor.execute("""
+        SELECT pdf_id, pdf_title, drive_file_id, drive_url
+        FROM book_pdfs
+        WHERE book_id = %s
+        LIMIT 1
+    """, (book_id,))
+    book_pdf = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
     return render_template(
         "book_details.html",
         book=book,
+        book_pdf=book_pdf,
         shelves=shelves,
         avg_rating=avg_rating,
         total_reviews=total_reviews,
@@ -1595,6 +1612,166 @@ def book_details(book_id):
         similar_books=similar_books,
         more_by_author=more_by_author
     )
+
+
+# -------------------------
+# PDF Reader
+# -------------------------
+@app.route("/read/<int:book_id>")
+def read_pdf(book_id):
+    if "user_id" not in session:
+        flash("Please log in to read books.", "error")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Get book details and author
+        cursor.execute("""
+            SELECT b.book_id, b.title, b.page_count,
+                   a.name AS author
+            FROM books b
+            LEFT JOIN authors a ON b.author_id = a.author_id
+            WHERE b.book_id = %s
+        """, (book_id,))
+        book = cursor.fetchone()
+
+        if not book:
+            flash("Book not found.", "error")
+            return redirect(url_for("view_books"))
+
+        # Get the PDF associated with this book
+        cursor.execute("""
+            SELECT pdf_id, pdf_title, drive_file_id, drive_url
+            FROM book_pdfs
+            WHERE book_id = %s
+            LIMIT 1
+        """, (book_id,))
+        book_pdf = cursor.fetchone()
+
+        if not book_pdf:
+            flash("PDF is not available for this book.", "error")
+            return redirect(url_for("book_details", book_id=book_id))
+
+        # Get the logged-in user's saved reading progress
+        cursor.execute("""
+            SELECT current_page, total_pages
+            FROM reading_progress
+            WHERE user_id = %s AND book_id = %s
+        """, (session["user_id"], book_id))
+        progress = cursor.fetchone()
+
+        initial_page = max(
+            1, int(progress["current_page"])
+        ) if progress and progress["current_page"] is not None else 1
+
+        # Use the Drive download URL as the PDF source.
+        # This may require a different hosting method if PDF.js
+        # is blocked by Google Drive CORS or permissions.
+        pdf_url = url_for("serve_book_pdf", book_id=book_id)
+
+        return render_template(
+            "pdf_reader.html",
+            book=book,
+            pdf_url=pdf_url,
+            initial_page=initial_page,
+            progress_api_url=url_for(
+                "save_pdf_reading_progress", book_id=book_id
+            )
+        )
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------------
+# Serve PDF from Google Drive
+# -------------------------
+@app.route("/pdf/<int:book_id>")
+def serve_book_pdf(book_id):
+    if "user_id" not in session:
+        abort(401)
+
+    # Look up the Drive file ID in the existing database.
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT drive_file_id, pdf_title
+            FROM book_pdfs
+            WHERE book_id = %s
+            LIMIT 1
+        """, (book_id,))
+        book_pdf = cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+
+    if not book_pdf or not book_pdf.get("drive_file_id"):
+        abort(404, description="PDF not found for this book.")
+
+    # Load credentials kept outside the public website directory.
+    credentials_path = os.environ.get(
+        "GOOGLE_APPLICATION_CREDENTIALS"
+    )
+
+    if not credentials_path or not os.path.isfile(credentials_path):
+        app.logger.error("Google Drive credentials file is not configured.")
+        abort(500, description="PDF storage is not configured.")
+
+    try:
+        from google.oauth2.service_account import Credentials
+
+        credentials = Credentials.from_service_account_file(
+            credentials_path,
+            scopes=["https://www.googleapis.com/auth/drive.readonly"]
+        )
+
+        drive_service = build(
+            "drive",
+            "v3",
+            credentials=credentials,
+            cache_discovery=False
+        )
+
+        # Request the actual file content, not the Drive preview webpage.
+        drive_request = drive_service.files().get_media(
+            fileId=book_pdf["drive_file_id"]
+        )
+
+        pdf_buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(pdf_buffer, drive_request)
+
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+
+        pdf_buffer.seek(0)
+
+        return send_file(
+            pdf_buffer,
+            mimetype="application/pdf",
+            download_name="book.pdf",
+            as_attachment=False,
+            conditional=True
+        )
+
+    except HttpError as error:
+        app.logger.exception("Google Drive could not provide the PDF.")
+
+        if error.resp.status == 404:
+            abort(404, description="PDF not found in Google Drive.")
+        if error.resp.status in (401, 403):
+            abort(502, description=(
+                "Google Drive denied access. Check the service account "
+                "and the PDF sharing permissions."
+            ))
+
+        abort(502, description="Could not retrieve the PDF from Google Drive.")
+
 
 
 @app.route("/book/<int:book_id>/review", methods=["POST"])
@@ -3022,32 +3199,101 @@ def recommendations():
     """, (session["user_id"], session["user_id"]))
     author_books = cursor.fetchall()    
 
-    # --- 7 Top Rated Books ---
+    # --- 7 Most Popular Books ---
+    # Popularity = how much readers interact with a book (not just how well it is rated):
+    #   shelf adds (x3) + reviews (x2) + page views (x1)
+    # Each count comes from its own subquery so the JOINs never multiply each other.
     cursor.execute("""
-        SELECT 
+        SELECT
             b.book_id,
             b.title,
             a.name AS author,
             b.cover_image_url,
-            ROUND(AVG(r.ratings), 1) AS avg_rating,
-            COUNT(r.review_id) AS review_count
+            COALESCE(rv.avg_rating, 0)    AS avg_rating,
+            COALESCE(rv.review_count, 0)  AS review_count,
+            COALESCE(sh.shelf_count, 0)   AS shelf_count,
+            COALESCE(vw.view_count, 0)    AS view_count,
+            (COALESCE(sh.shelf_count, 0) * 3
+             + COALESCE(rv.review_count, 0) * 2
+             + COALESCE(vw.view_count, 0)) AS popularity_score
         FROM books b
         LEFT JOIN authors a ON b.author_id = a.author_id
-        JOIN reviews r ON b.book_id = r.book_id
-        WHERE r.ratings IS NOT NULL
-        GROUP BY b.book_id, b.title, a.name, b.cover_image_url
-        HAVING review_count >= 3
-        ORDER BY avg_rating DESC, review_count DESC
+        LEFT JOIN (
+            SELECT book_id, COUNT(*) AS review_count, ROUND(AVG(ratings), 1) AS avg_rating
+            FROM reviews
+            GROUP BY book_id
+        ) rv ON rv.book_id = b.book_id
+        LEFT JOIN (
+            SELECT book_id, COUNT(DISTINCT shelf_id) AS shelf_count
+            FROM user_shelf_books
+            GROUP BY book_id
+        ) sh ON sh.book_id = b.book_id
+        LEFT JOIN (
+            SELECT book_id, COUNT(*) AS view_count
+            FROM user_book_views
+            GROUP BY book_id
+        ) vw ON vw.book_id = b.book_id
+        HAVING popularity_score > 0
+        ORDER BY popularity_score DESC, avg_rating DESC, b.title ASC
         LIMIT 15
     """)
-    top_rated_books = cursor.fetchall()
+    popular_books = cursor.fetchall()
+
+
+
+        # --- 8 Trending Right Now ---
+    # Same scoring as Most Popular, but only counts activity inside a recent window.
+    trending_query = """
+        SELECT
+            b.book_id,
+            b.title,
+            a.name AS author,
+            b.cover_image_url,
+            COALESCE(sh.shelf_count, 0)  AS shelf_count,
+            COALESCE(rv.review_count, 0) AS review_count,
+            COALESCE(vw.view_count, 0)   AS view_count,
+            (COALESCE(sh.shelf_count, 0) * 3
+             + COALESCE(rv.review_count, 0) * 2
+             + COALESCE(vw.view_count, 0)) AS trend_score
+        FROM books b
+        LEFT JOIN authors a ON b.author_id = a.author_id
+        LEFT JOIN (
+            SELECT book_id, COUNT(*) AS shelf_count
+            FROM user_shelf_books
+            WHERE added_date >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY book_id
+        ) sh ON sh.book_id = b.book_id
+        LEFT JOIN (
+            SELECT book_id, COUNT(*) AS review_count
+            FROM reviews
+            WHERE review_date >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY book_id
+        ) rv ON rv.book_id = b.book_id
+        LEFT JOIN (
+            SELECT book_id, COUNT(*) AS view_count
+            FROM user_book_views
+            WHERE view_date >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY book_id
+        ) vw ON vw.book_id = b.book_id
+        HAVING trend_score > 0
+        ORDER BY trend_score DESC, b.title ASC
+        LIMIT 5
+    """
+
+    trending_books = []
+    for days in (7, 30):                      # try last 7 days, then widen to 30
+        cursor.execute(trending_query, (days, days, days))
+        trending_books = cursor.fetchall()
+        if len(trending_books) >= 5:
+            break
+
 
     # --- Hybrid recommendations: content-based + collaborative filtering ---
     hybrid_books = get_hybrid_recommendations(
         session["user_id"], cursor, limit=15
     )
-    print("HYBRID BOOKS:", hybrid_books)
-    print("HYBRID COUNT:", len(hybrid_books))
+    # print("HYBRID BOOKS:", hybrid_books)
+    # print("HYBRID COUNT:", len(hybrid_books))
 
     cursor.close()
     conn.close()
@@ -3060,7 +3306,8 @@ def recommendations():
         friends_books=friends_books,
         author_books=author_books,
         hybrid_books=hybrid_books,
-        top_rated_books=top_rated_books,
+        popular_books=popular_books,
+        trending_books=trending_books,
         active_page="recommendations"
     )
 
@@ -5000,6 +5247,104 @@ def compare_users(username):
         shared_count=len(both_read_ids),
         common_rated=len(common_rated_ids),
     )
+
+
+# -------------------------
+# Save PDF Reader Progress
+# -------------------------
+@app.route("/api/reading-progress/<int:book_id>", methods=["POST"])
+def save_pdf_reading_progress(book_id):
+    if "user_id" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Please log in first."
+        }), 401
+
+    data = request.get_json(silent=True) or {}
+
+    try:
+        current_page = int(data.get("current_page", 1))
+        total_pages = int(data.get("total_pages", 0))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "message": "Invalid page numbers."
+        }), 400
+
+    if current_page < 1 or total_pages < 1:
+        return jsonify({
+            "success": False,
+            "message": "Page numbers must be positive."
+        }), 400
+
+    if current_page > total_pages:
+        return jsonify({
+            "success": False,
+            "message": "Current page cannot exceed total pages."
+        }), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Confirm the book exists and obtain its recorded page count
+        cursor.execute("""
+            SELECT page_count
+            FROM books
+            WHERE book_id = %s
+        """, (book_id,))
+        book = cursor.fetchone()
+
+        if not book:
+            return jsonify({
+                "success": False,
+                "message": "Book not found."
+            }), 404
+
+        # Do not allow progress beyond a known book page count
+        real_page_count = book["page_count"]
+
+        if real_page_count and current_page > real_page_count:
+            return jsonify({
+                "success": False,
+                "message": "Current page exceeds the book's page count."
+            }), 400
+
+        # Use the existing unique key (user_id, book_id)
+        cursor.execute("""
+            INSERT INTO reading_progress
+                (user_id, book_id, current_page, total_pages, start_date)
+            VALUES (%s, %s, %s, %s, CURDATE())
+            ON DUPLICATE KEY UPDATE
+                current_page = VALUES(current_page),
+                total_pages = VALUES(total_pages),
+                updated_at = CURRENT_TIMESTAMP
+        """, (
+            session["user_id"],
+            book_id,
+            current_page,
+            total_pages
+        ))
+
+        conn.commit()
+
+        return jsonify({
+            "success": True,
+            "current_page": current_page,
+            "total_pages": total_pages
+        }), 200
+
+    except Exception:
+        conn.rollback()
+        app.logger.exception("Failed to save PDF reading progress")
+        return jsonify({
+            "success": False,
+            "message": "Could not save reading progress."
+        }), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @app.route("/update_progress/<int:book_id>", methods=["POST"])
