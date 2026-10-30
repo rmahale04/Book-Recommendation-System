@@ -625,6 +625,13 @@
                 </div>
 
                 <div class="action-buttons">
+                    {% if book_pdf and book_pdf.drive_url %}
+                        <a href="{{ url_for('read_pdf', book_id=book.book_id) }}" class="btn-solid">
+                            <span class="material-symbols-outlined">menu_book</span>
+                            Read PDF
+                        </a>
+                    {% endif %}
+
                     {% if book.buy_link %}
                         <a href="{{ book.buy_link }}" target="_blank" class="btn-solid">
                             <span class="material-symbols-outlined">shopping_cart</span> Buy This Book
