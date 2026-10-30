@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Apply the saved reader theme before the page is painted.
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem("readnext-reader-theme");
+                document.documentElement.dataset.theme = savedTheme === "light" ? "light" : "dark";
+            } catch (_) {
+                document.documentElement.dataset.theme = "dark";
+            }
+        })();
+    </script>
+
+    <title>Read {{ book.title }} | ReadNext</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/pdf_reader.css') }}">
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    </script>
+
+    <script src="{{ url_for('static', filename='js/pdf_reader.js') }}"
+            defer></script>
+</head>
+
+<body>
+    <main class="reader-container"
+          id="pdfReader"
+          data-pdf-url="{{ pdf_url }}"
+          data-progress-api-url="{{ progress_api_url }}"
+          data-initial-page="{{ initial_page|default(1, true) }}">
+
+        <header class="reader-header">
+            <div class="book-info">
+                <a href="{{ url_for('book_details', book_id=book.book_id) }}"
+                   class="back-link">
+                    <span aria-hidden="true">&larr;</span> Back to book
+                </a>
+
+                <h1>{{ book.title }}</h1>
+
+                {% if book.author %}
+                    <p class="book-author">by {{ book.author }}</p>
+                {% endif %}
+            </div>
+
+            <div class="reader-header-actions">
+                <div class="reading-status">
+                    <span id="saveStatus" role="status" aria-live="polite">
+                        Ready to read
+                    </span>
+                </div>
+                <button id="themeToggle" class="theme-toggle" type="button"
+                        aria-label="Switch to light reading mode" aria-pressed="false">
+                    <span id="themeIcon" class="theme-icon" aria-hidden="true">☀</span>
+                    <span id="themeLabel">Light mode</span>
+                </button>
+            </div>
+        </header>
+
+        <section class="reader-toolbar" aria-label="PDF controls">
+            <div class="page-controls">
+                <button id="prevPage" type="button" disabled>
+                    &larr; Previous
+                </button>
+
+                <label for="pageNumber" class="page-label">
+                    Page
+                </label>
+
+                <input id="pageNumber"
+                       type="number"
+                       min="1"
+                       value="1"
+                       inputmode="numeric"
+                       aria-label="Current page">
+
+                <span class="page-total">
+                    of <span id="totalPages">--</span>
+                </span>
+
+                <button id="nextPage" type="button" disabled>
+                    Next &rarr;
+                </button>
+            </div>
+
+            <div class="zoom-controls">
+                <button id="zoomOut" type="button" aria-label="Zoom out">
+                    &minus;
+                </button>
+
+                <span id="zoomLevel">100%</span>
+
+                <button id="zoomIn" type="button" aria-label="Zoom in">
+                    +
+                </button>
+
+                <button id="fitWidth" type="button">
+                    Fit width
+                </button>
+            </div>
+        </section>
+
+        <div id="readerError"
+             class="reader-error"
+             role="alert"
+             hidden></div>
+
+        <div id="loadingMessage" class="loading-message" role="status">
+            Loading your book...
+        </div>
+
+        <section class="pdf-viewport"
+                 id="pdfViewport"
+                 aria-label="PDF reading area">
+            <canvas id="pdfCanvas"></canvas>
+        </section>
+
+        <footer class="reader-footer">
+            <div class="progress-info">
+                <span>Reading progress</span>
+                <strong id="progressText">0%</strong>
+            </div>
+
+            <div class="progress-track"
+                 role="progressbar"
+                 id="progressBar"
+                 aria-label="Reading progress"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+
+            <p class="reader-note">
+                Your reading progress is saved automatically when you change
+                pages. You can return later and continue where you left off.
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            const root = document.documentElement;
+            const toggle = document.getElementById("themeToggle");
+            const icon = document.getElementById("themeIcon");
+            const label = document.getElementById("themeLabel");
+            if (!toggle || !icon || !label) return;
+
+            function applyTheme(theme) {
+                const isLight = theme === "light";
+                root.dataset.theme = isLight ? "light" : "dark";
+                icon.textContent = isLight ? "☾" : "☀";
+                label.textContent = isLight ? "Dark mode" : "Light mode";
+                toggle.setAttribute("aria-label", isLight ? "Switch to dark reading mode" : "Switch to light reading mode");
+                toggle.setAttribute("aria-pressed", String(isLight));
+                try { localStorage.setItem("readnext-reader-theme", isLight ? "light" : "dark"); } catch (_) {}
+            }
+
+            toggle.addEventListener("click", function () {
+                applyTheme(root.dataset.theme === "light" ? "dark" : "light");
+            });
+
+            applyTheme(root.dataset.theme === "light" ? "light" : "dark");
+        })();
+    </script>
+</body>
+</html>
