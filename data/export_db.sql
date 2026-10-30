@@ -1,3 +1,4 @@
+-- NOTE:-please make sure that there is nothing like "utf8mb4_0900_ai_ci", if it is present then change it to "utf8mb4_general_ci"
 CREATE DATABASE  IF NOT EXISTS `books_db1` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `books_db1`;
 -- MySQL dump 10.13  Distrib 8.0.32, for Win64 (x86_64)
