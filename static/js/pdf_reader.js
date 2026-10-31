@@ -47,6 +47,142 @@ document.addEventListener("DOMContentLoaded", () => {
     let isRendering = false;
     let fitToWidth = true;
 
+    // ---------------- AUDIOBOOK CONTROLS ----------------
+
+    // Create audio controls dynamically
+    const audioPanel = document.createElement("section");
+    audioPanel.className = "reader-audio-panel";
+
+    audioPanel.innerHTML = `
+        <div class="audio-heading">
+            <div>
+                <h2>Listen to this book</h2>
+                <p id="audioStatus">Ready to listen</p>
+            </div>
+            <span class="audio-icon">♫</span>
+        </div>
+
+        <div class="audio-controls">
+            <button id="audioBackward" type="button">↶ 15 sec</button>
+            <button id="audioPlay" type="button">▶ Play</button>
+            <button id="audioForward" type="button">15 sec ↷</button>
+            <button id="audioPause" type="button" disabled>Ⅱ Pause</button>
+            <button id="audioStop" type="button" disabled>■ Stop</button>
+
+            <label>
+                Speed
+                <select id="speechRate">
+                    <option value="0.5">0.5×</option>
+                    <option value="0.75">0.75×</option>
+                    <option value="1" selected>1×</option>
+                    <option value="1.25">1.25×</option>
+                    <option value="1.5">1.5×</option>
+                    <option value="1.75">1.75×</option>
+                    <option value="2">2×</option>
+                </select>
+            </label>
+        </div>
+
+        
+    `;
+
+    const toolbar = reader.querySelector(".reader-toolbar");
+
+    if (toolbar) {
+        toolbar.insertAdjacentElement("afterend", audioPanel);
+    }
+
+    // Add audio player styling
+    const audioStyle = document.createElement("style");
+
+    audioStyle.textContent = `
+        .reader-audio-panel {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 18px;
+            background: var(--reader-surface);
+            color: var(--reader-text);
+            border: 1px solid var(--reader-border);
+            border-radius: 14px;
+            box-shadow: var(--reader-shadow);
+        }
+
+        .audio-heading h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .audio-heading p {
+            margin: 5px 0;
+            color: var(--reader-muted);
+            font-size: 12px;
+        }
+
+        .audio-icon {
+            font-size: 25px;
+            color: var(--reader-primary);
+        }
+
+        .audio-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .audio-controls label {
+            color: var(--reader-muted);
+            font-size: 13px;
+        }
+
+        .audio-controls select {
+            padding: 9px;
+            border-radius: 8px;
+            background: var(--reader-bg);
+            color: var(--reader-text);
+            border: 1px solid var(--reader-border);
+        }
+
+        #audioPlay {
+            background: var(--reader-primary);
+            color: white;
+        }
+
+        .audio-note {
+            width: 100%;
+            margin: 0;
+            color: var(--reader-muted);
+            font-size: 12px;
+        }
+    `;
+
+    document.head.appendChild(audioStyle);
+
+    // Get audio elements
+    const audioPlay = document.getElementById("audioPlay");
+    const audioPause = document.getElementById("audioPause");
+    const audioStop = document.getElementById("audioStop");
+    const speechRate = document.getElementById("speechRate");
+    const audioStatus = document.getElementById("audioStatus");
+    const audioBackward = document.getElementById("audioBackward");
+    const audioForward = document.getElementById("audioForward");
+
+    // Audio state
+    let audioActive = false;
+    let audioPaused = false;
+    let audioPage = 1;
+    let audioChunks = [];
+    let audioChunkIndex = 0;
+    let audioRunId = 0;
+
+    let audioCharPosition = 0;
+    let audioChunkStart = 0;
+    let audioFullText = "";
+
     function showError(message) {
         errorBox.textContent = message;
         errorBox.hidden = false;
@@ -213,19 +349,369 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    prevButton.addEventListener("click", () => {
-        if (currentPage > 1) {
-            renderPage(currentPage - 1);
+    // ---------------- TEXT-TO-SPEECH ----------------
+
+    function updateAudioButtons() {
+        audioPlay.disabled = audioActive && !audioPaused;
+        audioPause.disabled = !audioActive;
+        audioStop.disabled = !audioActive;
+
+        audioPause.textContent = audioPaused
+            ? "▶ Resume"
+            : "Ⅱ Pause";
+    }
+
+    // Split long PDF text into smaller chunks
+    function splitText(text, maxLength = 1400) {
+        const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+
+        const chunks = [];
+        let current = "";
+
+        sentences.forEach(sentence => {
+            sentence = sentence.trim();
+
+            if (!sentence) return;
+
+            if (current.length + sentence.length > maxLength && current) {
+                chunks.push(current);
+                current = "";
+            }
+
+            current += " " + sentence;
+        });
+
+        if (current.trim()) {
+            chunks.push(current.trim());
         }
+
+        return chunks;
+    }
+
+    // Stop audio
+    function stopAudio() {
+        audioRunId++;
+
+        window.speechSynthesis.cancel();
+
+        audioActive = false;
+        audioPaused = false;
+
+        audioChunks = [];
+        audioChunkIndex = 0;
+        audioFullText = "";
+        audioCharPosition = 0;
+        audioChunkStart = 0;
+
+        updateAudioButtons();
+        audioStatus.textContent = "Audio stopped";
+    }
+
+    // Extract text from a PDF page
+    async function loadAudioPage(pageNumber, runId) {
+        try {
+            const page = await pdfDocument.getPage(pageNumber);
+            const textContent = await page.getTextContent();
+
+            if (runId !== audioRunId || !audioActive || audioPaused) return;
+
+            const text = textContent.items
+                .map(item => item.str || "")
+                .join(" ")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            audioPage = pageNumber;
+            currentPage = pageNumber;
+
+            // Automatically display the page being read.
+            await renderPage(pageNumber);
+
+            if (runId !== audioRunId || !audioActive || audioPaused) return;
+
+            audioFullText = text;
+            audioCharPosition = 0;
+            audioChunkStart = 0;
+
+            if (!text) {
+                audioStatus.textContent =
+                    `No readable text on page ${pageNumber}. Skipping...`;
+
+                speakNextChunk(runId, true);
+                return;
+            }
+
+            audioChunks = splitText(text);
+            audioChunkIndex = 0;
+
+            speakNextChunk(runId);
+
+        } catch (error) {
+            console.error("Audio text extraction failed:", error);
+            stopAudio();
+            audioStatus.textContent = "Could not read this PDF page.";
+        }
+    }
+
+    // Speak text and move to the next page
+    function speakNextChunk(runId, skipPage = false) {
+
+        if (runId !== audioRunId || !audioActive || audioPaused) return;
+
+        if (!skipPage && audioChunkIndex < audioChunks.length) {
+            const chunk = audioChunks[audioChunkIndex];
+
+            const utterance = new SpeechSynthesisUtterance(
+                chunk.slice(audioCharPosition - audioChunkStart)
+            );
+
+            utterance.rate = Number(speechRate.value);
+
+            const utteranceStart = audioCharPosition;
+
+            utterance.onboundary = event => {
+                if (runId !== audioRunId || audioPaused) return;
+
+                audioCharPosition = utteranceStart + event.charIndex;
+            };
+
+            // Browser automatically chooses its default available voice.
+
+            utterance.onend = () => {
+                if (runId !== audioRunId || audioPaused) return;
+
+                audioCharPosition = audioChunkStart + chunk.length;
+                audioChunkIndex++;
+
+                if (audioChunkIndex < audioChunks.length) {
+                    audioChunkStart += chunk.length + 1;
+                    audioCharPosition = audioChunkStart;
+                }
+
+                speakNextChunk(runId);
+            };
+
+            utterance.onerror = error => {
+                if (runId !== audioRunId) return;
+                console.error("Speech error:", error);
+                stopAudio();
+                audioStatus.textContent = "Audio playback failed.";
+            };
+
+            window.speechSynthesis.speak(utterance);
+
+            audioStatus.textContent =
+                `Playing page ${audioPage} of ${totalPages}`;
+
+            return;
+        }
+
+        const nextPage = audioPage + 1;
+
+        if (nextPage > totalPages) {
+            audioActive = false;
+            audioPaused = false;
+
+            updateAudioButtons();
+
+            audioStatus.textContent = "You have reached the end of the book.";
+
+            scheduleProgressSave();
+            return;
+        }
+
+        loadAudioPage(nextPage, runId);
+    }
+
+    function skipAudio(seconds) {
+        if (!audioActive || !audioFullText) return;
+
+        const charactersPerSecond = 15 * Number(speechRate.value);
+
+        const movement = Math.round(seconds * charactersPerSecond);
+
+        const targetPosition = Math.max(
+            0,
+            Math.min(
+                audioFullText.length,
+                audioCharPosition + movement
+            )
+        );
+
+        // Find the chunk containing the new position.
+        let position = 0;
+
+        for (let i = 0; i < audioChunks.length; i++) {
+            const chunkEnd = position + audioChunks[i].length;
+
+            if (targetPosition <= chunkEnd || i === audioChunks.length - 1) {
+                audioChunkIndex = i;
+                audioChunkStart = position;
+                audioCharPosition = Math.min(targetPosition, chunkEnd);
+                break;
+            }
+
+            position = chunkEnd + 1;
+        }
+
+        const wasPaused = audioPaused;
+
+        // Cancel current speech and start from the new position.
+
+        audioRunId++;
+        const runId = audioRunId;
+
+        window.speechSynthesis.cancel();
+
+        audioPaused = false;
+
+        if (wasPaused) {
+            audioPaused = false;
+        }
+
+        speakNextChunk(runId);
+
+        if (wasPaused) {
+            window.speechSynthesis.pause();
+            audioPaused = true;
+        }
+
+        updateAudioButtons();
+    }
+
+    // Play or resume audio
+    function startAudio() {
+
+        if (!pdfDocument) {
+            audioStatus.textContent = "Please wait for the PDF to load.";
+            return;
+        }
+
+        if (!("speechSynthesis" in window)) {
+            audioStatus.textContent = "Your browser does not support Text-to-Speech.";
+            return;
+        }
+
+        // Resume paused audio
+        if (audioActive && audioPaused) {
+            audioPaused = false;
+
+            window.speechSynthesis.resume();
+
+            updateAudioButtons();
+
+            audioStatus.textContent = `Playing page ${audioPage}`;
+
+            return;
+        }
+
+        if (audioActive) return;
+
+        window.speechSynthesis.cancel();
+
+        audioRunId++;
+
+        const runId = audioRunId;
+
+        audioActive = true;
+        audioPaused = false;
+
+        audioPage = currentPage;
+        audioChunkIndex = 0;
+        audioChunks = [];
+
+        updateAudioButtons();
+
+        loadAudioPage(audioPage, runId);
+    }
+
+    // Play button
+    audioPlay.addEventListener("click", startAudio);
+
+    // Pause / Resume button
+    audioPause.addEventListener("click", () => {
+
+        if (!audioActive) return;
+
+        if (audioPaused) {
+            audioPaused = false;
+            window.speechSynthesis.resume();
+
+            audioStatus.textContent = `Playing page ${audioPage}`;
+
+        } else {
+            audioPaused = true;
+            window.speechSynthesis.pause();
+
+            audioStatus.textContent = "Audio paused";
+        }
+
+        updateAudioButtons();
+    });
+
+    // Stop button
+    audioStop.addEventListener("click", stopAudio);
+
+    audioBackward.addEventListener("click", () => {
+        skipAudio(-15);
+    });
+
+    audioForward.addEventListener("click", () => {
+        skipAudio(15);
+    });
+
+    updateAudioButtons();
+
+    // -----------------------------------------------
+
+    prevButton.addEventListener("click", () => {
+        if (currentPage <= 1) return;
+
+        if (audioActive) {
+            const wasPaused = audioPaused;
+
+            audioRunId++;
+            window.speechSynthesis.cancel();
+
+            audioPage = currentPage - 1;
+            audioPaused = false;
+
+            updateAudioButtons();
+
+            loadAudioPage(audioPage, audioRunId).then(() => {
+                if (wasPaused && audioActive) {
+                    audioPaused = true;
+                    window.speechSynthesis.pause();
+                    updateAudioButtons();
+                    audioStatus.textContent = "Audio paused";
+                }
+            });
+
+            return;
+        }
+
+        renderPage(currentPage - 1);
     });
 
     nextButton.addEventListener("click", () => {
-        if (currentPage < totalPages) {
-            renderPage(currentPage + 1);
+        if (currentPage >= totalPages) return;
+
+        if (audioActive) {
+            audioRunId++;
+            window.speechSynthesis.cancel();
+
+            audioPage = currentPage + 1;
+            audioPaused = false;
+
+            updateAudioButtons();
+            loadAudioPage(audioPage, audioRunId);
+            return;
         }
+
+        renderPage(currentPage + 1);
     });
 
-    pageInput.addEventListener("change", () => {
+    pageInput.addEventListener("change", async () => {
         const requested = parseInt(pageInput.value, 10);
 
         if (!Number.isFinite(requested)) {
@@ -233,7 +719,36 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        renderPage(requested);
+        const targetPage = Math.min(
+            Math.max(1, requested),
+            totalPages
+        );
+
+        if (audioActive) {
+            const wasPaused = audioPaused;
+
+            audioRunId++;
+            const runId = audioRunId;
+
+            window.speechSynthesis.cancel();
+
+            audioPage = targetPage;
+            audioPaused = false;
+
+            updateAudioButtons();
+
+            await loadAudioPage(audioPage, runId);
+
+            if (wasPaused && audioActive && runId === audioRunId) {
+                audioPaused = true;
+                window.speechSynthesis.pause();
+                updateAudioButtons();
+                audioStatus.textContent = "Audio paused";
+            }
+
+        } else {
+            renderPage(targetPage);
+        }
     });
 
     pageInput.addEventListener("keydown", event => {
