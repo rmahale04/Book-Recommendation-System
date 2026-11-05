@@ -33,7 +33,9 @@ from googleapiclient.errors import HttpError
 from review_sentiment import add_sentiment
 
 app = Flask(__name__)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"D:\netra college\sem 9\Book-Recommendation-System\secrets\readnext-pdf-reader-4bc11c49c9fd.json"
 app.secret_key = "NextRead_2025_LoginKey!"
+
 
 # --- OCR book-cover scanner settings ---
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024   # reject uploads > 8 MB
@@ -4047,7 +4049,8 @@ def author_dashboard():
     
     # Get author information
     cursor.execute("""
-        SELECT author_id, name, email, biography, date_of_birth, date_of_death, created_at
+        SELECT author_id, name, email, biography, date_of_birth, date_of_death, created_at,
+               profile_image_url
         FROM authors
         WHERE author_id = %s
     """, (author_id,))
@@ -4097,11 +4100,14 @@ def author_dashboard():
             b.title,
             b.published_year,
             b.cover_image_url,
+            b.series_order,
+            MAX(s.name) AS series_name,
             GROUP_CONCAT(DISTINCT g.genre_name SEPARATOR ', ') AS genres,
             COALESCE(AVG(r.ratings), 0) AS avg_rating,
             COUNT(DISTINCT r.review_id) AS review_count,
             COUNT(DISTINCT usb.shelf_id) AS shelf_count
         FROM books b
+        LEFT JOIN series s ON b.series_id = s.series_id
         LEFT JOIN book_genres bg ON b.book_id = bg.book_id
         LEFT JOIN genres g ON bg.genre_id = g.genre_id
         LEFT JOIN reviews r ON b.book_id = r.book_id
@@ -4140,18 +4146,17 @@ def author_dashboard():
     """, (author_id,))
     total_readers = cursor.fetchone()['total']
 
-    # Get series that have at least one book by this author
+    # Series that have at least one book by this author
     cursor.execute("""
-        SELECT s.series_id, s.name, s.description,
-               COUNT(b.book_id) AS book_count
+        SELECT s.series_id, s.name, s.description, COUNT(b.book_id) AS book_count
         FROM series s
-        INNER JOIN books b ON b.series_id = s.series_id
+        JOIN books b ON b.series_id = s.series_id
         WHERE b.author_id = %s
         GROUP BY s.series_id
         ORDER BY s.name
     """, (author_id,))
     author_series = cursor.fetchall()
-    
+
     # Get recent reviews
     cursor.execute("""
         SELECT 
@@ -4166,50 +4171,30 @@ def author_dashboard():
         JOIN books b ON r.book_id = b.book_id
         WHERE b.author_id = %s
         ORDER BY r.review_date DESC
-        LIMIT 10
+        LIMIT 5
     """, (author_id,))
     recent_reviews = cursor.fetchall()
     
-    # Get recent activity
-    cursor.execute("""
-        SELECT 
-            'review' AS type,
-            CONCAT(u.username, ' reviewed "', b.title, '"') AS text,
-            r.review_date AS time
-        FROM reviews r
-        JOIN users u ON r.user_id = u.user_id
-        JOIN books b ON r.book_id = b.book_id
-        WHERE b.author_id = %s
-        UNION ALL
-        SELECT 
-            'shelf' AS type,
-            CONCAT('A reader added "', b.title, '" to their shelf') AS text,
-            usb.added_date AS time
-        FROM user_shelf_books usb
-        JOIN books b ON usb.book_id = b.book_id
-        WHERE b.author_id = %s
-        ORDER BY time DESC
-        LIMIT 15
-    """, (author_id, author_id))
-    recent_activity = cursor.fetchall()
-    
-    # Format activity times
-    for activity in recent_activity:
-        from datetime import datetime, timedelta
-        now = datetime.now()
-        diff = now - activity['time']
-        
-        if diff < timedelta(minutes=1):
-            activity['time'] = "just now"
-        elif diff < timedelta(hours=1):
-            activity['time'] = f"{int(diff.total_seconds() / 60)} minutes ago"
-        elif diff < timedelta(days=1):
-            activity['time'] = f"{int(diff.total_seconds() / 3600)} hours ago"
-        elif diff < timedelta(days=7):
-            activity['time'] = f"{diff.days} days ago"
-        else:
-            activity['time'] = activity['time'].strftime("%b %d, %Y")
-    
+    # ---- ML: how positive are the written reviews? ----
+    positive_pct = None
+    try:
+        model = author_insights.get_model(get_db_connection)
+        if model:
+            cursor.execute("""
+                SELECT r.book_id, r.review_text
+                FROM reviews r JOIN books b ON b.book_id = r.book_id
+                WHERE b.author_id = %s AND r.review_text <> ''
+            """, (author_id,))
+            rows = cursor.fetchall()
+            if rows:
+                labels = list(model.predict([r["review_text"] for r in rows]))
+                positive_pct = author_insights.positive_percent(labels)
+                for book in books:            # per-book badge (needs 3+ written reviews)
+                    mine = [l for r, l in zip(rows, labels) if r["book_id"] == book["book_id"]]
+                    book["positive_pct"] = author_insights.positive_percent(mine) if len(mine) >= 3 else None
+    except Exception as e:
+        print("ML error (author_dashboard):", e)
+
     cursor.close()
     conn.close()
     
@@ -4221,8 +4206,8 @@ def author_dashboard():
                          avg_rating=round(avg_rating, 2),
                          total_readers=total_readers,
                          recent_reviews=recent_reviews,
-                         recent_activity=recent_activity,
-                         author_series=author_series)
+                         author_series=author_series,
+                         positive_pct=positive_pct)
 
 
 # -------------------------
@@ -4660,13 +4645,28 @@ def author_view_book(book_id):
     """, (book_id,))
     rating_breakdown = {row["ratings"]: row["cnt"] for row in cursor.fetchall()}
 
+    # ---- ML: is each written review positive, neutral or negative? ----
+    positive_pct = None
+    try:
+        model = author_insights.get_model(get_db_connection)
+        written = [r for r in reviews if r["review_text"]]
+        if model and written:
+            labels = list(model.predict([r["review_text"] for r in written]))
+            for r, label in zip(written, labels):
+                r["sentiment"] = label
+            if len(written) >= 3:             # a percentage is only reliable with 3+ reviews
+                positive_pct = author_insights.positive_percent(labels)
+    except Exception as e:
+        print("ML error (author_view_book):", e)
+
     cursor.close()
     conn.close()
 
     return render_template("author_view_book.html",
                            book=book,
                            reviews=reviews,
-                           rating_breakdown=rating_breakdown)
+                           rating_breakdown=rating_breakdown,
+                           positive_pct=positive_pct)
 
 
 # -------------------------
