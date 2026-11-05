@@ -1,992 +1,229 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Author Dashboard - {{ author.name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-    :root {
-        --surface: #111319;
-        --surface-container: #1d2025;
-        --surface-container-low: #191c21;
-        --surface-container-high: #272a30;
-
-        --on-surface: #e1e2ea;
-        --on-surface-variant: #c1c6d3;
-
-        --outline: #8b919d;
-        --outline-variant: #414751;
-
-        --primary: #a6c8ff;
-        --primary-container: #1466b8;
-        --on-primary-container: #d7e4ff;
-
-        --accent-purple: #a855f7;
-
-        --status-success: #22c55e;
-        --status-error: #ef4444;
-        --status-warning: #f59e0b;
-
-        --border-subtle: rgba(20, 102, 184, 0.2);
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: var(--surface);
-        color: var(--on-surface);
-        min-height: 100vh;
-    }
-
-    /* =========================
-       AUTHOR HEADER
-       ========================= */
-
-    .author-header {
-        background:
-            radial-gradient(
-                circle at 10% 20%,
-                rgba(20, 102, 184, 0.25),
-                transparent 35%
-            ),
-            radial-gradient(
-                circle at 90% 0%,
-                rgba(168, 85, 247, 0.18),
-                transparent 30%
-            ),
-            var(--surface-container);
-
-        color: var(--on-surface);
-        padding: 24px 0;
-        border-bottom: 1px solid var(--outline-variant);
-
-        box-shadow:
-            0 4px 20px rgba(0, 0, 0, 0.35);
-    }
-
-    .author-header .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    /* =========================
-       LOGO
-       ========================= */
-
-    .logo {
-        height: 30px;
-        width: auto;
-        object-fit: contain;
-        display: block;
-        transform-origin: left center;
-        background: transparent;
-    }
-
-    .header-logo {
-        height: 85px;
-        width: auto;
-        object-fit: contain;
-        flex-shrink: 0;
-    }
-
-    /* =========================
-       AUTHOR INFO
-       ========================= */
-
-    .author-info {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .author-info h1 {
-        margin: 0 0 10px 0;
-        font-size: 32px;
-        font-weight: 700;
-        color: #ffffff;
-    }
-
-    .author-info p {
-        margin: 0;
-        color: var(--on-surface-variant);
-    }
-
-    .author-text h1 {
-        margin: 0 0 5px 0;
-        color: #ffffff;
-    }
-
-    .author-text p {
-        margin: 0;
-        color: var(--on-surface-variant);
-    }
-
-    /* =========================
-       AUTHOR BADGE
-       ========================= */
-
-    .author-badge {
-        background: rgba(20, 102, 184, 0.22);
-        color: var(--primary);
-
-        padding: 6px 15px;
-        border-radius: 20px;
-
-        font-size: 14px;
-        font-weight: 600;
-
-        display: inline-block;
-        margin-left: 10px;
-
-        border: 1px solid rgba(166, 200, 255, 0.25);
-    }
-
-    /* =========================
-       HEADER ACTIONS
-       ========================= */
-
-    .author-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border-radius: 8px;
-
-        text-decoration: none;
-        font-weight: 600;
-
-        transition:
-            background 0.25s ease,
-            transform 0.2s ease,
-            box-shadow 0.25s ease;
-
-        cursor: pointer;
-        border: none;
-        font-size: 14px;
-    }
-
-    .btn-light {
-        background: var(--primary-container);
-        color: #ffffff;
-
-        box-shadow:
-            0 4px 12px rgba(20, 102, 184, 0.25);
-    }
-
-    .btn-light:hover {
-        background: #1976d2;
-        transform: translateY(-2px);
-
-        box-shadow:
-            0 6px 18px rgba(20, 102, 184, 0.35);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: var(--primary);
-
-        border: 1px solid var(--outline);
-    }
-
-    .btn-outline:hover {
-        background: rgba(166, 200, 255, 0.08);
-        border-color: var(--primary);
-        transform: translateY(-1px);
-    }
-
-    /* =========================
-       DASHBOARD CONTAINER
-       ========================= */
-
-    .dashboard-container {
-        max-width: 1200px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
-
-    /* =========================
-       STATISTICS
-       ========================= */
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(
-            auto-fit,
-            minmax(250px, 1fr)
-        );
-
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        position: relative;
-
-        background: var(--surface-container);
-        padding: 25px;
-
-        border-radius: 14px;
-        border: 1px solid var(--outline-variant);
-
-        box-shadow:
-            0 4px 15px rgba(0, 0, 0, 0.25);
-
-        transition:
-            transform 0.25s ease,
-            border-color 0.25s ease,
-            box-shadow 0.25s ease;
-
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: "";
-        position: absolute;
-
-        width: 120px;
-        height: 120px;
-
-        right: -40px;
-        top: -40px;
-
-        background: rgba(20, 102, 184, 0.12);
-        border-radius: 50%;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-
-        border-color: rgba(166, 200, 255, 0.35);
-
-        box-shadow:
-            0 8px 25px rgba(0, 0, 0, 0.35),
-            0 0 20px rgba(20, 102, 184, 0.08);
-    }
-
-    .stat-card h3 {
-        margin: 0 0 10px 0;
-
-        color: var(--on-surface-variant);
-
-        font-size: 13px;
-        font-weight: 600;
-
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .stat-value {
-        font-size: 36px;
-        font-weight: 700;
-
-        color: var(--primary);
-
-        margin: 10px 0;
-    }
-
-    .stat-icon {
-        float: right;
-
-        font-size: 40px;
-
-        color: var(--primary);
-        opacity: 0.25;
-    }
-
-    /* =========================
-       CONTENT GRID
-       ========================= */
-
-    .content-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-
-        gap: 30px;
-        margin-top: 30px;
-    }
-
-    /* =========================
-       CARDS
-       ========================= */
-
-    .card {
-        background: var(--surface-container);
-
-        padding: 25px;
-
-        border-radius: 14px;
-
-        border: 1px solid var(--outline-variant);
-
-        box-shadow:
-            0 4px 15px rgba(0, 0, 0, 0.25);
-    }
-
-    .card h2 {
-        margin: 0 0 20px 0;
-
-        color: var(--primary);
-
-        font-size: 22px;
-        font-weight: 700;
-
-        border-bottom: 1px solid var(--outline-variant);
-
-        padding-bottom: 12px;
-    }
-
-    /* =========================
-       BOOK GRID
-       ========================= */
-
-    .books-grid {
-        display: grid;
-
-        grid-template-columns:
-            repeat(auto-fill, minmax(150px, 1fr));
-
-        gap: 20px;
-    }
-
-    .book-item {
-        text-align: center;
-    }
-
-    .book-cover {
-        width: 100%;
-        height: 220px;
-
-        object-fit: cover;
-
-        border-radius: 10px;
-
-        box-shadow:
-            0 6px 15px rgba(0, 0, 0, 0.4);
-
-        margin-bottom: 10px;
-
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-
-    .book-cover:hover {
-        transform: scale(1.04);
-
-        box-shadow:
-            0 10px 25px rgba(0, 0, 0, 0.5);
-    }
-
-    .book-title {
-        font-weight: 600;
-        font-size: 14px;
-
-        color: var(--on-surface);
-
-        margin-bottom: 5px;
-    }
-
-    .book-stats {
-        font-size: 12px;
-        color: var(--on-surface-variant);
-    }
-
-    /* =========================
-       REVIEWS
-       ========================= */
-
-    .review-item {
-        padding: 15px;
-
-        border-left: 3px solid var(--accent-purple);
-
-        background: var(--surface-container-low);
-
-        margin-bottom: 15px;
-
-        border-radius: 8px;
-
-        border-top: 1px solid rgba(255, 255, 255, 0.03);
-        border-right: 1px solid rgba(255, 255, 255, 0.03);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .review-header {
-        display: flex;
-        justify-content: space-between;
-
-        margin-bottom: 10px;
-    }
-
-    .reviewer-name {
-        font-weight: 600;
-        color: var(--primary);
-    }
-
-    .review-rating {
-        color: #fbbf24;
-    }
-
-    .review-text {
-        color: var(--on-surface-variant);
-
-        line-height: 1.6;
-
-        margin-bottom: 5px;
-    }
-
-    .review-date {
-        font-size: 12px;
-        color: var(--outline);
-    }
-
-    /* =========================
-       ACTIVITY
-       ========================= */
-
-    .activity-item {
-        padding: 12px;
-
-        border-bottom: 1px solid var(--outline-variant);
-
-        display: flex;
-        align-items: center;
-
-        gap: 15px;
-    }
-
-    .activity-item:last-child {
-        border-bottom: none;
-    }
-
-    .activity-icon {
-        width: 40px;
-        height: 40px;
-
-        flex-shrink: 0;
-
-        border-radius: 50%;
-
-        background:
-            linear-gradient(
-                135deg,
-                var(--primary-container),
-                #1a4f91
-            );
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        color: #ffffff;
-
-        font-size: 18px;
-
-        box-shadow:
-            0 4px 12px rgba(20, 102, 184, 0.25);
-    }
-
-    .activity-content {
-        flex: 1;
-    }
-
-    .activity-text {
-        color: var(--on-surface);
-
-        margin-bottom: 3px;
-
-        font-size: 14px;
-    }
-
-    .activity-time {
-        font-size: 12px;
-        color: var(--outline);
-    }
-
-    /* =========================
-       EMPTY STATE
-       ========================= */
-
-    .empty-state {
-        text-align: center;
-
-        padding: 40px;
-
-        color: var(--outline);
-    }
-
-    .empty-state-icon {
-        font-size: 60px;
-
-        margin-bottom: 15px;
-
-        color: var(--primary);
-
-        opacity: 0.25;
-    }
-
-    /* =========================
-       FLASH MESSAGES
-       ========================= */
-
-    .flash-messages {
-        max-width: 1200px;
-
-        margin: 20px auto;
-
-        padding: 0 20px;
-    }
-
-    .alert {
-        padding: 15px 20px;
-
-        border-radius: 10px;
-
-        margin-bottom: 15px;
-    }
-
-    .alert-success {
-        background: rgba(34, 197, 94, 0.12);
-
-        color: #86efac;
-
-        border: 1px solid rgba(34, 197, 94, 0.35);
-
-        border-left: 4px solid var(--status-success);
-    }
-
-    .alert-error {
-        background: rgba(239, 68, 68, 0.12);
-
-        color: #fca5a5;
-
-        border: 1px solid rgba(239, 68, 68, 0.35);
-
-        border-left: 4px solid var(--status-error);
-    }
-
-    /* =========================
-       BOOK ACTIONS
-       ========================= */
-
-    .book-actions {
-        margin-top: 8px;
-
-        display: flex;
-        gap: 5px;
-
-        justify-content: center;
-
-        flex-wrap: wrap;
-    }
-
-    .btn-action {
-        display: inline-block;
-
-        padding: 5px 9px;
-
-        border-radius: 6px;
-
-        font-size: 11px;
-        font-weight: 600;
-
-        text-decoration: none;
-
-        cursor: pointer;
-
-        border: 1px solid transparent;
-
-        transition:
-            opacity 0.2s,
-            transform 0.2s,
-            background 0.2s;
-    }
-
-    .btn-action:hover {
-        opacity: 1;
-        transform: translateY(-1px);
-    }
-
-    /* View */
-
-    .btn-view {
-        background: rgba(20, 102, 184, 0.15);
-
-        color: var(--primary);
-
-        border-color: rgba(166, 200, 255, 0.2);
-    }
-
-    .btn-view:hover {
-        background: rgba(20, 102, 184, 0.28);
-    }
-
-    /* Edit */
-
-    .btn-edit {
-        background: rgba(245, 158, 11, 0.12);
-
-        color: #fbbf24;
-
-        border-color: rgba(245, 158, 11, 0.25);
-    }
-
-    .btn-edit:hover {
-        background: rgba(245, 158, 11, 0.22);
-    }
-
-    /* Delete */
-
-    .btn-delete {
-        background: rgba(239, 68, 68, 0.12);
-
-        color: #f87171;
-
-        border-color: rgba(239, 68, 68, 0.25);
-    }
-
-    .btn-delete:hover {
-        background: rgba(239, 68, 68, 0.22);
-    }
-
-    /* =========================
-       SCROLLBAR
-       ========================= */
-
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: var(--surface);
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: var(--outline-variant);
-
-        border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: var(--outline);
-    }
-
-    /* =========================
-       RESPONSIVE
-       ========================= */
-
-    @media (max-width: 968px) {
-
-        .content-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .author-header .container {
-            flex-direction: column;
-
-            text-align: center;
-
-            gap: 20px;
-        }
-
-        .author-info {
-            justify-content: center;
-        }
-
-        .author-actions {
-            justify-content: center;
-        }
-
-        .books-grid {
-            grid-template-columns:
-                repeat(auto-fill, minmax(120px, 1fr));
-        }
-    }
-
-    @media (max-width: 600px) {
-
-        .author-header {
-            padding: 20px 0;
-        }
-
-        .header-logo {
-            height: 65px;
-        }
-
-        .author-info {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .author-info h1 {
-            font-size: 26px;
-        }
-
-        .author-badge {
-            margin-left: 0;
-        }
-
-        .author-actions {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .author-actions .btn {
-            width: 100%;
-            text-align: center;
-        }
-
-        .dashboard-container {
-            margin: 20px auto;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .card {
-            padding: 20px;
-        }
-
-        .books-grid {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-
-            gap: 15px;
-        }
-
-        .book-cover {
-            height: 200px;
-        }
-    }
-</style>
-</head>
-<body>
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flash-messages">
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <!-- Author Header -->
-    <div class="author-header">
-        <div class="container">
-            <div class="author-info">
-                <img src="{{ url_for('static', filename='images/logo3.png') }}" alt="ReadNext" class="header-logo">
-                
-                <div class="author-text">
-                    <h1>
-                        {{ author.name }}
-                        <span class="author-badge">✍️ AUTHOR</span>
-                    </h1>
-                    <p>{{ author.email }}</p>
+{% extends "author_base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Author header -->
+    <section class="bg-surface-container-low rounded-xl p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+                {% if author.profile_image_url %}
+                <img class="size-20 sm:size-24 rounded-full object-cover shadow-md shrink-0" src="{{ author.profile_image_url }}" alt="{{ author.name }}"/>
+                {% else %}
+                <div class="size-20 sm:size-24 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-4xl">person</span>
+                </div>
+                {% endif %}
+                <div class="min-w-0">
+                    <h1 class="text-2xl sm:text-3xl font-bold truncate">{{ author.name }}</h1>
+                    <p class="text-on-surface-variant mt-1">
+                        {{ total_books }} published book{{ '' if total_books == 1 else 's' }}
+                    </p>
+                    <p class="flex items-center gap-1.5 text-sm text-on-surface-variant mt-2">
+                        <span class="material-symbols-outlined text-base">mail</span> {{ author.email }}
+                    </p>
                 </div>
             </div>
-            <div class="author-actions">
-                
-                <a href="{{ url_for('add_book') }}" class="btn btn-light">➕ Add New Book</a>
-                <a href="{{ url_for('author_add_series') }}" class="btn btn-light">📚 New Series</a>
-                <a href="{{ url_for('edit_author_profile') }}" class="btn btn-light">Edit Profile</a>
-                <a href="{{ url_for('author_logout') }}" class="btn btn-outline">Logout</a>
+
+            <div class="flex flex-wrap items-center gap-3 shrink-0">
+                <a href="{{ url_for('edit_author_profile') }}" class="bg-surface-container-high hover:bg-surface-bright text-on-surface font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">edit</span> Edit Profile
+                </a>
+                <a href="{{ url_for('author_add_series') }}" class="bg-surface-container-high hover:bg-surface-bright text-on-surface font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">collections_bookmark</span> Create Series
+                </a>
+                <a href="{{ url_for('add_book') }}" class="bg-primary-container hover:opacity-95 text-on-primary-container font-bold px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">add</span> Add New Book
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Dashboard Content -->
-    <div class="dashboard-container">
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-icon">📚</span>
-                <h3>Total Books</h3>
-                <div class="stat-value">{{ total_books }}</div>
+    <!-- Metric cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+        <div class="bg-surface-container-low rounded-xl p-5 shadow-sm hover:bg-surface-container transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Books</span>
+                <div class="size-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-lg">menu_book</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <span class="stat-icon">⭐</span>
-                <h3>Average Rating</h3>
-                <div class="stat-value">{{ "%.1f"|format(avg_rating) }}</div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon">💬</span>
-                <h3>Total Reviews</h3>
-                <div class="stat-value">{{ total_reviews }}</div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon">👥</span>
-                <h3>Total Readers</h3>
-                <div class="stat-value">{{ total_readers }}</div>
-            </div>
+            <p class="mt-4 text-3xl font-bold">{{ total_books }}</p>
+            <p class="text-sm text-on-surface-variant mt-1">
+                {% if author_series %}Across {{ author_series|length }} series{% else %}Published on ReadNext{% endif %}
+            </p>
         </div>
 
-        <!-- Content Grid -->
-        <div class="content-grid">
-            <!-- Left Column: Books and Reviews -->
-            <div>
-                <!-- Your Books -->
-                <div class="card">
-                    <h2>Your Books</h2>
-                    {% if books %}
-                        <div class="books-grid">
-                            {% for book in books %}
-                            <div class="book-item">
-                                <a href="{{ url_for('author_view_book', book_id=book.book_id) }}">
-                                    <img src="{{ book.cover_image_url or 'https://via.placeholder.com/150x220?text=No+Cover' }}" 
-                                         alt="{{ book.title }}" 
-                                         class="book-cover">
-                                </a>
-                                <div class="book-title">{{ book.title }}</div>
-                                <div class="book-stats">
-                                    ⭐ {{ "%.1f"|format(book.avg_rating) }} 
-                                    ({{ book.review_count }} reviews)
-                                </div>
-                                <div class="book-actions">
-                                    <a href="{{ url_for('author_view_book', book_id=book.book_id) }}" 
-                                       class="btn-action btn-view">👁 View</a>
-                                    <a href="{{ url_for('author_edit_book', book_id=book.book_id) }}"
-                                       class="btn-action btn-edit">✏️ Edit</a>
-                                    <form action="{{ url_for('author_delete_book', book_id=book.book_id) }}" 
-                                          method="POST" style="display:inline;"
-                                          onsubmit="return confirm('Delete \'{{ book.title }}\'? This cannot be undone.');">
-                                        <button type="submit" class="btn-action btn-delete">🗑 Delete</button>
-                                    </form>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📚</div>
-                            <p>No books added yet. Contact admin to add your books to the platform.</p>
-                        </div>
-                    {% endif %}
+        <div class="bg-surface-container-low rounded-xl p-5 shadow-sm hover:bg-surface-container transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Readers</span>
+                <div class="size-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-lg">bookmark_added</span>
+                </div>
+            </div>
+            <p class="mt-4 text-3xl font-bold">{{ total_readers }}</p>
+            <p class="text-sm text-on-surface-variant mt-1">Added your books to a shelf</p>
+        </div>
+
+        <div class="bg-surface-container-low rounded-xl p-5 shadow-sm hover:bg-surface-container transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Average Rating</span>
+                <div class="size-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+                    <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                </div>
+            </div>
+            <p class="mt-4 text-3xl font-bold">{{ "%.1f"|format(avg_rating) }} <span class="text-tertiary text-xl">★</span></p>
+            {% if positive_pct is defined and positive_pct is not none %}
+            <p class="text-sm text-status-success mt-1" title="Predicted by an ML model trained on the reviews on this site">
+                {{ positive_pct }}% of written reviews are positive
+            </p>
+            {% else %}
+            <p class="text-sm text-on-surface-variant mt-1">Average of all reviews</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-surface-container-low rounded-xl p-5 shadow-sm hover:bg-surface-container transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Reviews</span>
+                <div class="size-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-lg">rate_review</span>
+                </div>
+            </div>
+            <p class="mt-4 text-3xl font-bold">{{ total_reviews }}</p>
+            <p class="text-sm text-on-surface-variant mt-1">Written by readers</p>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-10">
+
+        <!-- Left: books + series -->
+        <div class="lg:col-span-8 flex flex-col gap-10">
+
+            <section id="books" class="flex flex-col gap-5 scroll-mt-32">
+                <div>
+                    <h2 class="text-xl font-bold">Your Books</h2>
+                    <p class="text-sm text-on-surface-variant mt-0.5">View, edit or remove your titles</p>
                 </div>
 
-                <!-- My Series -->
-                <div class="card" style="margin-top: 30px;">
-                    <h2 style="display:flex; justify-content:space-between; align-items:center;">
-                        My Series
-                        <a href="{{ url_for('author_add_series') }}" 
-                           style="font-size:13px; padding:6px 14px; background:var(--author-primary); color:#fff; border-radius:6px; text-decoration:none;">
-                            ➕ New Series
-                        </a>
-                    </h2>
-                    {% if author_series %}
-                        <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
-                            {% for s in author_series %}
-                            <div style="background:#f8f9ff; border:1px solid #e0e4f8; border-radius:10px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-weight:600; color:#333; font-size:15px;">📖 {{ s.name }}</div>
-                                    {% if s.description %}
-                                        <div style="color:#666; font-size:13px; margin-top:4px;">{{ s.description[:100] }}{% if s.description|length > 100 %}…{% endif %}</div>
+                {% if books %}
+                <div class="flex flex-col gap-4">
+                    {% for book in books %}
+                    <article class="bg-surface-container-low hover:bg-surface-container rounded-xl p-5 shadow-sm transition-all flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <img class="w-16 h-24 object-cover rounded-md shrink-0 shadow-md bg-surface-container-high"
+                                 src="{{ book.cover_image_url or url_for('static', filename='images/default_book.png') }}" alt="{{ book.title }}"/>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    {% if book.series_name %}
+                                    <span class="bg-primary-container/30 text-primary text-xs font-semibold px-2 py-0.5 rounded">{{ book.series_name }}{% if book.series_order %} • Book {{ book.series_order }}{% endif %}</span>
+                                    {% endif %}
+                                    {% if book.published_year %}<span class="text-on-surface-variant text-sm">{{ book.published_year }}</span>{% endif %}
+                                </div>
+                                <h3 class="text-lg font-bold truncate mt-1">{{ book.title }}</h3>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-on-surface-variant">
+                                    {% if book.review_count %}
+                                    <span class="flex items-center gap-1 text-tertiary font-semibold">
+                                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>{{ "%.1f"|format(book.avg_rating) }}
+                                    </span>
+                                    <span>{{ book.review_count }} review{{ '' if book.review_count == 1 else 's' }}</span>
+                                    {% else %}
+                                    <span>No reviews yet</span>
+                                    {% endif %}
+                                    <span>{{ book.shelf_count }} {{ 'shelf' if book.shelf_count == 1 else 'shelves' }}</span>
+                                    {% if book.positive_pct is defined and book.positive_pct is not none %}
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                                        {{ 'bg-status-success/10 text-status-success' if book.positive_pct >= 70 else ('bg-status-warning/10 text-status-warning' if book.positive_pct >= 50 else 'bg-status-error/10 text-status-error') }}"
+                                        title="Share of this book's written reviews that are positive (ML)">
+                                        {{ book.positive_pct }}% positive
+                                    </span>
                                     {% endif %}
                                 </div>
-                                <div style="text-align:right; min-width:80px;">
-                                    <span style="background:var(--author-primary); color:#fff; padding:3px 10px; border-radius:12px; font-size:12px;">
-                                        {{ s.book_count }} book{{ 's' if s.book_count != 1 else '' }}
-                                    </span>
-                                </div>
                             </div>
-                            {% endfor %}
                         </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📚</div>
-                            <p>No series yet. <a href="{{ url_for('author_add_series') }}" style="color:var(--author-primary);">Create your first series →</a></p>
-                        </div>
-                    {% endif %}
-                </div>
 
-                <!-- Recent Reviews -->
-                <div class="card" style="margin-top: 30px;">
-                    <h2>Recent Reviews</h2>
-                    {% if recent_reviews %}
-                        {% for review in recent_reviews %}
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div>
-                                    <span class="reviewer-name">{{ review.username }}</span>
-                                    <span style="color: #999;"> reviewed </span>
-                                    <strong>{{ review.book_title }}</strong>
-                                </div>
-                                <div class="review-rating">
-                                    {% for i in range(review.ratings) %}⭐{% endfor %}
-                                </div>
-                            </div>
-                            {% if review.review_text %}
-                                <div class="review-text">{{ review.review_text[:150] }}{% if review.review_text|length > 150 %}...{% endif %}</div>
-                            {% endif %}
-                            <div class="review-date">{{ review.review_date.strftime('%B %d, %Y') }}</div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <p>No reviews yet.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Right Column: Recent Activity -->
-            <div>
-                <div class="card">
-                    <h2>Recent Activity</h2>
-                    {% if recent_activity %}
-                        {% for activity in recent_activity %}
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                {% if activity.type == 'review' %}💬{% else %}📖{% endif %}
-                            </div>
-                            <div class="activity-content">
-                                <div class="activity-text">{{ activity.text }}</div>
-                                <div class="activity-time">{{ activity.time }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📊</div>
-                            <p>No recent activity.</p>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- Author Bio -->
-                <div class="card" style="margin-top: 30px;">
-                    <h2>About You</h2>
-                    <p style="color: #555; line-height: 1.8;">
-                        {{ author.biography or "No biography added yet." }}
-                    </p>
-                    {% if author.website %}
-                        <p style="margin-top: 15px;">
-                            <strong>Website:</strong> 
-                            <a href="{{ author.website }}" target="_blank" style="color: var(--author-primary);">
-                                {{ author.website }}
+                        <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+                            <a href="{{ url_for('author_view_book', book_id=book.book_id) }}" class="bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-semibold px-3 py-2 rounded-lg transition-colors">View Details</a>
+                            <a href="{{ url_for('author_edit_book', book_id=book.book_id) }}" title="Edit book" class="bg-surface-container-high hover:bg-surface-bright text-on-surface p-2 rounded-lg transition-colors flex">
+                                <span class="material-symbols-outlined text-base">edit</span>
                             </a>
-                        </p>
-                    {% endif %}
+                            <form action="{{ url_for('author_delete_book', book_id=book.book_id) }}" method="POST" class="flex"
+                                  onsubmit='return confirm({{ ("Delete " ~ book.title ~ "? This cannot be undone.")|tojson }});'>
+                                <button type="submit" title="Delete book" class="bg-surface-container-high hover:bg-error-container hover:text-error text-on-surface-variant p-2 rounded-lg transition-colors flex">
+                                    <span class="material-symbols-outlined text-base">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                    {% endfor %}
                 </div>
-            </div>
+                {% else %}
+                <div class="bg-surface-container-low rounded-xl p-10 text-center text-on-surface-variant">
+                    <span class="material-symbols-outlined text-4xl">menu_book</span>
+                    <p class="mt-2">No books yet. <a href="{{ url_for('add_book') }}" class="text-primary font-semibold hover:underline">Add your first book</a></p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section id="series" class="flex flex-col gap-5 scroll-mt-32">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold">My Series</h2>
+                        <p class="text-sm text-on-surface-variant mt-0.5">Books grouped in reading order</p>
+                    </div>
+                    <a href="{{ url_for('author_add_series') }}" class="btn-secondary text-sm !py-2">
+                        <span class="material-symbols-outlined text-base">add</span> New Series
+                    </a>
+                </div>
+                {% if author_series %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for s in author_series %}
+                    <div class="bg-surface-container-low rounded-xl p-5 shadow-sm hover:bg-surface-container transition-all">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="text-lg font-bold truncate">{{ s.name }}</h3>
+                            <span class="bg-primary-container/20 text-primary text-xs font-semibold px-2.5 py-1 rounded shrink-0">{{ s.book_count }} book{{ '' if s.book_count == 1 else 's' }}</span>
+                        </div>
+                        {% if s.description %}
+                        <p class="text-sm text-on-surface-variant mt-2 line-clamp-2">{{ s.description }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="bg-surface-container-low rounded-xl p-8 text-center text-sm text-on-surface-variant">
+                    No series yet. Create one to group books in reading order.
+                </div>
+                {% endif %}
+            </section>
         </div>
+
+        <!-- Right: latest reviews -->
+        <aside class="lg:col-span-4">
+            <div class="bg-surface-container-low rounded-xl p-6 shadow-sm">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">rate_review</span> Latest Reviews
+                </h3>
+                {% if recent_reviews %}
+                <div class="mt-4 flex flex-col divide-y divide-outline-variant/40">
+                    {% for review in recent_reviews[:5] %}
+                    <div class="py-4 first:pt-0 last:pb-0">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-tertiary text-sm tracking-tight">{{ '★' * review.ratings }}<span class="text-outline-variant">{{ '★' * (5 - review.ratings) }}</span></span>
+                            <span class="text-xs text-on-surface-variant">{{ review.review_date.strftime('%b %d, %Y') }}</span>
+                        </div>
+                        <p class="text-sm mt-1">
+                            <span class="font-semibold text-primary">{{ review.username }}</span>
+                            <span class="text-on-surface-variant"> on </span>
+                            <a href="{{ url_for('author_view_book', book_id=review.book_id) }}" class="font-semibold hover:underline">{{ review.book_title }}</a>
+                        </p>
+                        {% if review.review_text %}
+                        <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">{{ review.review_text[:130] }}{% if review.review_text|length > 130 %}…{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="mt-4 text-sm text-on-surface-variant">No reviews yet.</p>
+                {% endif %}
+            </div>
+        </aside>
     </div>
-</body>
-</html>
+{% endblock %}
